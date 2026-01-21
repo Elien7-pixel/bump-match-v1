@@ -8,6 +8,9 @@ import { View, ActivityIndicator } from 'react-native';
 
 import { LandingPage } from './src/screens/LandingPage';
 import { AppPage } from './src/screens/AppPage';
+import { ProfileScreen } from './src/screens/ProfileScreen';
+import { LikedNamesScreen } from './src/screens/LikedNamesScreen';
+import { SettingsScreen } from './src/screens/SettingsScreen';
 import { AppTokens } from './src/theme/designTokens';
 
 const Stack = createStackNavigator();
@@ -53,6 +56,9 @@ export default function App() {
       >
         <Stack.Screen name="Landing" component={LandingPage} />
         <Stack.Screen name="App" component={AppPage} />
+        <Stack.Screen name="Profile" component={ProfileScreen} />
+        <Stack.Screen name="LikedNames" component={LikedNamesScreen} />
+        <Stack.Screen name="Settings" component={SettingsScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

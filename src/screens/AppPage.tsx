@@ -7,6 +7,8 @@ import { CardStack } from '../components/CardStack';
 import { BabyName } from '../models/BabyName';
 import { getRandomNames } from '../data/babyNames';
 import { PartnerInviteDialog } from '../components/PartnerInviteDialog';
+import { MenuDrawer } from '../components/MenuDrawer';
+import { LanguagePickerModal } from '../components/LanguagePickerModal';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 
@@ -22,9 +24,12 @@ export const AppPage = () => {
   
   const [surname, setSurname] = useState('');
   const [inviteVisible, setInviteVisible] = useState(false);
+  const [menuVisible, setMenuVisible] = useState(false);
+  const [languagePickerVisible, setLanguagePickerVisible] = useState(false);
 
   useEffect(() => {
     loadProfile();
+    loadLikedNames();
   }, []);
 
   useEffect(() => {
@@ -43,6 +48,25 @@ export const AppPage = () => {
     }
   };
 
+  const loadLikedNames = async () => {
+    try {
+      const json = await AsyncStorage.getItem('bumpmatch_liked_names');
+      if (json) {
+        setLikedNames(JSON.parse(json));
+      }
+    } catch (e) {
+      console.log('Error loading liked names', e);
+    }
+  };
+
+  const saveLikedNames = async (names: BabyName[]) => {
+    try {
+      await AsyncStorage.setItem('bumpmatch_liked_names', JSON.stringify(names));
+    } catch (e) {
+      console.log('Error saving liked names', e);
+    }
+  };
+
   const loadNames = useCallback(() => {
     const newNames = getRandomNames(20, { 
       gender: genderFilter,
@@ -53,7 +77,9 @@ export const AppPage = () => {
   }, [genderFilter, languageFilter]);
 
   const handleSwipeRight = (name: BabyName) => {
-    setLikedNames([...likedNames, name]);
+    const updated = [...likedNames, name];
+    setLikedNames(updated);
+    saveLikedNames(updated);
     setCardHistory([...cardHistory, name]);
     // Simulate popping from list by slicing in state update? 
     // CardStack handles visual removal, we need to keep sync if we want to rewind correctly.
@@ -86,7 +112,9 @@ export const AppPage = () => {
     // Remove from history
     setCardHistory(prev => prev.slice(0, -1));
     // Remove from liked/disliked
-    setLikedNames(prev => prev.filter(n => n.id !== lastCard.id));
+    const updatedLiked = likedNames.filter(n => n.id !== lastCard.id);
+    setLikedNames(updatedLiked);
+    saveLikedNames(updatedLiked);
     setDislikedNames(prev => prev.filter(n => n.id !== lastCard.id));
     
     // Add back to names at the beginning
@@ -118,19 +146,14 @@ export const AppPage = () => {
             <Text style={styles.logoText}>BumpMatch</Text>
         </View>
 
-        <TouchableOpacity style={styles.iconButton} onPress={() => {}}>
+        <TouchableOpacity style={styles.iconButton} onPress={() => setMenuVisible(true)}>
            <Ionicons name="menu-outline" size={24} color={AppTokens.colors.grey} />
         </TouchableOpacity>
       </View>
 
       {/* Filter Bar */}
       <View style={styles.filterBar}>
-        <TouchableOpacity style={styles.languageButton} onPress={() => {
-            // Cycle languages for demo
-            const langs = ['All', 'English', 'Zulu', 'Afrikaans'];
-            const idx = langs.indexOf(languageFilter);
-            setLanguageFilter(langs[(idx + 1) % langs.length]);
-        }}>
+        <TouchableOpacity style={styles.languageButton} onPress={() => setLanguagePickerVisible(true)}>
           <Text style={styles.filterText}>{languageFilter}</Text>
           <Ionicons name="chevron-down" size={16} color={AppTokens.colors.text} />
         </TouchableOpacity>
@@ -228,6 +251,19 @@ export const AppPage = () => {
         onClose={() => setInviteVisible(false)} 
         surname={surname} 
       />
+
+      <MenuDrawer
+        visible={menuVisible}
+        onClose={() => setMenuVisible(false)}
+        onNavigate={(screen) => navigation.navigate(screen as never)}
+      />
+
+      <LanguagePickerModal
+        visible={languagePickerVisible}
+        onClose={() => setLanguagePickerVisible(false)}
+        currentLanguage={languageFilter}
+        onSelectLanguage={setLanguageFilter}
+      />
     </SafeAreaView>
   );
 };
@@ -242,7 +278,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: AppTokens.spacing.m,
-    paddingVertical: AppTokens.spacing.s,
+    paddingTop: AppTokens.spacing.l,
+    paddingBottom: AppTokens.spacing.s,
   },
   iconButton: {
     padding: AppTokens.spacing.s,
@@ -326,7 +363,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingBottom: AppTokens.spacing.m,
+    paddingVertical: AppTokens.spacing.l,
   },
   actionBtn: {
     width: 60,
@@ -357,7 +394,8 @@ const styles = StyleSheet.create({
       textAlign: 'center',
       fontSize: 12,
       color: AppTokens.colors.grey,
-      marginBottom: 4,
+      marginBottom: AppTokens.spacing.s,
+      paddingBottom: AppTokens.spacing.m,
       fontFamily: AppTokens.typography.fontFamily
   }
 });
