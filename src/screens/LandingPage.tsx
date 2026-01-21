@@ -4,7 +4,6 @@ import {
   View, 
   Text, 
   StyleSheet, 
-  ImageBackground, 
   Modal, 
   TouchableOpacity, 
   Alert,
@@ -50,18 +49,23 @@ export const LandingPage = () => {
   };
 
   return (
-    <ImageBackground 
-      source={require('../../assets/landing-bg.png')} 
+    <LinearGradient
+      colors={['#fbc2eb', '#a6c1ee', '#ffecd2']}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
       style={styles.background}
-      resizeMode="cover"
     >
-      <LinearGradient
-        colors={['transparent', 'rgba(0,0,0,0.8)']}
-        style={styles.gradientOverlay}
-      >
+      <View style={styles.decorativeCircle1} />
+      <View style={styles.decorativeCircle2} />
+      <View style={styles.decorativeCircle3} />
+      
+      <View style={styles.gradientOverlay}>
         <View style={styles.content}>
+          <View style={styles.logoContainer}>
+            <Text style={styles.logoEmoji}>👶</Text>
+          </View>
           <Text style={styles.title}>BumpMatch</Text>
-          <Text style={styles.subtitle}>Find the perfect name together.</Text>
+          <Text style={styles.subtitle}>Find the perfect name for your little one, together.</Text>
           
           <Button 
             title="Log In / Sign Up" 
@@ -69,7 +73,7 @@ export const LandingPage = () => {
             style={styles.button}
           />
         </View>
-      </LinearGradient>
+      </View>
 
       <Modal
         animationType="slide"
@@ -140,7 +144,7 @@ export const LandingPage = () => {
           </KeyboardAvoidingView>
         </View>
       </Modal>
-    </ImageBackground>
+    </LinearGradient>
   );
 };
 
@@ -149,6 +153,33 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '100%',
     height: '100%',
+  },
+  decorativeCircle1: {
+    position: 'absolute',
+    width: 300,
+    height: 300,
+    borderRadius: 150,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    top: -80,
+    right: -80,
+  },
+  decorativeCircle2: {
+    position: 'absolute',
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    top: 150,
+    left: -60,
+  },
+  decorativeCircle3: {
+    position: 'absolute',
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    bottom: 200,
+    right: -40,
   },
   gradientOverlay: {
     flex: 1,
@@ -159,18 +190,39 @@ const styles = StyleSheet.create({
     marginBottom: AppTokens.spacing.xxl,
     alignItems: 'center',
   },
+  logoContainer: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: AppTokens.spacing.l,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  logoEmoji: {
+    fontSize: 50,
+  },
   title: {
     fontFamily: AppTokens.typography.fontFamilyBold,
     fontSize: AppTokens.typography.sizes.hero,
-    color: AppTokens.colors.textLight,
+    color: '#333',
     marginBottom: AppTokens.spacing.s,
+    textShadowColor: 'rgba(255, 255, 255, 0.5)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   subtitle: {
     fontFamily: AppTokens.typography.fontFamily,
     fontSize: AppTokens.typography.sizes.h3,
-    color: AppTokens.colors.textDim,
+    color: '#555',
     marginBottom: AppTokens.spacing.xl,
     textAlign: 'center',
+    paddingHorizontal: AppTokens.spacing.m,
   },
   button: {
     width: '100%',

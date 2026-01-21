@@ -1,6 +1,7 @@
 
 import React from 'react';
-import { View, Text, StyleSheet, Modal, TouchableOpacity, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, Modal, TouchableOpacity, Pressable } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { AppTokens } from '../theme/designTokens';
 
@@ -22,14 +23,13 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({ visible, onClose, onNavi
       animationType="slide"
       transparent={true}
       onRequestClose={onClose}
+      presentationStyle="overFullScreen"
+      statusBarTranslucent={true}
     >
-      <TouchableOpacity 
-        style={styles.overlay} 
-        activeOpacity={1} 
-        onPress={onClose}
-      >
-        <TouchableOpacity activeOpacity={1} style={styles.drawer}>
-          <SafeAreaView style={styles.content}>
+      <View style={styles.overlay}>
+        <Pressable style={styles.backdrop} onPress={onClose} />
+        <View style={styles.drawer}>
+          <SafeAreaView style={styles.content} edges={['bottom']}>
             <View style={styles.header}>
               <Text style={styles.title}>Menu</Text>
               <TouchableOpacity onPress={onClose}>
@@ -66,8 +66,8 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({ visible, onClose, onNavi
               </TouchableOpacity>
             </View>
           </SafeAreaView>
-        </TouchableOpacity>
-      </TouchableOpacity>
+        </View>
+      </View>
     </Modal>
   );
 };
@@ -75,14 +75,20 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({ visible, onClose, onNavi
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'flex-end',
+  },
+  backdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   drawer: {
     backgroundColor: AppTokens.colors.background,
     borderTopLeftRadius: AppTokens.borderRadius.xl,
     borderTopRightRadius: AppTokens.borderRadius.xl,
     maxHeight: '50%',
+    width: '100%',
+    zIndex: 1,
+    elevation: 10,
   },
   content: {
     flex: 1,

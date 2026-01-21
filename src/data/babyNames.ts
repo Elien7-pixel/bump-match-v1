@@ -1,32 +1,294 @@
 
 import { BabyName } from '../models/BabyName';
 
+// Raw dataset: 13 languages × 20 names each = 260 names total.
+// Languages must match the filter options used by the app exactly.
 const rawData: BabyName[] = [
+  // English
   { id: '1', name: 'Liam', gender: 'boy', origin: 'Irish', meaning: 'Strong-willed warrior', language: 'English' },
   { id: '2', name: 'Olivia', gender: 'girl', origin: 'Latin', meaning: 'Olive tree', language: 'English' },
-  { id: '3', name: 'Noah', gender: 'boy', origin: 'Hebrew', meaning: 'Rest, comfort', language: 'English' },
-  { id: '4', name: 'Emma', gender: 'girl', origin: 'German', meaning: 'Whole, universal', language: 'English' },
-  { id: '5', name: 'Thabo', gender: 'boy', origin: 'African', meaning: 'Happiness', language: 'Zulu' },
-  { id: '6', name: 'Nia', gender: 'girl', origin: 'African', meaning: 'Purpose', language: 'Swahili' },
-  { id: '7', name: 'Kai', gender: 'unisex', origin: 'Hawaiian', meaning: 'Sea', language: 'English' },
-  { id: '8', name: 'Aaliyah', gender: 'girl', origin: 'Arabic', meaning: 'High, exalted', language: 'English' },
-  { id: '9', name: 'Bongani', gender: 'boy', origin: 'African', meaning: 'Be thankful', language: 'Zulu' },
-  { id: '10', name: 'Lindiwe', gender: 'girl', origin: 'African', meaning: 'Waited for', language: 'Zulu' },
-  { id: '11', name: 'Sipho', gender: 'boy', origin: 'African', meaning: 'Gift', language: 'Xhosa' },
-  { id: '12', name: 'Zola', gender: 'girl', origin: 'African', meaning: 'Quiet, tranquil', language: 'Xhosa' },
-  { id: '13', name: 'Johan', gender: 'boy', origin: 'German', meaning: 'God is gracious', language: 'Afrikaans' },
-  { id: '14', name: 'Elize', gender: 'girl', origin: 'Hebrew', meaning: 'Pledged to God', language: 'Afrikaans' },
-  { id: '15', name: 'Riaan', gender: 'boy', origin: 'Dutch', meaning: 'Little King', language: 'Afrikaans' },
-  { id: '16', name: 'Aiden', gender: 'boy', origin: 'Irish', meaning: 'Little fire', language: 'English' },
-  { id: '17', name: 'Aria', gender: 'girl', origin: 'Italian', meaning: 'Air; Song', language: 'English' },
-  { id: '18', name: 'Jordan', gender: 'unisex', origin: 'Hebrew', meaning: 'Flowing down', language: 'English' },
-  { id: '19', name: 'Kabelo', gender: 'boy', origin: 'African', meaning: 'Given', language: 'Sotho' },
-  { id: '20', name: 'Mpho', gender: 'unisex', origin: 'African', meaning: 'Gift', language: 'Sotho' },
-  { id: '21', name: 'Lerato', gender: 'unisex', origin: 'African', meaning: 'Love', language: 'Sotho' },
-  { id: '22', name: 'Amara', gender: 'girl', origin: 'African', meaning: 'Grace', language: 'Igbo' },
-  { id: '23', name: 'Kwame', gender: 'boy', origin: 'African', meaning: 'Born on Saturday', language: 'Akan' },
-  { id: '24', name: 'Zoe', gender: 'girl', origin: 'Greek', meaning: 'Life', language: 'English' },
-  { id: '25', name: 'Luca', gender: 'boy', origin: 'Italian', meaning: 'Bringer of light', language: 'English' },
+  { id: '3', name: 'Noah', gender: 'boy', origin: 'Hebrew', meaning: 'Rest; comfort', language: 'English' },
+  { id: '4', name: 'Emma', gender: 'girl', origin: 'German', meaning: 'Whole; universal', language: 'English' },
+  { id: '5', name: 'Aiden', gender: 'boy', origin: 'Irish', meaning: 'Little fire', language: 'English' },
+  { id: '6', name: 'Ava', gender: 'girl', origin: 'Latin', meaning: 'Bird; life', language: 'English' },
+  { id: '7', name: 'Ethan', gender: 'boy', origin: 'Hebrew', meaning: 'Strong; firm', language: 'English' },
+  { id: '8', name: 'Mia', gender: 'girl', origin: 'Scandinavian', meaning: 'Beloved', language: 'English' },
+  { id: '9', name: 'Logan', gender: 'unisex', origin: 'Scottish', meaning: 'Little hollow', language: 'English' },
+  { id: '10', name: 'Harper', gender: 'girl', origin: 'English', meaning: 'Harp player', language: 'English' },
+  { id: '11', name: 'Jackson', gender: 'boy', origin: 'English', meaning: 'Son of Jack', language: 'English' },
+  { id: '12', name: 'Isabella', gender: 'girl', origin: 'Hebrew', meaning: 'God is my oath', language: 'English' },
+  { id: '13', name: 'Mason', gender: 'boy', origin: 'English', meaning: 'Stone worker', language: 'English' },
+  { id: '14', name: 'Grace', gender: 'girl', origin: 'Latin', meaning: 'Grace; favor', language: 'English' },
+  { id: '15', name: 'Carter', gender: 'boy', origin: 'English', meaning: 'Cart driver', language: 'English' },
+  { id: '16', name: 'Riley', gender: 'unisex', origin: 'Irish', meaning: 'Valiant', language: 'English' },
+  { id: '17', name: 'Benjamin', gender: 'boy', origin: 'Hebrew', meaning: 'Son of the right hand', language: 'English' },
+  { id: '18', name: 'Sophia', gender: 'girl', origin: 'Greek', meaning: 'Wisdom', language: 'English' },
+  { id: '19', name: 'Oliver', gender: 'boy', origin: 'Latin', meaning: 'Olive tree', language: 'English' },
+  { id: '20', name: 'Chloe', gender: 'girl', origin: 'Greek', meaning: 'Blooming; fertility', language: 'English' },
+
+  // Afrikaans
+  { id: '21', name: 'Johan', gender: 'boy', origin: 'Germanic', meaning: 'God is gracious', language: 'Afrikaans' },
+  { id: '22', name: 'Elize', gender: 'girl', origin: 'Hebrew', meaning: 'Pledged to God', language: 'Afrikaans' },
+  { id: '23', name: 'Riaan', gender: 'boy', origin: 'Dutch', meaning: 'Little king', language: 'Afrikaans' },
+  { id: '24', name: 'Annelie', gender: 'girl', origin: 'Hebrew', meaning: 'Grace; favor', language: 'Afrikaans' },
+  { id: '25', name: 'Pieter', gender: 'boy', origin: 'Greek', meaning: 'Rock; stone', language: 'Afrikaans' },
+  { id: '26', name: 'Marlene', gender: 'girl', origin: 'German', meaning: 'Little Mary', language: 'Afrikaans' },
+  { id: '27', name: 'Francois', gender: 'boy', origin: 'French', meaning: 'Free man', language: 'Afrikaans' },
+  { id: '28', name: 'Suné', gender: 'girl', origin: 'Unknown', meaning: 'Beloved one', language: 'Afrikaans' },
+  { id: '29', name: 'Hendrik', gender: 'boy', origin: 'Germanic', meaning: 'Home ruler', language: 'Afrikaans' },
+  { id: '30', name: 'Anika', gender: 'girl', origin: 'Hebrew', meaning: 'Grace; favor', language: 'Afrikaans' },
+  { id: '31', name: 'Willem', gender: 'boy', origin: 'Germanic', meaning: 'Resolute protector', language: 'Afrikaans' },
+  { id: '32', name: 'Carla', gender: 'girl', origin: 'German', meaning: 'Free woman', language: 'Afrikaans' },
+  { id: '33', name: 'Jacques', gender: 'boy', origin: 'French', meaning: 'Supplanter', language: 'Afrikaans' },
+  { id: '34', name: 'Liezl', gender: 'girl', origin: 'German', meaning: 'God is my oath', language: 'Afrikaans' },
+  { id: '35', name: 'Morne', gender: 'boy', origin: 'French', meaning: 'From the mountains', language: 'Afrikaans' },
+  { id: '36', name: 'Nadia', gender: 'girl', origin: 'Slavic', meaning: 'Hope', language: 'Afrikaans' },
+  { id: '37', name: 'Stefan', gender: 'boy', origin: 'Greek', meaning: 'Crown; garland', language: 'Afrikaans' },
+  { id: '38', name: 'Ilse', gender: 'girl', origin: 'German', meaning: 'Pledged to God', language: 'Afrikaans' },
+  { id: '39', name: 'Gideon', gender: 'boy', origin: 'Hebrew', meaning: 'Mighty warrior', language: 'Afrikaans' },
+  { id: '40', name: 'Marli', gender: 'girl', origin: 'Modern', meaning: 'Combination name', language: 'Afrikaans' },
+
+  // isiZulu
+  { id: '41', name: 'Thabo', gender: 'boy', origin: 'Zulu', meaning: 'Joy; happiness', language: 'isiZulu' },
+  { id: '42', name: 'Lindiwe', gender: 'girl', origin: 'Zulu', meaning: 'The one we waited for', language: 'isiZulu' },
+  { id: '43', name: 'Bongani', gender: 'boy', origin: 'Zulu', meaning: 'Be thankful', language: 'isiZulu' },
+  { id: '44', name: 'Nandi', gender: 'girl', origin: 'Zulu', meaning: 'Sweet; pleasant', language: 'isiZulu' },
+  { id: '45', name: 'Sipho', gender: 'boy', origin: 'Zulu', meaning: 'Gift', language: 'isiZulu' },
+  { id: '46', name: 'Zanele', gender: 'girl', origin: 'Zulu', meaning: 'They are enough', language: 'isiZulu' },
+  { id: '47', name: 'Sibusiso', gender: 'boy', origin: 'Zulu', meaning: 'Blessing', language: 'isiZulu' },
+  { id: '48', name: 'Nomsa', gender: 'girl', origin: 'Zulu', meaning: 'Mother of grace', language: 'isiZulu' },
+  { id: '49', name: 'Mfundo', gender: 'unisex', origin: 'Zulu', meaning: 'Education; learning', language: 'isiZulu' },
+  { id: '50', name: 'Ayanda', gender: 'unisex', origin: 'Zulu', meaning: 'They are increasing', language: 'isiZulu' },
+  { id: '51', name: 'Vusi', gender: 'boy', origin: 'Zulu', meaning: 'Awakening', language: 'isiZulu' },
+  { id: '52', name: 'Nokuthula', gender: 'girl', origin: 'Zulu', meaning: 'Mother of peace', language: 'isiZulu' },
+  { id: '53', name: 'Siyabonga', gender: 'boy', origin: 'Zulu', meaning: 'We are thankful', language: 'isiZulu' },
+  { id: '54', name: 'Zama', gender: 'girl', origin: 'Zulu', meaning: 'To strive; to try', language: 'isiZulu' },
+  { id: '55', name: 'Jabulani', gender: 'boy', origin: 'Zulu', meaning: 'Rejoice', language: 'isiZulu' },
+  { id: '56', name: 'Thandeka', gender: 'girl', origin: 'Zulu', meaning: 'Beloved', language: 'isiZulu' },
+  { id: '57', name: 'Lwazi', gender: 'unisex', origin: 'Zulu', meaning: 'Knowledge', language: 'isiZulu' },
+  { id: '58', name: 'Nkosinathi', gender: 'boy', origin: 'Zulu', meaning: 'The Lord is with us', language: 'isiZulu' },
+  { id: '59', name: 'Gugulethu', gender: 'girl', origin: 'Zulu', meaning: 'Our pride', language: 'isiZulu' },
+  { id: '60', name: 'Yanga', gender: 'unisex', origin: 'Zulu', meaning: 'May it happen', language: 'isiZulu' },
+
+  // isiXhosa
+  { id: '61', name: 'Zola', gender: 'unisex', origin: 'Xhosa', meaning: 'Quiet; tranquil', language: 'isiXhosa' },
+  { id: '62', name: 'Ayabonga', gender: 'unisex', origin: 'Xhosa', meaning: 'They are grateful', language: 'isiXhosa' },
+  { id: '63', name: 'Lulama', gender: 'girl', origin: 'Xhosa', meaning: 'Be mild; be gentle', language: 'isiXhosa' },
+  { id: '64', name: 'Buhle', gender: 'unisex', origin: 'Xhosa', meaning: 'Beauty', language: 'isiXhosa' },
+  { id: '65', name: 'Liyema', gender: 'boy', origin: 'Xhosa', meaning: 'The pillar stands firm', language: 'isiXhosa' },
+  { id: '66', name: 'Nomhle', gender: 'girl', origin: 'Xhosa', meaning: 'Mother of beauty', language: 'isiXhosa' },
+  { id: '67', name: 'Bongiwe', gender: 'girl', origin: 'Xhosa', meaning: 'We are grateful', language: 'isiXhosa' },
+  { id: '68', name: 'Khaya', gender: 'unisex', origin: 'Xhosa', meaning: 'Home', language: 'isiXhosa' },
+  { id: '69', name: 'Litha', gender: 'boy', origin: 'Xhosa', meaning: 'Light', language: 'isiXhosa' },
+  { id: '70', name: 'Nobuhle', gender: 'girl', origin: 'Xhosa', meaning: 'Mother of beauty', language: 'isiXhosa' },
+  { id: '71', name: 'Songezo', gender: 'boy', origin: 'Xhosa', meaning: 'We are added to', language: 'isiXhosa' },
+  { id: '72', name: 'Yamkela', gender: 'unisex', origin: 'Xhosa', meaning: 'Accept; receive', language: 'isiXhosa' },
+  { id: '73', name: 'Lithawe', gender: 'boy', origin: 'Xhosa', meaning: 'Little hero', language: 'isiXhosa' },
+  { id: '74', name: 'Andiswa', gender: 'girl', origin: 'Xhosa', meaning: 'We are multiplied', language: 'isiXhosa' },
+  { id: '75', name: 'Mihlali', gender: 'unisex', origin: 'Xhosa', meaning: 'Thankfulness', language: 'isiXhosa' },
+  { id: '76', name: 'Khanyisa', gender: 'unisex', origin: 'Xhosa', meaning: 'Illuminate', language: 'isiXhosa' },
+  { id: '77', name: 'Akholiwe', gender: 'girl', origin: 'Xhosa', meaning: 'The one who believes', language: 'isiXhosa' },
+  { id: '78', name: 'Lwandle', gender: 'unisex', origin: 'Xhosa', meaning: 'Sea; ocean', language: 'isiXhosa' },
+  { id: '79', name: 'Xolani', gender: 'unisex', origin: 'Xhosa', meaning: 'Be at peace', language: 'isiXhosa' },
+  { id: '80', name: 'Noluthando', gender: 'girl', origin: 'Xhosa', meaning: 'Mother of love', language: 'isiXhosa' },
+
+  // isiNdebele
+  { id: '81', name: 'Themba', gender: 'boy', origin: 'Ndebele', meaning: 'Hope; trust', language: 'isiNdebele' },
+  { id: '82', name: 'Nomsa', gender: 'girl', origin: 'Ndebele', meaning: 'Mother of grace', language: 'isiNdebele' },
+  { id: '83', name: 'Bheka', gender: 'boy', origin: 'Ndebele', meaning: 'Look; watch', language: 'isiNdebele' },
+  { id: '84', name: 'Nokuthula', gender: 'girl', origin: 'Ndebele', meaning: 'Mother of peace', language: 'isiNdebele' },
+  { id: '85', name: 'Sipho', gender: 'boy', origin: 'Ndebele', meaning: 'Gift', language: 'isiNdebele' },
+  { id: '86', name: 'Nokwazi', gender: 'girl', origin: 'Ndebele', meaning: 'Mother of knowledge', language: 'isiNdebele' },
+  { id: '87', name: 'Jabulani', gender: 'boy', origin: 'Ndebele', meaning: 'Rejoice', language: 'isiNdebele' },
+  { id: '88', name: 'Thandeka', gender: 'girl', origin: 'Ndebele', meaning: 'Beloved', language: 'isiNdebele' },
+  { id: '89', name: 'Musa', gender: 'unisex', origin: 'Ndebele', meaning: 'Grace; kindness', language: 'isiNdebele' },
+  { id: '90', name: 'Ayanda', gender: 'unisex', origin: 'Ndebele', meaning: 'They are increasing', language: 'isiNdebele' },
+  { id: '91', name: 'Siyabonga', gender: 'boy', origin: 'Ndebele', meaning: 'We are thankful', language: 'isiNdebele' },
+  { id: '92', name: 'Zinhle', gender: 'girl', origin: 'Ndebele', meaning: 'They are beautiful', language: 'isiNdebele' },
+  { id: '93', name: 'Khethiwe', gender: 'girl', origin: 'Ndebele', meaning: 'The chosen one', language: 'isiNdebele' },
+  { id: '94', name: 'Nkosinathi', gender: 'boy', origin: 'Ndebele', meaning: 'The Lord is with us', language: 'isiNdebele' },
+  { id: '95', name: 'Lungile', gender: 'unisex', origin: 'Ndebele', meaning: 'Good; right', language: 'isiNdebele' },
+  { id: '96', name: 'Gugu', gender: 'girl', origin: 'Ndebele', meaning: 'Treasure', language: 'isiNdebele' },
+  { id: '97', name: 'Sikhumbuzo', gender: 'boy', origin: 'Ndebele', meaning: 'Remembrance', language: 'isiNdebele' },
+  { id: '98', name: 'Nomvelo', gender: 'girl', origin: 'Ndebele', meaning: 'Mother of nature', language: 'isiNdebele' },
+  { id: '99', name: 'Mduduzi', gender: 'boy', origin: 'Ndebele', meaning: 'Comforter', language: 'isiNdebele' },
+  { id: '100', name: 'Zamokuhle', gender: 'unisex', origin: 'Ndebele', meaning: 'Trying for the best', language: 'isiNdebele' },
+
+  // Sepedi
+  { id: '101', name: 'Kabelo', gender: 'boy', origin: 'Sepedi', meaning: 'Given; gift', language: 'Sepedi' },
+  { id: '102', name: 'Mpho', gender: 'unisex', origin: 'Sepedi', meaning: 'Gift', language: 'Sepedi' },
+  { id: '103', name: 'Lerato', gender: 'unisex', origin: 'Sepedi', meaning: 'Love', language: 'Sepedi' },
+  { id: '104', name: 'Kgothatso', gender: 'unisex', origin: 'Sepedi', meaning: 'Encouragement', language: 'Sepedi' },
+  { id: '105', name: 'Thato', gender: 'unisex', origin: 'Sepedi', meaning: 'Will; desire', language: 'Sepedi' },
+  { id: '106', name: 'Reneilwe', gender: 'girl', origin: 'Sepedi', meaning: 'We have been given', language: 'Sepedi' },
+  { id: '107', name: 'Tshepo', gender: 'boy', origin: 'Sepedi', meaning: 'Hope; trust', language: 'Sepedi' },
+  { id: '108', name: 'Paballo', gender: 'unisex', origin: 'Sepedi', meaning: 'Care; protection', language: 'Sepedi' },
+  { id: '109', name: 'Tumelo', gender: 'unisex', origin: 'Sepedi', meaning: 'Faith; belief', language: 'Sepedi' },
+  { id: '110', name: 'Boitumelo', gender: 'girl', origin: 'Sepedi', meaning: 'Joy', language: 'Sepedi' },
+  { id: '111', name: 'Kgomotso', gender: 'girl', origin: 'Sepedi', meaning: 'Comfort', language: 'Sepedi' },
+  { id: '112', name: 'Lesedi', gender: 'unisex', origin: 'Sepedi', meaning: 'Light', language: 'Sepedi' },
+  { id: '113', name: 'Kgalalelo', gender: 'girl', origin: 'Sepedi', meaning: 'Praise; glory', language: 'Sepedi' },
+  { id: '114', name: 'Neo', gender: 'unisex', origin: 'Sepedi', meaning: 'Gift', language: 'Sepedi' },
+  { id: '115', name: 'Refilwe', gender: 'girl', origin: 'Sepedi', meaning: 'We have been given again', language: 'Sepedi' },
+  { id: '116', name: 'Onkarabile', gender: 'boy', origin: 'Sepedi', meaning: 'God has answered', language: 'Sepedi' },
+  { id: '117', name: 'Tshepiso', gender: 'unisex', origin: 'Sepedi', meaning: 'Promise', language: 'Sepedi' },
+  { id: '118', name: 'Karabo', gender: 'unisex', origin: 'Sepedi', meaning: 'Answer', language: 'Sepedi' },
+  { id: '119', name: 'Lebogang', gender: 'unisex', origin: 'Sepedi', meaning: 'Be thankful', language: 'Sepedi' },
+  { id: '120', name: 'Mmabatho', gender: 'girl', origin: 'Sepedi', meaning: 'Mother of the people', language: 'Sepedi' },
+
+  // Sesotho
+  { id: '121', name: 'Teboho', gender: 'boy', origin: 'Sesotho', meaning: 'Gratitude', language: 'Sesotho' },
+  { id: '122', name: 'Naledi', gender: 'girl', origin: 'Sesotho', meaning: 'Star', language: 'Sesotho' },
+  { id: '123', name: 'Kamohelo', gender: 'unisex', origin: 'Sesotho', meaning: 'Acceptance; welcome', language: 'Sesotho' },
+  { id: '124', name: 'Palesa', gender: 'girl', origin: 'Sesotho', meaning: 'Flower', language: 'Sesotho' },
+  { id: '125', name: 'Thapelo', gender: 'unisex', origin: 'Sesotho', meaning: 'Prayer', language: 'Sesotho' },
+  { id: '126', name: 'Lerato', gender: 'unisex', origin: 'Sesotho', meaning: 'Love', language: 'Sesotho' },
+  { id: '127', name: 'Mpho', gender: 'unisex', origin: 'Sesotho', meaning: 'Gift', language: 'Sesotho' },
+  { id: '128', name: 'Bokang', gender: 'unisex', origin: 'Sesotho', meaning: 'Praise', language: 'Sesotho' },
+  { id: '129', name: 'Tshepang', gender: 'unisex', origin: 'Sesotho', meaning: 'Hope', language: 'Sesotho' },
+  { id: '130', name: 'Lebohang', gender: 'unisex', origin: 'Sesotho', meaning: 'Be thankful', language: 'Sesotho' },
+  { id: '131', name: 'Masego', gender: 'girl', origin: 'Sesotho', meaning: 'Blessings', language: 'Sesotho' },
+  { id: '132', name: 'Kelebogile', gender: 'girl', origin: 'Sesotho', meaning: 'I am grateful', language: 'Sesotho' },
+  { id: '133', name: 'Refiloe', gender: 'girl', origin: 'Sesotho', meaning: 'Given again', language: 'Sesotho' },
+  { id: '134', name: 'Tau', gender: 'boy', origin: 'Sesotho', meaning: 'Lion', language: 'Sesotho' },
+  { id: '135', name: 'Kabelo', gender: 'boy', origin: 'Sesotho', meaning: 'Portion; share', language: 'Sesotho' },
+  { id: '136', name: 'Pontsho', gender: 'girl', origin: 'Sesotho', meaning: 'Show; sign', language: 'Sesotho' },
+  { id: '137', name: 'Khumo', gender: 'unisex', origin: 'Sesotho', meaning: 'Wealth; riches', language: 'Sesotho' },
+  { id: '138', name: 'Tshepiso', gender: 'unisex', origin: 'Sesotho', meaning: 'Promise', language: 'Sesotho' },
+  { id: '139', name: 'Thato', gender: 'unisex', origin: 'Sesotho', meaning: 'Desire; will', language: 'Sesotho' },
+  { id: '140', name: 'Lesedi', gender: 'unisex', origin: 'Sesotho', meaning: 'Light', language: 'Sesotho' },
+
+  // Setswana
+  { id: '141', name: 'Kagiso', gender: 'unisex', origin: 'Setswana', meaning: 'Peace', language: 'Setswana' },
+  { id: '142', name: 'Tshepo', gender: 'boy', origin: 'Setswana', meaning: 'Hope; trust', language: 'Setswana' },
+  { id: '143', name: 'Lorato', gender: 'unisex', origin: 'Setswana', meaning: 'Love', language: 'Setswana' },
+  { id: '144', name: 'Mpho', gender: 'unisex', origin: 'Setswana', meaning: 'Gift', language: 'Setswana' },
+  { id: '145', name: 'Rorisang', gender: 'unisex', origin: 'Setswana', meaning: 'Praise', language: 'Setswana' },
+  { id: '146', name: 'Lesedi', gender: 'unisex', origin: 'Setswana', meaning: 'Light', language: 'Setswana' },
+  { id: '147', name: 'Boitumelo', gender: 'girl', origin: 'Setswana', meaning: 'Joy', language: 'Setswana' },
+  { id: '148', name: 'Neo', gender: 'unisex', origin: 'Setswana', meaning: 'Gift', language: 'Setswana' },
+  { id: '149', name: 'Kabelo', gender: 'boy', origin: 'Setswana', meaning: 'Portion; share', language: 'Setswana' },
+  { id: '150', name: 'Leruo', gender: 'boy', origin: 'Setswana', meaning: 'Wealth', language: 'Setswana' },
+  { id: '151', name: 'Palesa', gender: 'girl', origin: 'Setswana', meaning: 'Flower', language: 'Setswana' },
+  { id: '152', name: 'Tlotlo', gender: 'unisex', origin: 'Setswana', meaning: 'Respect; honour', language: 'Setswana' },
+  { id: '153', name: 'Phenyo', gender: 'unisex', origin: 'Setswana', meaning: 'Victory', language: 'Setswana' },
+  { id: '154', name: 'Kutlwano', gender: 'unisex', origin: 'Setswana', meaning: 'Understanding', language: 'Setswana' },
+  { id: '155', name: 'Onkarabile', gender: 'boy', origin: 'Setswana', meaning: 'God has answered', language: 'Setswana' },
+  { id: '156', name: 'Karabo', gender: 'unisex', origin: 'Setswana', meaning: 'Answer', language: 'Setswana' },
+  { id: '157', name: 'Lesego', gender: 'unisex', origin: 'Setswana', meaning: 'Blessing', language: 'Setswana' },
+  { id: '158', name: 'Keitumetse', gender: 'girl', origin: 'Setswana', meaning: 'I am happy', language: 'Setswana' },
+  { id: '159', name: 'Tebogo', gender: 'unisex', origin: 'Setswana', meaning: 'Thanks', language: 'Setswana' },
+  { id: '160', name: 'Keneilwe', gender: 'girl', origin: 'Setswana', meaning: 'She has been given', language: 'Setswana' },
+
+  // siSwati
+  { id: '161', name: 'Sibusiso', gender: 'boy', origin: 'siSwati', meaning: 'Blessing', language: 'siSwati' },
+  { id: '162', name: 'Nokuthula', gender: 'girl', origin: 'siSwati', meaning: 'Mother of peace', language: 'siSwati' },
+  { id: '163', name: 'Sipho', gender: 'boy', origin: 'siSwati', meaning: 'Gift', language: 'siSwati' },
+  { id: '164', name: 'Thandeka', gender: 'girl', origin: 'siSwati', meaning: 'Beloved', language: 'siSwati' },
+  { id: '165', name: 'Musa', gender: 'unisex', origin: 'siSwati', meaning: 'Grace; mercy', language: 'siSwati' },
+  { id: '166', name: 'Ayanda', gender: 'unisex', origin: 'siSwati', meaning: 'They are increasing', language: 'siSwati' },
+  { id: '167', name: 'Bongani', gender: 'boy', origin: 'siSwati', meaning: 'Be thankful', language: 'siSwati' },
+  { id: '168', name: 'Nandi', gender: 'girl', origin: 'siSwati', meaning: 'Sweet; pleasant', language: 'siSwati' },
+  { id: '169', name: 'Lwandle', gender: 'unisex', origin: 'siSwati', meaning: 'Sea; ocean', language: 'siSwati' },
+  { id: '170', name: 'Zinhle', gender: 'girl', origin: 'siSwati', meaning: 'They are beautiful', language: 'siSwati' },
+  { id: '171', name: 'Jabulani', gender: 'boy', origin: 'siSwati', meaning: 'Rejoice', language: 'siSwati' },
+  { id: '172', name: 'Nomsa', gender: 'girl', origin: 'siSwati', meaning: 'Mother of grace', language: 'siSwati' },
+  { id: '173', name: 'Gugu', gender: 'girl', origin: 'siSwati', meaning: 'Treasure', language: 'siSwati' },
+  { id: '174', name: 'Lungelo', gender: 'unisex', origin: 'siSwati', meaning: 'Right; privilege', language: 'siSwati' },
+  { id: '175', name: 'Sifiso', gender: 'boy', origin: 'siSwati', meaning: 'Wish; desire', language: 'siSwati' },
+  { id: '176', name: 'Nokwazi', gender: 'girl', origin: 'siSwati', meaning: 'Mother of knowledge', language: 'siSwati' },
+  { id: '177', name: 'Mduduzi', gender: 'boy', origin: 'siSwati', meaning: 'Comforter', language: 'siSwati' },
+  { id: '178', name: 'Lwandlekazi', gender: 'girl', origin: 'siSwati', meaning: 'Little ocean', language: 'siSwati' },
+  { id: '179', name: 'Samkelo', gender: 'boy', origin: 'siSwati', meaning: 'Acceptance', language: 'siSwati' },
+  { id: '180', name: 'Thoko', gender: 'girl', origin: 'siSwati', meaning: 'Joy', language: 'siSwati' },
+
+  // Tshivenda
+  { id: '181', name: 'Tshilidzi', gender: 'unisex', origin: 'Tshivenda', meaning: 'Mercy; grace', language: 'Tshivenda' },
+  { id: '182', name: 'Mulalo', gender: 'unisex', origin: 'Tshivenda', meaning: 'Peace', language: 'Tshivenda' },
+  { id: '183', name: 'Lufuno', gender: 'unisex', origin: 'Tshivenda', meaning: 'Love', language: 'Tshivenda' },
+  { id: '184', name: 'Rendani', gender: 'unisex', origin: 'Tshivenda', meaning: 'Love us', language: 'Tshivenda' },
+  { id: '185', name: 'Khathu', gender: 'unisex', origin: 'Tshivenda', meaning: 'Unity', language: 'Tshivenda' },
+  { id: '186', name: 'Vhutshilo', gender: 'unisex', origin: 'Tshivenda', meaning: 'Life', language: 'Tshivenda' },
+  { id: '187', name: 'Tshinondi', gender: 'boy', origin: 'Tshivenda', meaning: 'We are satisfied', language: 'Tshivenda' },
+  { id: '188', name: 'Ndamulelo', gender: 'girl', origin: 'Tshivenda', meaning: 'Forgiveness', language: 'Tshivenda' },
+  { id: '189', name: 'Mpho', gender: 'unisex', origin: 'Tshivenda', meaning: 'Gift', language: 'Tshivenda' },
+  { id: '190', name: 'Rudzani', gender: 'unisex', origin: 'Tshivenda', meaning: 'Be honoured', language: 'Tshivenda' },
+  { id: '191', name: 'Tshifhiwa', gender: 'unisex', origin: 'Tshivenda', meaning: 'Gifted one', language: 'Tshivenda' },
+  { id: '192', name: 'Ndivhuwo', gender: 'unisex', origin: 'Tshivenda', meaning: 'Thanksgiving', language: 'Tshivenda' },
+  { id: '193', name: 'Adivhaho', gender: 'girl', origin: 'Tshivenda', meaning: 'They have known', language: 'Tshivenda' },
+  { id: '194', name: 'Ndamulelo', gender: 'girl', origin: 'Tshivenda', meaning: 'Forgiveness', language: 'Tshivenda' },
+  { id: '195', name: 'Livhuwani', gender: 'unisex', origin: 'Tshivenda', meaning: 'Be thankful', language: 'Tshivenda' },
+  { id: '196', name: 'Tshililo', gender: 'boy', origin: 'Tshivenda', meaning: 'Sorrow that turns to joy', language: 'Tshivenda' },
+  { id: '197', name: 'Ndadzwo', gender: 'boy', origin: 'Tshivenda', meaning: 'I have been sent', language: 'Tshivenda' },
+  { id: '198', name: 'Vhuthu', gender: 'unisex', origin: 'Tshivenda', meaning: 'Kindness', language: 'Tshivenda' },
+  { id: '199', name: 'Takalani', gender: 'unisex', origin: 'Tshivenda', meaning: 'Be happy', language: 'Tshivenda' },
+  { id: '200', name: 'Dzunani', gender: 'unisex', origin: 'Tshivenda', meaning: 'Be praised', language: 'Tshivenda' },
+
+  // Xitsonga
+  { id: '201', name: 'Bongani', gender: 'boy', origin: 'Xitsonga', meaning: 'Be thankful', language: 'Xitsonga' },
+  { id: '202', name: 'Nhlamulo', gender: 'unisex', origin: 'Xitsonga', meaning: 'Answer', language: 'Xitsonga' },
+  { id: '203', name: 'Akani', gender: 'unisex', origin: 'Xitsonga', meaning: 'Let us build', language: 'Xitsonga' },
+  { id: '204', name: 'Ntsako', gender: 'unisex', origin: 'Xitsonga', meaning: 'Joy', language: 'Xitsonga' },
+  { id: '205', name: 'Rirhandzu', gender: 'unisex', origin: 'Xitsonga', meaning: 'Love', language: 'Xitsonga' },
+  { id: '206', name: 'Hazelani', gender: 'girl', origin: 'Xitsonga', meaning: 'Rejoice', language: 'Xitsonga' },
+  { id: '207', name: 'Mpho', gender: 'unisex', origin: 'Xitsonga', meaning: 'Gift', language: 'Xitsonga' },
+  { id: '208', name: 'Tilo', gender: 'unisex', origin: 'Xitsonga', meaning: 'Heaven; sky', language: 'Xitsonga' },
+  { id: '209', name: 'Nyiko', gender: 'unisex', origin: 'Xitsonga', meaning: 'Gift', language: 'Xitsonga' },
+  { id: '210', name: 'Vutivi', gender: 'unisex', origin: 'Xitsonga', meaning: 'Knowledge', language: 'Xitsonga' },
+  { id: '211', name: 'Fikile', gender: 'girl', origin: 'Xitsonga', meaning: 'She has arrived', language: 'Xitsonga' },
+  { id: '212', name: 'Xikombiso', gender: 'unisex', origin: 'Xitsonga', meaning: 'Example', language: 'Xitsonga' },
+  { id: '213', name: 'Nkateko', gender: 'unisex', origin: 'Xitsonga', meaning: 'Blessing', language: 'Xitsonga' },
+  { id: '214', name: 'Xikwembu', gender: 'unisex', origin: 'Xitsonga', meaning: 'God', language: 'Xitsonga' },
+  { id: '215', name: 'Ayanda', gender: 'unisex', origin: 'Xitsonga', meaning: 'They are increasing', language: 'Xitsonga' },
+  { id: '216', name: 'Jabulani', gender: 'boy', origin: 'Xitsonga', meaning: 'Rejoice', language: 'Xitsonga' },
+  { id: '217', name: 'Tinyiko', gender: 'unisex', origin: 'Xitsonga', meaning: 'Gifts', language: 'Xitsonga' },
+  { id: '218', name: 'Vukosi', gender: 'boy', origin: 'Xitsonga', meaning: 'Kingship; kingdom', language: 'Xitsonga' },
+  { id: '219', name: 'Nkateko-Joy', gender: 'girl', origin: 'Xitsonga', meaning: 'Joyful blessing', language: 'Xitsonga' },
+  { id: '220', name: 'Xihlovo', gender: 'unisex', origin: 'Xitsonga', meaning: 'Source; spring', language: 'Xitsonga' },
+
+  // Greek
+  { id: '221', name: 'Zoe', gender: 'girl', origin: 'Greek', meaning: 'Life', language: 'Greek' },
+  { id: '222', name: 'Nicholas', gender: 'boy', origin: 'Greek', meaning: 'Victory of the people', language: 'Greek' },
+  { id: '223', name: 'Sophia', gender: 'girl', origin: 'Greek', meaning: 'Wisdom', language: 'Greek' },
+  { id: '224', name: 'Alexis', gender: 'unisex', origin: 'Greek', meaning: 'Helper; defender', language: 'Greek' },
+  { id: '225', name: 'Damian', gender: 'boy', origin: 'Greek', meaning: 'To tame; subdue', language: 'Greek' },
+  { id: '226', name: 'Iris', gender: 'girl', origin: 'Greek', meaning: 'Rainbow; messenger', language: 'Greek' },
+  { id: '227', name: 'Leon', gender: 'boy', origin: 'Greek', meaning: 'Lion', language: 'Greek' },
+  { id: '228', name: 'Calliope', gender: 'girl', origin: 'Greek', meaning: 'Beautiful voice', language: 'Greek' },
+  { id: '229', name: 'Theo', gender: 'boy', origin: 'Greek', meaning: 'Gift of God', language: 'Greek' },
+  { id: '230', name: 'Helena', gender: 'girl', origin: 'Greek', meaning: 'Torch; light', language: 'Greek' },
+  { id: '231', name: 'Dorian', gender: 'unisex', origin: 'Greek', meaning: 'Child of the sea', language: 'Greek' },
+  { id: '232', name: 'Penelope', gender: 'girl', origin: 'Greek', meaning: 'Weaver', language: 'Greek' },
+  { id: '233', name: 'Andreas', gender: 'boy', origin: 'Greek', meaning: 'Manly; brave', language: 'Greek' },
+  { id: '234', name: 'Irene', gender: 'girl', origin: 'Greek', meaning: 'Peace', language: 'Greek' },
+  { id: '235', name: 'Elias', gender: 'boy', origin: 'Greek', meaning: 'The Lord is my God', language: 'Greek' },
+  { id: '236', name: 'Selene', gender: 'girl', origin: 'Greek', meaning: 'Moon', language: 'Greek' },
+  { id: '237', name: 'Nikos', gender: 'boy', origin: 'Greek', meaning: 'Victory of the people', language: 'Greek' },
+  { id: '238', name: 'Thalia', gender: 'girl', origin: 'Greek', meaning: 'To blossom', language: 'Greek' },
+  { id: '239', name: 'Kyrie', gender: 'unisex', origin: 'Greek', meaning: 'Lord', language: 'Greek' },
+  { id: '240', name: 'Phoebe', gender: 'girl', origin: 'Greek', meaning: 'Bright; radiant', language: 'Greek' },
+
+  // Latin
+  { id: '241', name: 'Aurelia', gender: 'girl', origin: 'Latin', meaning: 'Golden', language: 'Latin' },
+  { id: '242', name: 'Felix', gender: 'boy', origin: 'Latin', meaning: 'Happy; fortunate', language: 'Latin' },
+  { id: '243', name: 'Lucia', gender: 'girl', origin: 'Latin', meaning: 'Light', language: 'Latin' },
+  { id: '244', name: 'Maximus', gender: 'boy', origin: 'Latin', meaning: 'Greatest', language: 'Latin' },
+  { id: '245', name: 'Clara', gender: 'girl', origin: 'Latin', meaning: 'Bright; clear', language: 'Latin' },
+  { id: '246', name: 'Julius', gender: 'boy', origin: 'Latin', meaning: 'Youthful; downy', language: 'Latin' },
+  { id: '247', name: 'Flora', gender: 'girl', origin: 'Latin', meaning: 'Flower', language: 'Latin' },
+  { id: '248', name: 'Cassius', gender: 'boy', origin: 'Latin', meaning: 'Vain; empty (modern: strong)', language: 'Latin' },
+  { id: '249', name: 'Livia', gender: 'girl', origin: 'Latin', meaning: 'Olive; bluish', language: 'Latin' },
+  { id: '250', name: 'Marcus', gender: 'boy', origin: 'Latin', meaning: 'Dedicated to Mars', language: 'Latin' },
+  { id: '251', name: 'Stella', gender: 'girl', origin: 'Latin', meaning: 'Star', language: 'Latin' },
+  { id: '252', name: 'Victor', gender: 'boy', origin: 'Latin', meaning: 'Conqueror', language: 'Latin' },
+  { id: '253', name: 'Aquila', gender: 'unisex', origin: 'Latin', meaning: 'Eagle', language: 'Latin' },
+  { id: '254', name: 'Regina', gender: 'girl', origin: 'Latin', meaning: 'Queen', language: 'Latin' },
+  { id: '255', name: 'Tacitus', gender: 'boy', origin: 'Latin', meaning: 'Silent', language: 'Latin' },
+  { id: '256', name: 'Vita', gender: 'girl', origin: 'Latin', meaning: 'Life', language: 'Latin' },
+  { id: '257', name: 'Caius', gender: 'boy', origin: 'Latin', meaning: 'Rejoice', language: 'Latin' },
+  { id: '258', name: 'Prima', gender: 'girl', origin: 'Latin', meaning: 'First', language: 'Latin' },
+  { id: '259', name: 'Silvanus', gender: 'boy', origin: 'Latin', meaning: 'Of the forest', language: 'Latin' },
+  { id: '260', name: 'Serena', gender: 'girl', origin: 'Latin', meaning: 'Serene; calm', language: 'Latin' },
 ];
 
 interface FilterOptions {
@@ -38,30 +300,18 @@ interface FilterOptions {
 export const getRandomNames = (count: number, options: FilterOptions = {}): BabyName[] => {
   const { excludeIds = [], gender = 'all', language = 'All' } = options;
 
-  let filtered = rawData.filter(item => !excludeIds.includes(item.id));
+  let filtered = rawData.filter((item) => !excludeIds.includes(item.id));
 
   if (gender !== 'all') {
     if (gender === 'unisex') {
-       // Typically users want to see unisex + requested gender if specific, but if they strictly want unisex:
-       filtered = filtered.filter(item => item.gender === 'unisex');
+      filtered = filtered.filter((item) => item.gender === 'unisex');
     } else {
-       // If gender is boy, show boys + unisex. If girl, show girls + unisex.
-       // Actually user probably toggles "Boy", "Girl", "Neutral". 
-       // Based on analysis: "Slider with 3 positions (0: Boy, 1: Neutral, 2: Girl)" 
-       // If Neutral is selected, maybe it means Everything? Or just Unisex?
-       // The analysis says "Slider... Mapped to 0.0, 1.0, 2.0". 
-       // Let's assume:
-       // Boy -> Boy + Unisex
-       // Neutral -> All? Or just Unisex? Let's assume All for now or just Unisex. 
-       // Let's stick to strict filtering for now:
-       // If gender provided is 'boy', return 'boy' | 'unisex'.
-       // If 'girl', return 'girl' | 'unisex'.
-       filtered = filtered.filter(item => item.gender === gender || item.gender === 'unisex');
+      filtered = filtered.filter((item) => item.gender === gender || item.gender === 'unisex');
     }
   }
 
   if (language && language !== 'All') {
-    filtered = filtered.filter(item => item.language === language);
+    filtered = filtered.filter((item) => item.language === language);
   }
 
   // Shuffle

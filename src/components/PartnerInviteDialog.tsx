@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { View, Text, StyleSheet, Modal, TouchableOpacity, Share } from 'react-native';
+import { View, Text, StyleSheet, Modal, TouchableOpacity, Share, Pressable } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import { AppTokens } from '../theme/designTokens';
 import { Button } from './Button';
@@ -31,8 +31,11 @@ export const PartnerInviteDialog: React.FC<PartnerInviteDialogProps> = ({ visibl
       transparent
       animationType="fade"
       onRequestClose={onClose}
+      presentationStyle="overFullScreen"
+      statusBarTranslucent={true}
     >
       <View style={styles.overlay}>
+        <Pressable style={styles.backdrop} onPress={onClose} />
         <View style={styles.dialog}>
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
              <Ionicons name="close" size={24} color={AppTokens.colors.grey} />
@@ -66,15 +69,20 @@ export const PartnerInviteDialog: React.FC<PartnerInviteDialogProps> = ({ visibl
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
     padding: AppTokens.spacing.l,
+  },
+  backdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.5)',
   },
   dialog: {
     backgroundColor: 'white',
     borderRadius: AppTokens.borderRadius.l,
     padding: AppTokens.spacing.l,
     alignItems: 'center',
+    zIndex: 1,
+    elevation: 10,
   },
   closeButton: {
     position: 'absolute',

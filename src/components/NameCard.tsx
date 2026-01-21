@@ -6,8 +6,8 @@ import { BabyName } from '../models/BabyName';
 import { AppTokens } from '../theme/designTokens';
 
 const { width } = Dimensions.get('window');
-const CARD_WIDTH = width * 0.9;
-const CARD_HEIGHT = CARD_WIDTH * 1.4;
+const CARD_WIDTH = width * 0.82;
+const CARD_HEIGHT = CARD_WIDTH * 1.3;
 
 interface NameCardProps {
   data: BabyName;
@@ -69,12 +69,13 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: AppTokens.borderRadius.xl,
     padding: AppTokens.spacing.l,
-    justifyContent: 'space-between',
+    justifyContent: 'space-around',
   },
   content: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingVertical: AppTokens.spacing.m,
   },
   name: {
     fontFamily: AppTokens.typography.fontFamilyBold,
@@ -129,6 +130,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: AppTokens.spacing.m,
+    marginBottom: AppTokens.spacing.s,
   },
   hint: {
       color: 'rgba(255,255,255, 0.6)',

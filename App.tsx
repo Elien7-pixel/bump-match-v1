@@ -28,16 +28,8 @@ export default function App() {
   }, []);
 
   const checkOnboarding = async () => {
-    try {
-      const value = await AsyncStorage.getItem('bumpmatch_onboarding_completed');
-      if (value === 'true') {
-        setInitialRoute('App');
-      } else {
-        setInitialRoute('Landing');
-      }
-    } catch (e) {
-      setInitialRoute('Landing');
-    }
+    // For demo: always start on Landing (sign up) page
+    setInitialRoute('Landing');
   };
 
   if (!fontsLoaded || !initialRoute) {

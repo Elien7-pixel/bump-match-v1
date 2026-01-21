@@ -1,6 +1,7 @@
 
 import React from 'react';
-import { View, Text, StyleSheet, Modal, TouchableOpacity, SafeAreaView, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Modal, TouchableOpacity, ScrollView, Pressable } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { AppTokens } from '../theme/designTokens';
 
@@ -45,14 +46,13 @@ export const LanguagePickerModal: React.FC<LanguagePickerModalProps> = ({
       animationType="slide"
       transparent={true}
       onRequestClose={onClose}
+      presentationStyle="overFullScreen"
+      statusBarTranslucent={true}
     >
-      <TouchableOpacity 
-        style={styles.overlay} 
-        activeOpacity={1} 
-        onPress={onClose}
-      >
-        <TouchableOpacity activeOpacity={1} style={styles.modal}>
-          <SafeAreaView style={styles.content}>
+      <View style={styles.overlay}>
+        <Pressable style={styles.backdrop} onPress={onClose} />
+        <View style={styles.modal}>
+          <SafeAreaView style={styles.content} edges={['bottom']}>
             <View style={styles.header}>
               <Text style={styles.title}>Select Language</Text>
               <TouchableOpacity onPress={onClose}>
@@ -83,8 +83,8 @@ export const LanguagePickerModal: React.FC<LanguagePickerModalProps> = ({
               ))}
             </ScrollView>
           </SafeAreaView>
-        </TouchableOpacity>
-      </TouchableOpacity>
+        </View>
+      </View>
     </Modal>
   );
 };
@@ -92,14 +92,20 @@ export const LanguagePickerModal: React.FC<LanguagePickerModalProps> = ({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'flex-end',
+  },
+  backdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modal: {
     backgroundColor: AppTokens.colors.background,
     borderTopLeftRadius: AppTokens.borderRadius.xl,
     borderTopRightRadius: AppTokens.borderRadius.xl,
     maxHeight: '70%',
+    width: '100%',
+    zIndex: 1,
+    elevation: 10,
   },
   content: {
     flex: 1,
