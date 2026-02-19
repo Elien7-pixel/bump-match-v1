@@ -5,17 +5,26 @@ import { createStackNavigator } from '@react-navigation/stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFonts, Inter_400Regular, Inter_700Bold } from '@expo-google-fonts/inter';
 import { View, ActivityIndicator } from 'react-native';
+import { ConvexProvider, ConvexReactClient } from 'convex/react';
 
 import { LandingPage } from './src/screens/LandingPage';
 import { AppPage } from './src/screens/AppPage';
 import { ProfileScreen } from './src/screens/ProfileScreen';
 import { LikedNamesScreen } from './src/screens/LikedNamesScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
+import { PartnerScreen } from './src/screens/PartnerScreen';
 import { AppTokens } from './src/theme/designTokens';
+import { ThemeProvider } from './src/context/ThemeContext';
+import { AuthProvider } from './src/context/AuthContext';
+
+// Initialize Convex client
+// Replace with your actual Convex deployment URL after running `npx convex dev`
+const convexUrl = process.env.EXPO_PUBLIC_CONVEX_URL || 'https://your-convex-url.convex.cloud';
+const convex = new ConvexReactClient(convexUrl);
 
 const Stack = createStackNavigator();
 
-export default function App() {
+function AppContent() {
   const [fontsLoaded] = useFonts({
     Inter_400Regular,
     Inter_700Bold,
@@ -28,8 +37,18 @@ export default function App() {
   }, []);
 
   const checkOnboarding = async () => {
-    // For demo: always start on Landing (sign up) page
-    setInitialRoute('Landing');
+    try {
+      const completed = await AsyncStorage.getItem('bumpmatch_onboarding_completed');
+      const token = await AsyncStorage.getItem('bumpmatch_auth_token');
+
+      if (completed === 'true' && token) {
+        setInitialRoute('App');
+      } else {
+        setInitialRoute('Landing');
+      }
+    } catch (e) {
+      setInitialRoute('Landing');
+    }
   };
 
   if (!fontsLoaded || !initialRoute) {
@@ -42,8 +61,8 @@ export default function App() {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator 
-        initialRouteName={initialRoute} 
+      <Stack.Navigator
+        initialRouteName={initialRoute}
         screenOptions={{ headerShown: false }}
       >
         <Stack.Screen name="Landing" component={LandingPage} />
@@ -51,7 +70,20 @@ export default function App() {
         <Stack.Screen name="Profile" component={ProfileScreen} />
         <Stack.Screen name="LikedNames" component={LikedNamesScreen} />
         <Stack.Screen name="Settings" component={SettingsScreen} />
+        <Stack.Screen name="Partner" component={PartnerScreen} />
       </Stack.Navigator>
     </NavigationContainer>
+  );
+}
+
+export default function App() {
+  return (
+    <ConvexProvider client={convex}>
+      <ThemeProvider>
+        <AuthProvider>
+          <AppContent />
+        </AuthProvider>
+      </ThemeProvider>
+    </ConvexProvider>
   );
 }

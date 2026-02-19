@@ -1,6 +1,6 @@
 
 import React, { useEffect } from 'react';
-import { View, StyleSheet, Dimensions } from 'react-native';
+import { View, StyleSheet, useWindowDimensions } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, { 
   useSharedValue, 
@@ -13,9 +13,6 @@ import Animated, {
 import { BabyName } from '../models/BabyName';
 import { NameCard } from './NameCard';
 
-const { width } = Dimensions.get('window');
-const SWIPE_THRESHOLD = width * 0.3;
-
 interface CardStackProps {
   names: BabyName[];
   onSwipeRight: (name: BabyName) => void;
@@ -24,6 +21,8 @@ interface CardStackProps {
 }
 
 export const CardStack: React.FC<CardStackProps> = ({ names, onSwipeRight, onSwipeLeft, onEmpty }) => {
+  const { width } = useWindowDimensions();
+  const SWIPE_THRESHOLD = width * 0.3;
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
   const startX = useSharedValue(0);

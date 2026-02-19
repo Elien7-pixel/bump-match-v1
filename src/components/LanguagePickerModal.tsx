@@ -3,7 +3,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Modal, TouchableOpacity, ScrollView, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { AppTokens } from '../theme/designTokens';
+import { useTheme } from '../context/ThemeContext';
 
 interface LanguagePickerModalProps {
   visible: boolean;
@@ -35,10 +35,79 @@ export const LanguagePickerModal: React.FC<LanguagePickerModalProps> = ({
   currentLanguage,
   onSelectLanguage,
 }) => {
+  const { theme, isDark } = useTheme();
+
   const handleSelect = (language: string) => {
     onSelectLanguage(language);
     onClose();
   };
+
+  const styles = React.useMemo(() => StyleSheet.create({
+    overlay: {
+      flex: 1,
+      justifyContent: 'flex-end',
+    },
+    backdrop: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    },
+    modal: {
+      backgroundColor: theme.colors.background,
+      borderTopLeftRadius: theme.borderRadius.xl,
+      borderTopRightRadius: theme.borderRadius.xl,
+      maxHeight: '70%',
+      width: '100%',
+      zIndex: 1,
+      elevation: 10,
+    },
+
+    header: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      padding: theme.spacing.l,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.colors.border,
+    },
+    title: {
+      fontFamily: theme.typography.fontFamilyBold,
+      fontSize: theme.typography.sizes.h2,
+      color: theme.colors.text,
+    },
+    list: {
+      minHeight: 300,
+      paddingBottom: theme.spacing.xl,
+    },
+    languageItem: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      padding: theme.spacing.l,
+      marginHorizontal: theme.spacing.m,
+      marginVertical: 4,
+      backgroundColor: theme.colors.card,
+      borderRadius: theme.borderRadius.m,
+      shadowColor: theme.colors.shadow,
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.05,
+      shadowRadius: 2,
+      elevation: 2,
+    },
+    languageItemActive: {
+      backgroundColor: isDark ? theme.colors.primary : '#E0F2FE',
+      borderWidth: 1,
+      borderColor: theme.colors.primary,
+    },
+    languageText: {
+      fontFamily: theme.typography.fontFamily,
+      fontSize: theme.typography.sizes.body,
+      color: theme.colors.text,
+    },
+    languageTextActive: {
+      fontFamily: theme.typography.fontFamilyBold,
+      color: isDark ? 'white' : theme.colors.primary,
+    },
+  }), [theme, isDark]);
 
   return (
     <Modal
@@ -52,11 +121,11 @@ export const LanguagePickerModal: React.FC<LanguagePickerModalProps> = ({
       <View style={styles.overlay}>
         <Pressable style={styles.backdrop} onPress={onClose} />
         <View style={styles.modal}>
-          <SafeAreaView style={styles.content} edges={['bottom']}>
+          <SafeAreaView edges={['bottom']}>
             <View style={styles.header}>
               <Text style={styles.title}>Select Language</Text>
               <TouchableOpacity onPress={onClose}>
-                <Ionicons name="close" size={28} color={AppTokens.colors.text} />
+                <Ionicons name="close" size={28} color={theme.colors.text} />
               </TouchableOpacity>
             </View>
 
@@ -77,7 +146,7 @@ export const LanguagePickerModal: React.FC<LanguagePickerModalProps> = ({
                     {language}
                   </Text>
                   {currentLanguage === language && (
-                    <Ionicons name="checkmark" size={24} color={AppTokens.colors.primary} />
+                    <Ionicons name="checkmark" size={24} color={isDark ? 'white' : theme.colors.primary} />
                   )}
                 </TouchableOpacity>
               ))}
@@ -88,71 +157,3 @@ export const LanguagePickerModal: React.FC<LanguagePickerModalProps> = ({
     </Modal>
   );
 };
-
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    justifyContent: 'flex-end',
-  },
-  backdrop: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
-  modal: {
-    backgroundColor: AppTokens.colors.background,
-    borderTopLeftRadius: AppTokens.borderRadius.xl,
-    borderTopRightRadius: AppTokens.borderRadius.xl,
-    maxHeight: '70%',
-    width: '100%',
-    zIndex: 1,
-    elevation: 10,
-  },
-  content: {
-    flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: AppTokens.spacing.l,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-  },
-  title: {
-    fontFamily: AppTokens.typography.fontFamilyBold,
-    fontSize: AppTokens.typography.sizes.h2,
-    color: AppTokens.colors.text,
-  },
-  list: {
-    flex: 1,
-  },
-  languageItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: AppTokens.spacing.l,
-    marginHorizontal: AppTokens.spacing.m,
-    marginVertical: 4,
-    backgroundColor: 'white',
-    borderRadius: AppTokens.borderRadius.m,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  languageItemActive: {
-    backgroundColor: '#E0F2FE',
-    borderWidth: 1,
-    borderColor: AppTokens.colors.primary,
-  },
-  languageText: {
-    fontFamily: AppTokens.typography.fontFamily,
-    fontSize: AppTokens.typography.sizes.body,
-    color: AppTokens.colors.text,
-  },
-  languageTextActive: {
-    fontFamily: AppTokens.typography.fontFamilyBold,
-    color: AppTokens.colors.primary,
-  },
-});

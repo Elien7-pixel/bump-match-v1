@@ -16,10 +16,21 @@
         "distribution": "internal"
       }
     },
-    "release-apk": {
+    "production": {
       "android": {
-        "buildType": "apk"
+        "buildType": "app-bundle"
+      },
+      "ios": {
+        "autoIncrement": true
       }
+    }
+  },
+  "submit": {
+    "production": {
+      "android": {
+        "track": "internal"
+      },
+      "ios": {}
     }
   }
 }
