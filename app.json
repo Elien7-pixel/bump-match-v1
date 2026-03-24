@@ -15,7 +15,10 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.orbitai.bumpmatch",
-      "buildNumber": "1"
+      "buildNumber": "1",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -35,6 +38,10 @@
         "projectId": "9f0dd1ac-0f6e-436d-999c-e002e06ba3bf"
       }
     },
-    "owner": "elien7"
+    "owner": "elien7",
+    "scheme": "bumpmatch",
+    "plugins": [
+      "@react-native-community/datetimepicker"
+    ]
   }
 }

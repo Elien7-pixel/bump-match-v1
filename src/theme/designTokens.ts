@@ -4,7 +4,7 @@ const BaseTokens = {
   gradients: {
     g1: ['#FF9A9E', '#FECFEF'] as const,
     g2: ['#a18cd1', '#fbc2eb'] as const,
-    g3: ['#fad0c4', '#ffd1ff'] as const,
+    g3: ['#D4A574', '#E8C547'] as const,
     g4: ['#ff9a9e', '#fecfef'] as const,
     g5: ['#fbc2eb', '#a6c1ee'] as const,
     g6: ['#84fab0', '#8fd3f4'] as const,
@@ -55,6 +55,7 @@ export const LightTheme = {
     textDim: 'rgba(255, 255, 255, 0.7)',
     boyBlue: '#60A5FA',
     girlPink: '#F472B6',
+    neutralBeige: '#D4A574',
     like: 'hsl(316, 69%, 72%)',
     dislike: 'hsl(0, 0%, 40%)',
     superLike: 'hsl(184, 100%, 33%)',
@@ -78,6 +79,7 @@ export const DarkTheme = {
     textDim: 'rgba(255, 255, 255, 0.5)',
     boyBlue: '#60A5FA',
     girlPink: '#F472B6',
+    neutralBeige: '#D4A574',
     like: 'hsl(316, 69%, 62%)',
     dislike: 'hsl(0, 0%, 60%)', // Lighter grey for visibility
     superLike: 'hsl(184, 100%, 33%)',

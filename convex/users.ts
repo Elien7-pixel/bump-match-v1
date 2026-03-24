@@ -38,12 +38,30 @@ export const getProfile = query({
       }
     }
 
+    // Calculate age from date of birth (stored in `age` field as ISO string)
+    let calculatedAge: number | null = null;
+    if (user.age) {
+      try {
+        const dob = new Date(user.age);
+        if (!isNaN(dob.getTime())) {
+          const today = new Date();
+          let years = today.getFullYear() - dob.getFullYear();
+          const monthDiff = today.getMonth() - dob.getMonth();
+          if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+            years--;
+          }
+          calculatedAge = years;
+        }
+      } catch {}
+    }
+
     return {
       id: user._id,
       email: user.email,
       firstName: user.firstName,
       surname: user.surname,
-      age: user.age,
+      dateOfBirth: user.age,
+      age: calculatedAge,
       gender: user.gender,
       status: user.status,
       inviteCode: user.inviteCode,
@@ -176,5 +194,41 @@ export const getPartnerInfo = query({
       surname: partner.surname,
       connectedAt: user.createdAt,
     };
+  },
+});
+
+export const setMatchRevealDate = mutation({
+  args: {
+    token: v.string(),
+    revealDate: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const user = await getUserFromToken(ctx, args.token);
+    if (!user) {
+      throw new Error("Not authenticated");
+    }
+
+    await ctx.db.patch(user._id, { matchRevealDate: args.revealDate });
+
+    // Also set on partner if connected
+    if (user.partnerId) {
+      await ctx.db.patch(user.partnerId, { matchRevealDate: args.revealDate });
+    }
+
+    return { success: true };
+  },
+});
+
+export const getMatchRevealDate = query({
+  args: {
+    token: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const user = await getUserFromToken(ctx, args.token);
+    if (!user) {
+      return null;
+    }
+
+    return user.matchRevealDate || null;
   },
 });

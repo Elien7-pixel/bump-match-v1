@@ -260,7 +260,7 @@ export const SettingsScreen = () => {
       </View>
 
       {/* Settings Content */}
-      <View style={styles.content}>
+      <ScrollView style={styles.content}>
         {/* User Info */}
         {user && (
           <View style={styles.userInfo}>
@@ -384,7 +384,7 @@ export const SettingsScreen = () => {
           <Ionicons name="log-out-outline" size={24} color={isDark ? '#FECACA' : '#EF4444'} />
           <Text style={styles.logoutText}>Log Out</Text>
         </TouchableOpacity>
-      </View>
+      </ScrollView>
 
       {/* Help & FAQ Modal */}
       <Modal visible={helpModalVisible} animationType="slide" presentationStyle="pageSheet">

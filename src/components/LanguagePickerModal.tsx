@@ -8,38 +8,69 @@ import { useTheme } from '../context/ThemeContext';
 interface LanguagePickerModalProps {
   visible: boolean;
   onClose: () => void;
-  currentLanguage: string;
-  onSelectLanguage: (language: string) => void;
+  selectedLanguages: string[];
+  onSelectLanguages: (languages: string[]) => void;
 }
 
 const LANGUAGES = [
   'All',
   'Afrikaans',
   'English',
+  'German',
+  'Greek',
+  'Irish',
   'isiNdebele',
   'isiXhosa',
   'isiZulu',
+  'Italian',
+  'Korean',
+  'Latin',
+  'Portuguese',
   'Sepedi',
   'Sesotho',
   'Setswana',
   'siSwati',
+  'Spanish',
   'Tshivenda',
   'Xitsonga',
-  'Greek',
-  'Latin',
 ];
 
 export const LanguagePickerModal: React.FC<LanguagePickerModalProps> = ({
   visible,
   onClose,
-  currentLanguage,
-  onSelectLanguage,
+  selectedLanguages,
+  onSelectLanguages,
 }) => {
   const { theme, isDark } = useTheme();
 
-  const handleSelect = (language: string) => {
-    onSelectLanguage(language);
-    onClose();
+  const isAllSelected = selectedLanguages.includes('All') || selectedLanguages.length === 0;
+
+  const handleToggle = (language: string) => {
+    if (language === 'All') {
+      onSelectLanguages(['All']);
+      return;
+    }
+
+    let updated: string[];
+    if (isAllSelected) {
+      // Switching from All to a specific language
+      updated = [language];
+    } else if (selectedLanguages.includes(language)) {
+      // Deselect this language
+      updated = selectedLanguages.filter(l => l !== language);
+      if (updated.length === 0) {
+        updated = ['All'];
+      }
+    } else {
+      // Add this language
+      updated = [...selectedLanguages.filter(l => l !== 'All'), language];
+    }
+    onSelectLanguages(updated);
+  };
+
+  const isSelected = (language: string) => {
+    if (language === 'All') return isAllSelected;
+    return !isAllSelected && selectedLanguages.includes(language);
   };
 
   const styles = React.useMemo(() => StyleSheet.create({
@@ -74,6 +105,13 @@ export const LanguagePickerModal: React.FC<LanguagePickerModalProps> = ({
       fontSize: theme.typography.sizes.h2,
       color: theme.colors.text,
     },
+    subtitle: {
+      fontFamily: theme.typography.fontFamily,
+      fontSize: theme.typography.sizes.small,
+      color: theme.colors.grey,
+      paddingHorizontal: theme.spacing.l,
+      paddingTop: theme.spacing.s,
+    },
     list: {
       minHeight: 300,
       paddingBottom: theme.spacing.xl,
@@ -107,6 +145,31 @@ export const LanguagePickerModal: React.FC<LanguagePickerModalProps> = ({
       fontFamily: theme.typography.fontFamilyBold,
       color: isDark ? 'white' : theme.colors.primary,
     },
+    checkbox: {
+      width: 24,
+      height: 24,
+      borderRadius: 6,
+      borderWidth: 2,
+      borderColor: theme.colors.border,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    checkboxActive: {
+      backgroundColor: theme.colors.primary,
+      borderColor: theme.colors.primary,
+    },
+    doneButton: {
+      margin: theme.spacing.m,
+      padding: theme.spacing.m,
+      backgroundColor: theme.colors.primary,
+      borderRadius: theme.borderRadius.m,
+      alignItems: 'center',
+    },
+    doneButtonText: {
+      fontFamily: theme.typography.fontFamilyBold,
+      fontSize: theme.typography.sizes.body,
+      color: '#FFFFFF',
+    },
   }), [theme, isDark]);
 
   return (
@@ -123,34 +186,44 @@ export const LanguagePickerModal: React.FC<LanguagePickerModalProps> = ({
         <View style={styles.modal}>
           <SafeAreaView edges={['bottom']}>
             <View style={styles.header}>
-              <Text style={styles.title}>Select Language</Text>
+              <Text style={styles.title}>Select Languages</Text>
               <TouchableOpacity onPress={onClose}>
                 <Ionicons name="close" size={28} color={theme.colors.text} />
               </TouchableOpacity>
             </View>
+            <Text style={styles.subtitle}>Select multiple languages to see names from all of them</Text>
 
             <ScrollView style={styles.list}>
-              {LANGUAGES.map((language) => (
-                <TouchableOpacity
-                  key={language}
-                  style={[
-                    styles.languageItem,
-                    currentLanguage === language && styles.languageItemActive
-                  ]}
-                  onPress={() => handleSelect(language)}
-                >
-                  <Text style={[
-                    styles.languageText,
-                    currentLanguage === language && styles.languageTextActive
-                  ]}>
-                    {language}
-                  </Text>
-                  {currentLanguage === language && (
-                    <Ionicons name="checkmark" size={24} color={isDark ? 'white' : theme.colors.primary} />
-                  )}
-                </TouchableOpacity>
-              ))}
+              {LANGUAGES.map((language) => {
+                const active = isSelected(language);
+                return (
+                  <TouchableOpacity
+                    key={language}
+                    style={[
+                      styles.languageItem,
+                      active && styles.languageItemActive
+                    ]}
+                    onPress={() => handleToggle(language)}
+                  >
+                    <Text style={[
+                      styles.languageText,
+                      active && styles.languageTextActive
+                    ]}>
+                      {language}
+                    </Text>
+                    <View style={[styles.checkbox, active && styles.checkboxActive]}>
+                      {active && (
+                        <Ionicons name="checkmark" size={16} color="#FFFFFF" />
+                      )}
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
             </ScrollView>
+
+            <TouchableOpacity style={styles.doneButton} onPress={onClose}>
+              <Text style={styles.doneButtonText}>Done</Text>
+            </TouchableOpacity>
           </SafeAreaView>
         </View>
       </View>

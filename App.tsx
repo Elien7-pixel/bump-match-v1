@@ -1,11 +1,12 @@
 import 'react-native-gesture-handler';
 import React, { useEffect, useState } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, LinkingOptions } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFonts, Inter_400Regular, Inter_700Bold } from '@expo-google-fonts/inter';
 import { View, ActivityIndicator } from 'react-native';
 import { ConvexProvider, ConvexReactClient } from 'convex/react';
+import * as Linking from 'expo-linking';
 
 import { LandingPage } from './src/screens/LandingPage';
 import { AppPage } from './src/screens/AppPage';
@@ -18,11 +19,23 @@ import { ThemeProvider } from './src/context/ThemeContext';
 import { AuthProvider } from './src/context/AuthContext';
 
 // Initialize Convex client
-// Replace with your actual Convex deployment URL after running `npx convex dev`
-const convexUrl = process.env.EXPO_PUBLIC_CONVEX_URL || 'https://your-convex-url.convex.cloud';
+const convexUrl = process.env.EXPO_PUBLIC_CONVEX_URL || 'https://silent-ermine-169.convex.cloud';
 const convex = new ConvexReactClient(convexUrl);
 
 const Stack = createStackNavigator();
+
+const CONVEX_SITE_URL = (process.env.EXPO_PUBLIC_CONVEX_URL || 'https://elated-newt-380.convex.cloud').replace('.cloud', '.site');
+
+const linking: LinkingOptions<any> = {
+  prefixes: [Linking.createURL('/'), 'bumpmatch://', CONVEX_SITE_URL],
+  config: {
+    screens: {
+      Partner: {
+        path: 'join/:code',
+      },
+    },
+  },
+};
 
 function AppContent() {
   const [fontsLoaded] = useFonts({
@@ -60,7 +73,7 @@ function AppContent() {
   }
 
   return (
-    <NavigationContainer>
+    <NavigationContainer linking={linking}>
       <Stack.Navigator
         initialRouteName={initialRoute}
         screenOptions={{ headerShown: false }}

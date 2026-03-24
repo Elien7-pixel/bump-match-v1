@@ -1,8 +1,28 @@
 "use node";
 import { v } from "convex/values";
-import { action } from "./_generated/server";
+import { action, internalAction } from "./_generated/server";
 import { internal } from "./_generated/api";
-import { Resend } from "resend";
+
+// Helper to send email via Google Apps Script
+async function sendEmail(payload: Record<string, string>) {
+  const scriptUrl = process.env.GOOGLE_APPS_SCRIPT_URL;
+  if (!scriptUrl) {
+    console.log("Google Apps Script URL not configured, skipping email");
+    return;
+  }
+
+  const response = await fetch(scriptUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+    redirect: "follow", // Apps Script redirects on deploy
+  });
+
+  const result = await response.json();
+  if (!result.success) {
+    throw new Error(`Email failed: ${result.error || "Unknown error"}`);
+  }
+}
 
 // Public action that generates the token and sends the email
 export const forgotPassword = action({
@@ -24,32 +44,30 @@ export const forgotPassword = action({
       return response;
     }
 
-    // Send email via Resend
-    const resendApiKey = process.env.RESEND_API_KEY;
-    if (!resendApiKey) {
-      throw new Error("Email service is not configured.");
-    }
-
-    const resend = new Resend(resendApiKey);
-    await resend.emails.send({
-      from: "BumpMatch <noreply@sherbetagency.com>",
+    await sendEmail({
+      type: "reset",
       to: args.email.toLowerCase(),
-      subject: "Your BumpMatch Password Reset Code",
-      html: `
-        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 480px; margin: 0 auto; padding: 40px 20px;">
-          <h2 style="color: #333; margin-bottom: 8px;">Password Reset</h2>
-          <p style="color: #666; font-size: 16px;">Hi ${result.firstName},</p>
-          <p style="color: #666; font-size: 16px;">Here is your password reset code:</p>
-          <div style="background: #F3F4F6; border-radius: 12px; padding: 20px; text-align: center; margin: 24px 0;">
-            <span style="font-size: 32px; font-weight: bold; letter-spacing: 4px; color: #111;">${result.resetToken}</span>
-          </div>
-          <p style="color: #666; font-size: 14px;">This code expires in 1 hour. If you didn't request this, you can safely ignore this email.</p>
-          <hr style="border: none; border-top: 1px solid #E5E7EB; margin: 32px 0;" />
-          <p style="color: #999; font-size: 12px;">BumpMatch - Find the perfect baby name together.</p>
-        </div>
-      `,
+      firstName: result.firstName!,
+      resetToken: result.resetToken!,
     });
 
     return response;
+  },
+});
+
+// Internal action to send welcome email after signup
+export const sendWelcomeEmail = internalAction({
+  args: {
+    email: v.string(),
+    firstName: v.string(),
+    inviteCode: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await sendEmail({
+      type: "welcome",
+      to: args.email,
+      firstName: args.firstName,
+      inviteCode: args.inviteCode,
+    });
   },
 });

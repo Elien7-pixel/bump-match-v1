@@ -108,6 +108,7 @@ export const getLikedNames = query({
       meaning: ln.meaning,
       language: ln.language,
       likedAt: ln.likedAt,
+      isFavorite: ln.isFavorite || false,
     }));
   },
 });
@@ -176,6 +177,37 @@ export const getMatchedNames = query({
   },
 });
 
+export const toggleFavorite = mutation({
+  args: {
+    token: v.string(),
+    nameId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const user = await getUserFromToken(ctx, args.token);
+    if (!user) {
+      throw new Error("Not authenticated");
+    }
+
+    const likedName = await ctx.db
+      .query("likedNames")
+      .withIndex("by_user_and_name", (q) =>
+        q.eq("userId", user._id).eq("nameId", args.nameId)
+      )
+      .first();
+
+    if (!likedName) {
+      throw new Error("Name not found in liked list");
+    }
+
+    const newValue = !likedName.isFavorite;
+    await ctx.db.patch(likedName._id, {
+      isFavorite: newValue,
+    });
+
+    return { success: true, isFavorite: newValue };
+  },
+});
+
 export const getLikedNameIds = query({
   args: {
     token: v.string(),
@@ -192,5 +224,55 @@ export const getLikedNameIds = query({
       .collect();
 
     return likedNames.map((ln) => ln.nameId);
+  },
+});
+
+export const clearAllLikedNames = mutation({
+  args: {
+    token: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const user = await getUserFromToken(ctx, args.token);
+    if (!user) {
+      throw new Error("Not authenticated");
+    }
+
+    const likedNames = await ctx.db
+      .query("likedNames")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
+
+    for (const ln of likedNames) {
+      await ctx.db.delete(ln._id);
+    }
+
+    return { success: true, deleted: likedNames.length };
+  },
+});
+
+export const clearAllFavorites = mutation({
+  args: {
+    token: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const user = await getUserFromToken(ctx, args.token);
+    if (!user) {
+      throw new Error("Not authenticated");
+    }
+
+    const favorites = await ctx.db
+      .query("likedNames")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
+
+    let cleared = 0;
+    for (const ln of favorites) {
+      if (ln.isFavorite) {
+        await ctx.db.patch(ln._id, { isFavorite: false });
+        cleared++;
+      }
+    }
+
+    return { success: true, cleared };
   },
 });

@@ -10,9 +10,10 @@ interface MenuDrawerProps {
   visible: boolean;
   onClose: () => void;
   onNavigate: (screen: 'Profile' | 'LikedNames' | 'Settings' | 'Partner' | 'Landing') => void;
+  onSuggestName?: () => void;
 }
 
-export const MenuDrawer: React.FC<MenuDrawerProps> = ({ visible, onClose, onNavigate }) => {
+export const MenuDrawer: React.FC<MenuDrawerProps> = ({ visible, onClose, onNavigate, onSuggestName }) => {
   const { theme, isDark } = useTheme();
 
   const handleNavigation = (screen: 'Profile' | 'LikedNames' | 'Settings' | 'Partner') => {
@@ -157,6 +158,18 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({ visible, onClose, onNavi
               >
                 <Ionicons name="people-outline" size={24} color={theme.colors.primary} />
                 <Text style={styles.menuText}>Partner</Text>
+                <Ionicons name="chevron-forward" size={20} color={theme.colors.grey} />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.menuItem}
+                onPress={() => {
+                  onClose();
+                  onSuggestName?.();
+                }}
+              >
+                <Ionicons name="add-circle-outline" size={24} color={theme.colors.primary} />
+                <Text style={styles.menuText}>Suggest a Name</Text>
                 <Ionicons name="chevron-forward" size={20} color={theme.colors.grey} />
               </TouchableOpacity>
 

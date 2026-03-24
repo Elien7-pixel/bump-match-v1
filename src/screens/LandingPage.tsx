@@ -34,6 +34,7 @@ import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useAction } from 'convex/react';
 import { api } from '../../convex/_generated/api';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 
@@ -108,11 +109,15 @@ export const LandingPage = () => {
 
   const [firstName, setFirstName] = useState('');
   const [surname, setSurname] = useState('');
-  const [age, setAge] = useState('');
+  const [dateOfBirth, setDateOfBirth] = useState<Date | null>(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [gender, setGender] = useState<'mom' | 'dad' | 'partner'>('mom');
+  const [expecting, setExpecting] = useState<'boy' | 'girl' | 'unknown'>('unknown');
   const [status, setStatus] = useState('Expecting soon');
+  const [dueDate, setDueDate] = useState<Date | null>(null);
+  const [showDueDatePicker, setShowDueDatePicker] = useState(false);
 
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
@@ -400,8 +405,8 @@ export const LandingPage = () => {
   }), [theme]);
 
   const handleCompleteOnboarding = async () => {
-    if (!firstName.trim() || !surname.trim() || !email.trim() || !password.trim() || !age.trim()) {
-      Alert.alert('Required', 'Please fill in all fields.');
+    if (!firstName.trim() || !surname.trim() || !email.trim() || !password.trim() || !dateOfBirth) {
+      Alert.alert('Required', 'Please fill in all fields including date of birth.');
       return;
     }
 
@@ -412,23 +417,27 @@ export const LandingPage = () => {
 
     setIsSubmitting(true);
 
-    const result = await signUp({
-      email,
-      password,
-      firstName,
-      surname,
-      age,
-      gender,
-      status,
-    });
+    try {
+      const timeoutPromise = new Promise<{ success: false; error: string }>((resolve) =>
+        setTimeout(() => resolve({ success: false, error: 'Connection timed out. Please check your internet connection and try again.' }), 15000)
+      );
 
-    setIsSubmitting(false);
+      const result = await Promise.race([
+        signUp({ email, password, firstName, surname, age: dateOfBirth ? dateOfBirth.toISOString() : '', gender, expecting, status }),
+        timeoutPromise,
+      ]);
 
-    if (result.success) {
-      setSignUpModalVisible(false);
-      navigation.replace('App');
-    } else {
-      Alert.alert('Sign Up Failed', result.error || 'Please try again.');
+      setIsSubmitting(false);
+
+      if (result.success) {
+        setSignUpModalVisible(false);
+        navigation.replace('App', { fromSignUp: true });
+      } else {
+        Alert.alert('Sign Up Failed', result.error || 'Please try again.');
+      }
+    } catch (e: any) {
+      setIsSubmitting(false);
+      Alert.alert('Sign Up Failed', 'Something went wrong. Please try again.');
     }
   };
 
@@ -440,15 +449,27 @@ export const LandingPage = () => {
 
     setIsSubmitting(true);
 
-    const result = await login(loginEmail, loginPassword);
+    try {
+      const timeoutPromise = new Promise<{ success: false; error: string }>((resolve) =>
+        setTimeout(() => resolve({ success: false, error: 'Connection timed out. Please check your internet connection and try again.' }), 15000)
+      );
 
-    setIsSubmitting(false);
+      const result = await Promise.race([
+        login(loginEmail, loginPassword),
+        timeoutPromise,
+      ]);
 
-    if (result.success) {
-      setLoginModalVisible(false);
-      navigation.replace('App');
-    } else {
-      Alert.alert('Login Failed', result.error || 'Invalid email or password.');
+      setIsSubmitting(false);
+
+      if (result.success) {
+        setLoginModalVisible(false);
+        navigation.replace('App');
+      } else {
+        Alert.alert('Login Failed', result.error || 'Invalid email or password.');
+      }
+    } catch (e: any) {
+      setIsSubmitting(false);
+      Alert.alert('Login Failed', 'Something went wrong. Please try again.');
     }
   };
 
@@ -545,6 +566,7 @@ export const LandingPage = () => {
             <KeyboardAvoidingView
               behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
               style={pageStyles.modalContent}
+              keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 0}
             >
               <ScrollView contentContainerStyle={pageStyles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
                 <View style={pageStyles.modalHeader}>
@@ -562,7 +584,9 @@ export const LandingPage = () => {
                   label="First Name"
                   value={firstName}
                   onChangeText={setFirstName}
-                  placeholder="e.g. Sarah"
+                  placeholder="e.g. Naledi"
+                  textContentType="givenName"
+                  autoComplete="given-name"
                   labelStyle={{ color: '#FFFFFF' }}
                   style={{ backgroundColor: 'rgba(255,255,255,0.9)', color: '#333' }}
                 />
@@ -571,28 +595,52 @@ export const LandingPage = () => {
                   label="Last Name"
                   value={surname}
                   onChangeText={setSurname}
-                  placeholder="e.g. Smith"
+                  placeholder="e.g. Ndlovu"
+                  textContentType="familyName"
+                  autoComplete="family-name"
                   labelStyle={{ color: '#FFFFFF' }}
                   style={{ backgroundColor: 'rgba(255,255,255,0.9)', color: '#333' }}
                 />
 
-                <Input
-                  label="Age"
-                  value={age}
-                  onChangeText={setAge}
-                  placeholder="e.g. 28"
-                  keyboardType="numeric"
-                  labelStyle={{ color: '#FFFFFF' }}
-                  style={{ backgroundColor: 'rgba(255,255,255,0.9)', color: '#333' }}
-                />
+                <Text style={pageStyles.label}>Date of Birth</Text>
+                <TouchableOpacity
+                  onPress={() => setShowDatePicker(true)}
+                  style={{ backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: 12, padding: 14, marginBottom: 4 }}
+                >
+                  <Text style={{ color: dateOfBirth ? '#333' : '#999', fontSize: 16, fontFamily: theme.typography.fontFamily }}>
+                    {dateOfBirth ? dateOfBirth.toLocaleDateString('en-ZA', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Select your date of birth'}
+                  </Text>
+                </TouchableOpacity>
+                {showDatePicker && (
+                  <DateTimePicker
+                    value={dateOfBirth || new Date(1995, 0, 1)}
+                    mode="date"
+                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                    maximumDate={new Date()}
+                    minimumDate={new Date(1940, 0, 1)}
+                    onChange={(event, selected) => {
+                      if (Platform.OS === 'android') setShowDatePicker(false);
+                      if (selected) setDateOfBirth(selected);
+                    }}
+                    textColor="#FFFFFF"
+                    themeVariant="dark"
+                  />
+                )}
+                {showDatePicker && Platform.OS === 'ios' && (
+                  <TouchableOpacity onPress={() => setShowDatePicker(false)} style={{ alignItems: 'center', paddingVertical: 8 }}>
+                    <Text style={{ color: theme.colors.primary, fontFamily: theme.typography.fontFamilyBold, fontSize: 15 }}>Done</Text>
+                  </TouchableOpacity>
+                )}
 
                 <Input
                   label="Email"
                   value={email}
                   onChangeText={setEmail}
-                  placeholder="sarah@example.com"
+                  placeholder="naledi@example.com"
                   keyboardType="email-address"
                   autoCapitalize="none"
+                  textContentType="emailAddress"
+                  autoComplete="email"
                   labelStyle={{ color: '#FFFFFF' }}
                   style={{ backgroundColor: 'rgba(255,255,255,0.9)', color: '#333' }}
                 />
@@ -603,6 +651,8 @@ export const LandingPage = () => {
                   onChangeText={setPassword}
                   placeholder="Minimum 8 characters"
                   secureTextEntry
+                  textContentType="newPassword"
+                  autoComplete="new-password"
                   labelStyle={{ color: '#FFFFFF' }}
                   style={{ backgroundColor: 'rgba(255,255,255,0.9)', color: '#333' }}
                 />
@@ -622,9 +672,24 @@ export const LandingPage = () => {
                   ))}
                 </View>
 
+                <Text style={pageStyles.label}>What are you expecting?</Text>
+                <View style={pageStyles.row}>
+                  {(['boy', 'girl', 'unknown'] as const).map((e) => (
+                    <TouchableOpacity
+                      key={e}
+                      style={[pageStyles.option, expecting === e && pageStyles.optionSelected]}
+                      onPress={() => setExpecting(e)}
+                    >
+                      <Text style={[pageStyles.optionText, expecting === e && pageStyles.optionTextSelected]}>
+                        {e === 'unknown' ? "Don't Know" : e.charAt(0).toUpperCase() + e.slice(1)}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+
                 <Text style={pageStyles.label}>Status</Text>
                 <View style={pageStyles.statusContainer}>
-                  {['Expecting soon', 'Just found out', 'Have child'].map((s) => (
+                  {['Expecting soon', 'Planning ahead'].map((s) => (
                     <TouchableOpacity
                       key={s}
                       style={[pageStyles.statusOption, status === s && pageStyles.optionSelected]}
@@ -637,16 +702,50 @@ export const LandingPage = () => {
                   ))}
                 </View>
 
+                {status === 'Expecting soon' && (
+                  <>
+                    <Text style={pageStyles.label}>When are you expecting?</Text>
+                    <TouchableOpacity
+                      onPress={() => setShowDueDatePicker(true)}
+                      style={{ backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: 12, padding: 14, marginBottom: 4 }}
+                    >
+                      <Text style={{ color: dueDate ? '#333' : '#999', fontSize: 16, fontFamily: theme.typography.fontFamily }}>
+                        {dueDate ? dueDate.toLocaleDateString('en-ZA', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Select your due date'}
+                      </Text>
+                    </TouchableOpacity>
+                    {showDueDatePicker && (
+                      <DateTimePicker
+                        value={dueDate || new Date()}
+                        mode="date"
+                        display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                        minimumDate={new Date()}
+                        maximumDate={new Date(Date.now() + 10 * 30 * 24 * 60 * 60 * 1000)}
+                        onChange={(event, selected) => {
+                          if (Platform.OS === 'android') setShowDueDatePicker(false);
+                          if (selected) setDueDate(selected);
+                        }}
+                        textColor="#FFFFFF"
+                        themeVariant="dark"
+                      />
+                    )}
+                    {showDueDatePicker && Platform.OS === 'ios' && (
+                      <TouchableOpacity onPress={() => setShowDueDatePicker(false)} style={{ alignItems: 'center', paddingVertical: 8 }}>
+                        <Text style={{ color: theme.colors.primary, fontFamily: theme.typography.fontFamilyBold, fontSize: 15 }}>Done</Text>
+                      </TouchableOpacity>
+                    )}
+                  </>
+                )}
+
                 <View style={pageStyles.modalActions}>
                   <Button
-                    title="Cancel"
+                    title="Go Back"
                     variant="ghost"
                     onPress={() => setSignUpModalVisible(false)}
                     style={{ flex: 1, marginRight: 8 }}
                     disabled={isSubmitting}
                   />
                   <Button
-                    title={isSubmitting ? "Creating..." : "Start Swiping"}
+                    title={isSubmitting ? "Creating..." : "Sign Up"}
                     onPress={handleCompleteOnboarding}
                     style={{ flex: 1 }}
                     disabled={isSubmitting}
@@ -698,9 +797,11 @@ export const LandingPage = () => {
                     label="Email"
                     value={loginEmail}
                     onChangeText={setLoginEmail}
-                    placeholder="sarah@example.com"
+                    placeholder="naledi@example.com"
                     keyboardType="email-address"
                     autoCapitalize="none"
+                    textContentType="emailAddress"
+                    autoComplete="email"
                     labelStyle={{ color: '#FFFFFF' }}
                     style={{ backgroundColor: 'rgba(255,255,255,0.9)', color: '#333' }}
                   />
@@ -711,6 +812,8 @@ export const LandingPage = () => {
                     onChangeText={setLoginPassword}
                     placeholder="Enter your password"
                     secureTextEntry
+                    textContentType="password"
+                    autoComplete="password"
                     labelStyle={{ color: '#FFFFFF' }}
                     style={{ backgroundColor: 'rgba(255,255,255,0.9)', color: '#333' }}
                   />
@@ -769,9 +872,11 @@ export const LandingPage = () => {
                     label="Email"
                     value={forgotEmail}
                     onChangeText={setForgotEmail}
-                    placeholder="sarah@example.com"
+                    placeholder="naledi@example.com"
                     keyboardType="email-address"
                     autoCapitalize="none"
+                    textContentType="emailAddress"
+                    autoComplete="email"
                     labelStyle={{ color: '#FFFFFF' }}
                     style={{ backgroundColor: 'rgba(255,255,255,0.9)', color: '#333' }}
                   />
@@ -788,7 +893,7 @@ export const LandingPage = () => {
                     onPress={() => setForgotPasswordMode(false)}
                   >
                     <Text style={pageStyles.switchAuthText}>
-                      <Text style={pageStyles.switchAuthHighlight}>Back to Login</Text>
+                      <Text style={pageStyles.switchAuthHighlight}>Go Back</Text>
                     </Text>
                   </TouchableOpacity>
                 </>
@@ -833,6 +938,8 @@ export const LandingPage = () => {
                     onChangeText={setNewPassword}
                     placeholder="Minimum 8 characters"
                     secureTextEntry
+                    textContentType="newPassword"
+                    autoComplete="new-password"
                     labelStyle={{ color: '#FFFFFF' }}
                     style={{ backgroundColor: 'rgba(255,255,255,0.9)', color: '#333' }}
                   />
@@ -853,7 +960,7 @@ export const LandingPage = () => {
                     }}
                   >
                     <Text style={pageStyles.switchAuthText}>
-                      <Text style={pageStyles.switchAuthHighlight}>Back</Text>
+                      <Text style={pageStyles.switchAuthHighlight}>Go Back</Text>
                     </Text>
                   </TouchableOpacity>
                 </>
@@ -993,21 +1100,21 @@ const AnimatedNameCards = () => {
 
   const cards = isWide
     ? [
-        { name: 'Emma', x: w * 0.1, y: h * 0.06, delay: 0 },
-        { name: 'Liam', x: w * 0.55, y: h * 0.08, delay: 200 },
-        { name: 'Olivia', x: w * 0.3, y: h * 0.18, delay: 400 },
-        { name: 'Noah', x: w * 0.05, y: h * 0.28, delay: 600 },
-        { name: 'Ava', x: w * 0.6, y: h * 0.25, delay: 800 },
-        { name: 'Sophia', x: w * 0.75, y: h * 0.12, delay: 300 },
-        { name: 'James', x: w * 0.45, y: h * 0.35, delay: 500 },
-        { name: 'Mia', x: w * 0.8, y: h * 0.32, delay: 700 },
+        { name: 'Oliver', x: w * 0.1, y: h * 0.06, delay: 0 },       // English
+        { name: 'Annelie', x: w * 0.55, y: h * 0.08, delay: 200 },   // Afrikaans
+        { name: 'Sipho', x: w * 0.3, y: h * 0.18, delay: 400 },      // isiZulu
+        { name: 'Lerato', x: w * 0.05, y: h * 0.28, delay: 600 },    // Sepedi
+        { name: 'Lufuno', x: w * 0.6, y: h * 0.25, delay: 800 },     // Tshivenda
+        { name: 'Riaan', x: w * 0.75, y: h * 0.12, delay: 300 },     // Afrikaans
+        { name: 'Lindiwe', x: w * 0.45, y: h * 0.35, delay: 500 },   // isiZulu
+        { name: 'Kabelo', x: w * 0.8, y: h * 0.32, delay: 700 },     // Sepedi
       ]
     : [
-        { name: 'Emma', x: w * 0.15, y: h * 0.08, delay: 0 },
-        { name: 'Liam', x: w * 0.6, y: h * 0.10, delay: 200 },
-        { name: 'Olivia', x: w * 0.35, y: h * 0.20, delay: 400 },
-        { name: 'Noah', x: w * 0.08, y: h * 0.28, delay: 600 },
-        { name: 'Ava', x: w * 0.65, y: h * 0.30, delay: 800 },
+        { name: 'Oliver', x: w * 0.15, y: h * 0.08, delay: 0 },      // English
+        { name: 'Annelie', x: w * 0.6, y: h * 0.10, delay: 200 },    // Afrikaans
+        { name: 'Sipho', x: w * 0.35, y: h * 0.20, delay: 400 },     // isiZulu
+        { name: 'Lerato', x: w * 0.08, y: h * 0.28, delay: 600 },    // Sepedi
+        { name: 'Lufuno', x: w * 0.65, y: h * 0.30, delay: 800 },    // Tshivenda
       ];
 
   return (

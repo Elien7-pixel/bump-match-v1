@@ -10,29 +10,41 @@ import {
     ScrollView,
     Share,
     TextInput,
-    ActivityIndicator
+    ActivityIndicator,
+    Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import QRCode from 'react-native-qrcode-svg';
 import { Ionicons } from '@expo/vector-icons';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { Button } from '../components/Button';
+import { MatchRevealAnimation } from '../components/MatchRevealAnimation';
 
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 
 export const PartnerScreen = () => {
     const navigation = useNavigation();
+    const route = useRoute<any>();
     const { theme, isDark } = useTheme();
     const { user, token, refreshUser } = useAuth();
 
     const [joinCode, setJoinCode] = useState('');
     const [showJoinInput, setShowJoinInput] = useState(false);
     const [isConnecting, setIsConnecting] = useState(false);
+
+    // Handle deep link: bumpmatch://join/CODE
+    useEffect(() => {
+        if (route.params?.code) {
+            setJoinCode(route.params.code);
+            setShowJoinInput(true);
+        }
+    }, [route.params?.code]);
 
     // Convex queries
     const partnerInfo = useQuery(
@@ -54,6 +66,52 @@ export const PartnerScreen = () => {
         api.partnerInvites.getMyInvite,
         token ? { token } : "skip"
     );
+
+    // Deadline state
+    const revealDate = useQuery(
+        api.users.getMatchRevealDate,
+        token ? { token } : "skip"
+    );
+    const setRevealDateMutation = useMutation(api.users.setMatchRevealDate);
+    const [showDeadlinePicker, setShowDeadlinePicker] = useState(false);
+
+    const hasDeadline = !!revealDate;
+    const deadlinePassed = hasDeadline && Date.now() >= revealDate;
+    const matchesHidden = hasDeadline && !deadlinePassed;
+
+    // Match reveal state
+    const [showMatchReveal, setShowMatchReveal] = useState(false);
+    const [newMatchNames, setNewMatchNames] = useState<string[]>([]);
+
+    // Track seen matches and show reveal for new ones
+    useEffect(() => {
+        const checkNewMatches = async () => {
+            if (!matchedNames || matchedNames.length === 0) return;
+
+            try {
+                const seenJson = await AsyncStorage.getItem('bumpmatch_seen_matches');
+                const seenMatches: string[] = seenJson ? JSON.parse(seenJson) : [];
+                const seenSet = new Set(seenMatches);
+
+                const newNames = matchedNames
+                    .filter((m: any) => !seenSet.has(m.name))
+                    .map((m: any) => m.name);
+
+                if (newNames.length > 0) {
+                    setNewMatchNames(newNames);
+                    setShowMatchReveal(true);
+
+                    // Mark all current matches as seen
+                    const allNames = matchedNames.map((m: any) => m.name);
+                    await AsyncStorage.setItem('bumpmatch_seen_matches', JSON.stringify(allNames));
+                }
+            } catch (e) {
+                console.log('Error checking new matches', e);
+            }
+        };
+
+        checkNewMatches();
+    }, [matchedNames]);
 
     // Convex mutations
     const connectPartnerMutation = useMutation(api.users.connectPartner);
@@ -345,7 +403,8 @@ export const PartnerScreen = () => {
     }), [theme, isDark]);
 
     const inviteCode = myInvite?.inviteCode || user?.inviteCode || '';
-    const inviteLink = `bumpmatch://join/${inviteCode}`;
+    const siteUrl = (process.env.EXPO_PUBLIC_CONVEX_URL || 'https://elated-newt-380.convex.cloud').replace('.cloud', '.site');
+    const inviteLink = `${siteUrl}/join/${inviteCode}`;
 
     const handleShare = async () => {
         try {
@@ -452,7 +511,76 @@ export const PartnerScreen = () => {
                             </TouchableOpacity>
                         </View>
 
+                        {/* Reveal Deadline */}
+                        <View style={styles.section}>
+                            {!hasDeadline ? (
+                                <TouchableOpacity
+                                    style={[styles.matchedNameCard, { justifyContent: 'center' }]}
+                                    onPress={() => setShowDeadlinePicker(true)}
+                                >
+                                    <Ionicons name="calendar-outline" size={20} color="#F59E0B" style={{ marginRight: 8 }} />
+                                    <Text style={[styles.matchedNameText, { color: isDark ? '#FDE68A' : '#92400E', fontSize: 14 }]}>
+                                        Set a reveal date for your matches
+                                    </Text>
+                                </TouchableOpacity>
+                            ) : matchesHidden ? (
+                                <View style={[styles.matchedNameCard, { flexDirection: 'column', alignItems: 'center', paddingVertical: 20 }]}>
+                                    <Ionicons name="lock-closed" size={32} color="#F59E0B" />
+                                    <Text style={[styles.matchedNameText, { color: isDark ? '#FDE68A' : '#92400E', marginTop: 8, textAlign: 'center' }]}>
+                                        {matchedNames?.length || 0} {(matchedNames?.length || 0) === 1 ? 'match' : 'matches'} waiting!
+                                    </Text>
+                                    <Text style={[styles.emptySubtext, { marginTop: 4 }]}>
+                                        Reveals on {new Date(revealDate!).toLocaleDateString('en-ZA', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                    </Text>
+                                    <TouchableOpacity
+                                        style={{ marginTop: 12 }}
+                                        onPress={() => {
+                                            Alert.alert(
+                                                'Remove Deadline',
+                                                'Want to see your matches now instead?',
+                                                [
+                                                    { text: 'Keep Waiting', style: 'cancel' },
+                                                    {
+                                                        text: 'Reveal Now',
+                                                        onPress: async () => {
+                                                            if (token) {
+                                                                await setRevealDateMutation({ token, revealDate: Date.now() - 1000 });
+                                                            }
+                                                        },
+                                                    },
+                                                ]
+                                            );
+                                        }}
+                                    >
+                                        <Text style={{ color: theme.colors.primary, fontFamily: theme.typography.fontFamilyBold, fontSize: 13 }}>
+                                            Reveal now instead
+                                        </Text>
+                                    </TouchableOpacity>
+                                </View>
+                            ) : null}
+
+                            {showDeadlinePicker && (
+                                <View style={{ marginVertical: 8 }}>
+                                    <DateTimePicker
+                                        value={new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)}
+                                        mode="date"
+                                        display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                                        minimumDate={new Date(Date.now() + 24 * 60 * 60 * 1000)}
+                                        maximumDate={new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)}
+                                        onChange={async (event, selected) => {
+                                            setShowDeadlinePicker(false);
+                                            if (selected && token) {
+                                                await setRevealDateMutation({ token, revealDate: selected.getTime() });
+                                                Alert.alert('Deadline Set!', `Your matches will be revealed on ${selected.toLocaleDateString('en-ZA', { day: 'numeric', month: 'long', year: 'numeric' })}`);
+                                            }
+                                        }}
+                                    />
+                                </View>
+                            )}
+                        </View>
+
                         {/* Matched Names */}
+                        {!matchesHidden && (
                         <View style={styles.section}>
                             <Text style={styles.sectionTitle}>
                                 <Ionicons name="heart" size={16} color={theme.colors.primary} /> Matched Names
@@ -474,6 +602,7 @@ export const PartnerScreen = () => {
                                 </View>
                             )}
                         </View>
+                        )}
 
                         {/* Partner's Likes */}
                         <View style={styles.section}>
@@ -590,6 +719,12 @@ export const PartnerScreen = () => {
                     </>
                 )}
             </ScrollView>
+
+            <MatchRevealAnimation
+                visible={showMatchReveal}
+                matchedNames={newMatchNames}
+                onDismiss={() => setShowMatchReveal(false)}
+            />
         </SafeAreaView>
     );
 };

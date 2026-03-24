@@ -1,8 +1,10 @@
 import React from 'react';
-import { View, Text, StyleSheet, useWindowDimensions } from 'react-native';
+import { View, Text, StyleSheet, useWindowDimensions, TouchableOpacity, Alert } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 import { BabyName } from '../models/BabyName';
 import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';
 
 interface NameCardProps {
   data: BabyName;
@@ -10,6 +12,8 @@ interface NameCardProps {
 
 export const NameCard: React.FC<NameCardProps> = ({ data }) => {
   const { theme } = useTheme();
+  const { user } = useAuth();
+  const surname = user?.surname || '';
   const { width } = useWindowDimensions();
   const CARD_WIDTH = Math.min(width * 0.82, 400);
   const CARD_HEIGHT = CARD_WIDTH * 1.3;
@@ -17,8 +21,8 @@ export const NameCard: React.FC<NameCardProps> = ({ data }) => {
   const getGradientColors = () => {
     if (data.gender === 'boy') return [theme.colors.boyBlue, '#3B82F6'] as const;
     if (data.gender === 'girl') return [theme.colors.girlPink, '#EC4899'] as const;
-    // Random pastel gradient for unisex
-    return theme.gradients.g3;
+    // Neutral beige/yellow gradient for unisex
+    return [theme.colors.neutralBeige, '#E8C547'] as const;
   };
 
   const styles = React.useMemo(() => StyleSheet.create({
@@ -48,6 +52,15 @@ export const NameCard: React.FC<NameCardProps> = ({ data }) => {
       paddingVertical: theme.spacing.m,
     },
     name: {
+      fontFamily: theme.typography.fontFamilyBold,
+      fontSize: 48,
+      color: theme.colors.textLight,
+      textShadowColor: 'rgba(0, 0, 0, 0.2)',
+      textShadowOffset: { width: 1, height: 1 },
+      textShadowRadius: 5,
+      marginBottom: theme.spacing.s,
+    },
+    surname: {
       fontFamily: theme.typography.fontFamilyBold,
       fontSize: 48,
       color: theme.colors.textLight,
@@ -105,7 +118,17 @@ export const NameCard: React.FC<NameCardProps> = ({ data }) => {
     hint: {
       color: 'rgba(255,255,255, 0.6)',
       fontFamily: theme.typography.fontFamilyBold,
-      fontSize: 12
+      fontSize: 12,
+    },
+    infoButton: {
+      position: 'absolute',
+      top: theme.spacing.m,
+      right: theme.spacing.m,
+      zIndex: 10,
+      width: 32,
+      height: 32,
+      alignItems: 'center',
+      justifyContent: 'center',
     }
   }), [theme]);
 
@@ -117,8 +140,19 @@ export const NameCard: React.FC<NameCardProps> = ({ data }) => {
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       >
+        {data.celebrity ? (
+          <TouchableOpacity
+            style={styles.infoButton}
+            onPress={() => Alert.alert(data.name, `Named by ${data.celebrity}\n\nMeaning: ${data.meaning}\nOrigin: ${data.origin}`)}
+          >
+            <Ionicons name="information-circle" size={24} color="rgba(255,255,255,0.7)" />
+          </TouchableOpacity>
+        ) : null}
         <View style={styles.content}>
-          <Text style={styles.name}>{data.name}</Text>
+          <Text style={styles.name} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.5}>{data.name}</Text>
+          {surname ? (
+            <Text style={styles.surname}>{surname}</Text>
+          ) : null}
           <Text style={styles.details}>{data.gender.toUpperCase()}</Text>
 
           <View style={styles.infoBox}>

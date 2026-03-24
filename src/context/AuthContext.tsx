@@ -33,6 +33,7 @@ interface SignUpData {
   surname: string;
   age: string;
   gender: 'mom' | 'dad' | 'partner';
+  expecting?: 'boy' | 'girl' | 'unknown';
   status: string;
 }
 

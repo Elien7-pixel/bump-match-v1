@@ -14,6 +14,9 @@ import type * as deleteAccount from "../deleteAccount.js";
 import type * as http from "../http.js";
 import type * as names from "../names.js";
 import type * as partnerInvites from "../partnerInvites.js";
+import type * as search from "../search.js";
+import type * as searchHelpers from "../searchHelpers.js";
+import type * as submissions from "../submissions.js";
 import type * as users from "../users.js";
 
 import type {
@@ -29,6 +32,9 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   names: typeof names;
   partnerInvites: typeof partnerInvites;
+  search: typeof search;
+  searchHelpers: typeof searchHelpers;
+  submissions: typeof submissions;
   users: typeof users;
 }>;
 

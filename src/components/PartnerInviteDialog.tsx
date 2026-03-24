@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Modal, TouchableOpacity, Share, Pressable } from 'react-native';
+import { View, Text, StyleSheet, Modal, TouchableOpacity, Share, Pressable, Linking, Alert } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import { Ionicons } from '@expo/vector-icons';
 import { Button } from './Button';
@@ -19,12 +19,20 @@ export const PartnerInviteDialog: React.FC<PartnerInviteDialogProps> = ({ visibl
   const navigation = useNavigation<any>();
 
   const inviteCode = user?.inviteCode || `${surname.toUpperCase().substring(0, 6)}-CODE`;
-  const inviteLink = `bumpmatch://join/${inviteCode}`;
+  const siteUrl = (process.env.EXPO_PUBLIC_CONVEX_URL || 'https://elated-newt-380.convex.cloud').replace('.cloud', '.site');
+  const inviteLink = `${siteUrl}/join/${inviteCode}`;
+
+  const handleQRTap = () => {
+    Alert.alert(
+      'Share QR Code',
+      'Your partner can scan this QR code to join you on BumpMatch. If they don\'t have the app yet, it will take them to the download page.'
+    );
+  };
 
   const handleShare = async () => {
     try {
       await Share.share({
-        message: `Join me on BumpMatch to find a name for Baby ${surname}! Use code: ${inviteCode} or tap: ${inviteLink}`,
+        message: `Hey! I'm using BumpMatch to find the perfect baby name. Want to swipe together?\n\nJoin the ${surname} family name hunt:\nCode: ${inviteCode}\n\nTap to join: ${inviteLink}`,
       });
     } catch (error) {
       console.log(error);
@@ -144,9 +152,9 @@ export const PartnerInviteDialog: React.FC<PartnerInviteDialogProps> = ({ visibl
             <Text style={styles.subtitle}>Share this code to sync your likes</Text>
           </View>
 
-          <View style={styles.qrContainer}>
+          <TouchableOpacity style={styles.qrContainer} onPress={handleQRTap} activeOpacity={0.7}>
             <QRCode value={inviteLink} size={150} />
-          </View>
+          </TouchableOpacity>
 
           <View style={styles.codeBox}>
             <Text style={styles.codeLabel}>Your Invite Code:</Text>

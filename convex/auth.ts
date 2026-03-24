@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query, internalMutation } from "./_generated/server";
+import { internal } from "./_generated/api";
 
 // Simple hash function for demo purposes
 // In production, use proper bcrypt or argon2 via an action
@@ -41,6 +42,7 @@ export const signUp = mutation({
     surname: v.string(),
     age: v.string(),
     gender: v.union(v.literal("mom"), v.literal("dad"), v.literal("partner")),
+    expecting: v.optional(v.union(v.literal("boy"), v.literal("girl"), v.literal("unknown"))),
     status: v.string(),
   },
   handler: async (ctx, args) => {
@@ -63,6 +65,7 @@ export const signUp = mutation({
       surname: args.surname,
       age: args.age,
       gender: args.gender,
+      expecting: args.expecting,
       status: args.status,
       inviteCode,
       createdAt: Date.now(),
@@ -78,6 +81,13 @@ export const signUp = mutation({
       token,
       createdAt: now,
       expiresAt,
+    });
+
+    // Schedule welcome email
+    await ctx.scheduler.runAfter(0, internal.authActions.sendWelcomeEmail, {
+      email: args.email.toLowerCase(),
+      firstName: args.firstName,
+      inviteCode,
     });
 
     return {

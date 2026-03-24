@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, StatusBar, Alert, ScrollView, Modal, TextInput } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, StatusBar, Alert, ScrollView, Modal, TextInput, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useMutation, useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { Input } from '../components/Input';
 import { Button } from '../components/Button';
 import { useTheme } from '../context/ThemeContext';
@@ -21,7 +22,7 @@ const AVATAR_OPTIONS = [
 ];
 
 export const ProfileScreen = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const { theme, isDark } = useTheme();
   const { user, token, refreshUser } = useAuth();
 
@@ -37,6 +38,8 @@ export const ProfileScreen = () => {
     gender: string;
     status: string;
     avatar?: string;
+    heritage?: string[];
+    dueDate?: string;
   } | null>(null);
 
   // Editable fields
@@ -46,6 +49,10 @@ export const ProfileScreen = () => {
   const [editGender, setEditGender] = useState<'mom' | 'dad' | 'partner'>('mom');
   const [editStatus, setEditStatus] = useState('');
   const [editAvatar, setEditAvatar] = useState('default');
+  const [editHeritage, setEditHeritage] = useState<string[]>([]);
+  const [editDueDate, setEditDueDate] = useState('');
+  const [showDueDatePicker, setShowDueDatePicker] = useState(false);
+  const [showDobPicker, setShowDobPicker] = useState(false);
 
   // Convex query for profile
   const convexProfile = useQuery(
@@ -250,6 +257,50 @@ export const ProfileScreen = () => {
       color: isDark ? '#FECACA' : '#EF4444',
       marginLeft: theme.spacing.s,
     },
+    heritageContainer: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
+      marginTop: theme.spacing.s,
+    },
+    heritageChip: {
+      paddingVertical: 6,
+      paddingHorizontal: 12,
+      borderRadius: theme.borderRadius.round,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.card,
+    },
+    heritageChipSelected: {
+      backgroundColor: theme.colors.primary,
+      borderColor: theme.colors.primary,
+    },
+    heritageChipText: {
+      fontFamily: theme.typography.fontFamily,
+      fontSize: 12,
+      color: theme.colors.text,
+    },
+    heritageChipTextSelected: {
+      color: '#FFFFFF',
+      fontFamily: theme.typography.fontFamilyBold,
+    },
+    heritageDisplay: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 6,
+      marginTop: 4,
+    },
+    heritageTag: {
+      paddingVertical: 3,
+      paddingHorizontal: 8,
+      borderRadius: theme.borderRadius.round,
+      backgroundColor: isDark ? '#1E3A8A' : '#E0F2FE',
+    },
+    heritageTagText: {
+      fontFamily: theme.typography.fontFamily,
+      fontSize: 11,
+      color: isDark ? '#93C5FD' : '#1E40AF',
+    },
   }), [theme, isDark]);
 
   useEffect(() => {
@@ -262,14 +313,14 @@ export const ProfileScreen = () => {
       setProfile({
         firstName: convexProfile.firstName,
         surname: convexProfile.surname,
-        age: convexProfile.age,
+        age: convexProfile.dateOfBirth,
         gender: convexProfile.gender,
         status: convexProfile.status,
         avatar: 'default', // Avatar stored locally for now
       });
       setEditFirstName(convexProfile.firstName || '');
       setEditSurname(convexProfile.surname || '');
-      setEditAge(convexProfile.age || '');
+      setEditAge(convexProfile.dateOfBirth || '');
       setEditGender(convexProfile.gender || 'mom');
       setEditStatus(convexProfile.status || '');
     }
@@ -287,6 +338,8 @@ export const ProfileScreen = () => {
         setEditGender(data.gender || 'mom');
         setEditStatus(data.status || '');
         setEditAvatar(data.avatar || 'default');
+        setEditHeritage(data.heritage || []);
+        setEditDueDate(data.dueDate || '');
       }
     } catch (e) {
       console.log('Error loading profile', e);
@@ -309,6 +362,8 @@ export const ProfileScreen = () => {
       gender: editGender,
       status: editStatus,
       avatar: editAvatar,
+      heritage: editHeritage,
+      dueDate: editStatus === 'Expecting soon' ? editDueDate : undefined,
       updatedAt: new Date().toISOString(),
     };
 
@@ -348,6 +403,8 @@ export const ProfileScreen = () => {
       setEditGender((profile.gender as any) || 'mom');
       setEditStatus(profile.status || '');
       setEditAvatar(profile.avatar || 'default');
+      setEditHeritage(profile.heritage || []);
+      setEditDueDate(profile.dueDate || '');
     }
     setIsEditing(false);
   };
@@ -469,23 +526,43 @@ export const ProfileScreen = () => {
               label="First Name"
               value={editFirstName}
               onChangeText={setEditFirstName}
-              placeholder="e.g. Sarah"
+              placeholder="e.g. Naledi"
             />
 
             <Input
               label="Last Name"
               value={editSurname}
               onChangeText={setEditSurname}
-              placeholder="e.g. Smith"
+              placeholder="e.g. Ndlovu"
             />
 
-            <Input
-              label="Age"
-              value={editAge}
-              onChangeText={setEditAge}
-              placeholder="e.g. 28"
-              keyboardType="numeric"
-            />
+            <Text style={styles.label}>Date of Birth</Text>
+            <TouchableOpacity
+              onPress={() => setShowDobPicker(true)}
+              style={{ backgroundColor: theme.colors.card, borderRadius: 12, padding: 14, marginBottom: 4, borderWidth: 1, borderColor: theme.colors.border }}
+            >
+              <Text style={{ color: editAge ? theme.colors.text : theme.colors.grey, fontSize: 16, fontFamily: theme.typography.fontFamily }}>
+                {editAge ? new Date(editAge).toLocaleDateString('en-ZA', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Select your date of birth'}
+              </Text>
+            </TouchableOpacity>
+            {showDobPicker && (
+              <DateTimePicker
+                value={editAge ? new Date(editAge) : new Date(1995, 0, 1)}
+                mode="date"
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                maximumDate={new Date()}
+                minimumDate={new Date(1940, 0, 1)}
+                onChange={(event, selected) => {
+                  if (Platform.OS === 'android') setShowDobPicker(false);
+                  if (selected) setEditAge(selected.toISOString());
+                }}
+              />
+            )}
+            {showDobPicker && Platform.OS === 'ios' && (
+              <TouchableOpacity onPress={() => setShowDobPicker(false)} style={{ alignItems: 'center', paddingVertical: 8 }}>
+                <Text style={{ color: theme.colors.primary, fontFamily: theme.typography.fontFamilyBold, fontSize: 15 }}>Done</Text>
+              </TouchableOpacity>
+            )}
 
             <Text style={styles.label}>I am a...</Text>
             <View style={styles.row}>
@@ -504,7 +581,7 @@ export const ProfileScreen = () => {
 
             <Text style={styles.label}>Status</Text>
             <View style={styles.statusContainer}>
-              {['Expecting soon', 'Just found out', 'Have child'].map((s) => (
+              {['Expecting soon', 'Planning ahead'].map((s) => (
                 <TouchableOpacity
                   key={s}
                   style={[styles.statusOption, editStatus === s && styles.optionSelected]}
@@ -515,6 +592,64 @@ export const ProfileScreen = () => {
                   </Text>
                 </TouchableOpacity>
               ))}
+            </View>
+
+            {editStatus === 'Expecting soon' && (
+              <>
+                <Text style={styles.label}>When are you expecting?</Text>
+                <TouchableOpacity
+                  onPress={() => setShowDueDatePicker(true)}
+                  style={{ backgroundColor: theme.colors.card, borderRadius: 12, padding: 14, marginBottom: 4, borderWidth: 1, borderColor: theme.colors.border }}
+                >
+                  <Text style={{ color: editDueDate ? theme.colors.text : theme.colors.grey, fontSize: 16, fontFamily: theme.typography.fontFamily }}>
+                    {editDueDate
+                      ? (() => { try { return new Date(editDueDate).toLocaleDateString('en-ZA', { day: 'numeric', month: 'long', year: 'numeric' }); } catch { return editDueDate; } })()
+                      : 'Select your due date'}
+                  </Text>
+                </TouchableOpacity>
+                {showDueDatePicker && (
+                  <DateTimePicker
+                    value={editDueDate ? new Date(editDueDate) : new Date()}
+                    mode="date"
+                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                    minimumDate={new Date()}
+                    maximumDate={new Date(Date.now() + 10 * 30 * 24 * 60 * 60 * 1000)}
+                    onChange={(event, selected) => {
+                      if (Platform.OS === 'android') setShowDueDatePicker(false);
+                      if (selected) setEditDueDate(selected.toISOString());
+                    }}
+                  />
+                )}
+                {showDueDatePicker && Platform.OS === 'ios' && (
+                  <TouchableOpacity onPress={() => setShowDueDatePicker(false)} style={{ alignItems: 'center', paddingVertical: 8 }}>
+                    <Text style={{ color: theme.colors.primary, fontFamily: theme.typography.fontFamilyBold, fontSize: 15 }}>Done</Text>
+                  </TouchableOpacity>
+                )}
+              </>
+            )}
+
+            <Text style={styles.label}>Cultural Heritage (select multiple)</Text>
+            <View style={styles.heritageContainer}>
+              {['English', 'Afrikaans', 'isiZulu', 'isiXhosa', 'isiNdebele', 'Sepedi', 'Sesotho', 'Setswana', 'siSwati', 'Tshivenda', 'Xitsonga', 'Irish', 'Italian', 'Korean', 'Spanish', 'German', 'Portuguese', 'Greek', 'Latin'].map((h) => {
+                const selected = editHeritage.includes(h);
+                return (
+                  <TouchableOpacity
+                    key={h}
+                    style={[styles.heritageChip, selected && styles.heritageChipSelected]}
+                    onPress={() => {
+                      if (selected) {
+                        setEditHeritage(editHeritage.filter(x => x !== h));
+                      } else {
+                        setEditHeritage([...editHeritage, h]);
+                      }
+                    }}
+                  >
+                    <Text style={[styles.heritageChipText, selected && styles.heritageChipTextSelected]}>
+                      {h}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
 
             <View style={styles.buttonRow}>
@@ -549,9 +684,24 @@ export const ProfileScreen = () => {
               <View style={styles.infoRow}>
                 <View style={styles.infoLabel}>
                   <Ionicons name="calendar-outline" size={20} color={theme.colors.grey} />
-                  <Text style={styles.labelText}>Age</Text>
+                  <Text style={styles.labelText}>Date of Birth</Text>
                 </View>
-                <Text style={styles.valueText}>{(profile as any).age || 'Not set'}</Text>
+                <Text style={styles.valueText}>
+                  {(profile as any).age
+                    ? (() => {
+                        try {
+                          const d = new Date((profile as any).age);
+                          if (isNaN(d.getTime())) return (profile as any).age;
+                          const today = new Date();
+                          let years = today.getFullYear() - d.getFullYear();
+                          const monthDiff = today.getMonth() - d.getMonth();
+                          if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < d.getDate())) years--;
+                          const formatted = d.toLocaleDateString('en-ZA', { day: 'numeric', month: 'long', year: 'numeric' });
+                          return `${formatted} (${years} yrs)`;
+                        } catch { return (profile as any).age; }
+                      })()
+                    : 'Not set'}
+                </Text>
               </View>
 
               <View style={styles.infoRow}>
@@ -570,7 +720,28 @@ export const ProfileScreen = () => {
                   <Text style={styles.labelText}>Status</Text>
                 </View>
                 <Text style={styles.valueText}>{profile.status || 'Not set'}</Text>
+                {profile.status === 'Expecting soon' && profile.dueDate ? (
+                  <Text style={[styles.valueText, { fontSize: 13, color: theme.colors.grey, marginTop: 4 }]}>
+                    Due: {(() => { try { return new Date(profile.dueDate).toLocaleDateString('en-ZA', { day: 'numeric', month: 'long', year: 'numeric' }); } catch { return profile.dueDate; } })()}
+                  </Text>
+                ) : null}
               </View>
+
+              {profile.heritage && profile.heritage.length > 0 && (
+                <View style={styles.infoRow}>
+                  <View style={styles.infoLabel}>
+                    <Ionicons name="globe-outline" size={20} color={theme.colors.grey} />
+                    <Text style={styles.labelText}>Heritage</Text>
+                  </View>
+                  <View style={styles.heritageDisplay}>
+                    {profile.heritage.map((h) => (
+                      <View key={h} style={styles.heritageTag}>
+                        <Text style={styles.heritageTagText}>{h}</Text>
+                      </View>
+                    ))}
+                  </View>
+                </View>
+              )}
 
               {/* Invite Code Banner */}
               {user?.inviteCode && (
