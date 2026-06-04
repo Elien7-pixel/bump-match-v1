@@ -402,7 +402,7 @@ export const PartnerScreen = () => {
     }), [theme, isDark]);
 
     const inviteCode = myInvite?.inviteCode || user?.inviteCode || '';
-    const siteUrl = (process.env.EXPO_PUBLIC_CONVEX_URL || 'https://elated-newt-380.convex.cloud').replace('.cloud', '.site');
+    const siteUrl = (process.env.EXPO_PUBLIC_CONVEX_URL || 'https://silent-ermine-169.convex.cloud').replace('.cloud', '.site');
     const inviteLink = `${siteUrl}/join/${inviteCode}`;
 
     const handleShare = async () => {

@@ -36,7 +36,7 @@ const convex = new ConvexReactClient(convexUrl);
 
 const Stack = createStackNavigator();
 
-const CONVEX_SITE_URL = (process.env.EXPO_PUBLIC_CONVEX_URL || 'https://elated-newt-380.convex.cloud').replace('.cloud', '.site');
+const CONVEX_SITE_URL = (process.env.EXPO_PUBLIC_CONVEX_URL || 'https://silent-ermine-169.convex.cloud').replace('.cloud', '.site');
 
 const linking: LinkingOptions<any> = {
   prefixes: [Linking.createURL('/'), 'bumpmatch://', CONVEX_SITE_URL],

@@ -19,7 +19,7 @@ export const PartnerInviteDialog: React.FC<PartnerInviteDialogProps> = ({ visibl
   const navigation = useNavigation<any>();
 
   const inviteCode = user?.inviteCode || `${surname.toUpperCase().substring(0, 6)}-CODE`;
-  const siteUrl = (process.env.EXPO_PUBLIC_CONVEX_URL || 'https://elated-newt-380.convex.cloud').replace('.cloud', '.site');
+  const siteUrl = (process.env.EXPO_PUBLIC_CONVEX_URL || 'https://silent-ermine-169.convex.cloud').replace('.cloud', '.site');
   const inviteLink = `${siteUrl}/join/${inviteCode}`;
 
   const handleQRTap = () => {
