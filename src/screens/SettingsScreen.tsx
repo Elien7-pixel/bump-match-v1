@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, StatusBar, Alert, Switch, Linking, Modal, ScrollView, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, StatusBar, Alert, Switch, Linking, Modal, ScrollView, Platform, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,6 +8,7 @@ import Constants from 'expo-constants';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
+import { LogoIcon, LogoText } from '../components/Logo';
 
 export const SettingsScreen = () => {
   const navigation = useNavigation<any>();
@@ -396,7 +397,11 @@ export const SettingsScreen = () => {
             </TouchableOpacity>
           </View>
           <ScrollView style={{ flex: 1, padding: 16 }}>
-            <Text style={{ fontFamily: theme.typography.fontFamilyBold, fontSize: 16, color: theme.colors.text, marginBottom: 8 }}>How does BumpMatch work?</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+              <Text style={{ fontFamily: theme.typography.fontFamilyBold, fontSize: 16, color: theme.colors.text }}>How does </Text>
+              <LogoText size="small" style={{ height: 18, width: 54 }} />
+              <Text style={{ fontFamily: theme.typography.fontFamilyBold, fontSize: 16, color: theme.colors.text }}> work?</Text>
+            </View>
             <Text style={{ fontFamily: theme.typography.fontFamily, fontSize: 14, color: theme.colors.grey, marginBottom: 20, lineHeight: 20 }}>
               Swipe right on names you love, left on names you don't. When you and your partner both like the same name, it's a match!
             </Text>

@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { Doc } from "./_generated/dataModel";
+import { internal } from "./_generated/api";
 
 // Helper to get user from token
 async function getUserFromToken(ctx: any, token: string): Promise<Doc<"users"> | null> {
@@ -150,6 +151,20 @@ export const acceptInvite = mutation({
     if (invite && invite.status === "pending") {
       await ctx.db.patch(invite._id, { status: "accepted" });
     }
+
+    // Notify both users about the connection
+    await ctx.scheduler.runAfter(0, internal.pushNotifications.notifyUser, {
+      userId: inviter._id,
+      title: "You're connected!",
+      body: `You're now connected with ${user.firstName}!`,
+      data: { screen: "Partner" },
+    });
+    await ctx.scheduler.runAfter(0, internal.pushNotifications.notifyUser, {
+      userId: user._id,
+      title: "You're connected!",
+      body: `You're now connected with ${inviter.firstName}!`,
+      data: { screen: "Partner" },
+    });
 
     return {
       success: true,

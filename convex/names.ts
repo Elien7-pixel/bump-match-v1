@@ -177,6 +177,50 @@ export const getMatchedNames = query({
   },
 });
 
+export const likeAndFavorite = mutation({
+  args: {
+    token: v.string(),
+    nameId: v.string(),
+    name: v.string(),
+    gender: v.union(v.literal("boy"), v.literal("girl"), v.literal("unisex")),
+    origin: v.string(),
+    meaning: v.string(),
+    language: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const user = await getUserFromToken(ctx, args.token);
+    if (!user) {
+      throw new Error("Not authenticated");
+    }
+
+    const existing = await ctx.db
+      .query("likedNames")
+      .withIndex("by_user_and_name", (q) =>
+        q.eq("userId", user._id).eq("nameId", args.nameId)
+      )
+      .first();
+
+    if (existing) {
+      await ctx.db.patch(existing._id, { isFavorite: true });
+      return { success: true, alreadyLiked: true };
+    }
+
+    await ctx.db.insert("likedNames", {
+      userId: user._id,
+      nameId: args.nameId,
+      name: args.name,
+      gender: args.gender,
+      origin: args.origin,
+      meaning: args.meaning,
+      language: args.language,
+      likedAt: Date.now(),
+      isFavorite: true,
+    });
+
+    return { success: true, alreadyLiked: false };
+  },
+});
+
 export const toggleFavorite = mutation({
   args: {
     token: v.string(),

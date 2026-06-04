@@ -29,13 +29,31 @@ export const PartnerInviteDialog: React.FC<PartnerInviteDialogProps> = ({ visibl
     );
   };
 
+  const inviteMessage = `Hey! I'm using BumpMatch to find the perfect baby name. Want to swipe together?\n\nJoin the ${surname} family name hunt:\nCode: ${inviteCode}\n\n${inviteLink}`;
+
   const handleShare = async () => {
     try {
       await Share.share({
-        message: `Hey! I'm using BumpMatch to find the perfect baby name. Want to swipe together?\n\nJoin the ${surname} family name hunt:\nCode: ${inviteCode}\n\nTap to join: ${inviteLink}`,
+        message: inviteMessage,
+        url: inviteLink,
       });
     } catch (error) {
       console.log(error);
+    }
+  };
+
+  const handleWhatsAppShare = async () => {
+    const whatsappUrl = `whatsapp://send?text=${encodeURIComponent(inviteMessage)}`;
+    try {
+      const canOpen = await Linking.canOpenURL(whatsappUrl);
+      if (canOpen) {
+        await Linking.openURL(whatsappUrl);
+      } else {
+        // Fallback to wa.me web link
+        await Linking.openURL(`https://wa.me/?text=${encodeURIComponent(inviteMessage)}`);
+      }
+    } catch (error) {
+      Alert.alert('WhatsApp not available', 'Could not open WhatsApp. Try the share button instead.');
     }
   };
 
@@ -120,6 +138,28 @@ export const PartnerInviteDialog: React.FC<PartnerInviteDialogProps> = ({ visibl
       width: '100%',
       marginBottom: theme.spacing.s,
     },
+    shareRow: {
+      flexDirection: 'row',
+      width: '100%',
+      gap: theme.spacing.s,
+      marginBottom: theme.spacing.s,
+    },
+    whatsappButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: '#25D366',
+      paddingVertical: 12,
+      paddingHorizontal: 16,
+      borderRadius: theme.borderRadius.round,
+      flex: 1,
+    },
+    whatsappText: {
+      color: '#FFFFFF',
+      fontFamily: theme.typography.fontFamilyBold,
+      fontSize: 14,
+      marginLeft: 6,
+    },
     viewMoreLink: {
       paddingVertical: theme.spacing.s,
     },
@@ -161,6 +201,12 @@ export const PartnerInviteDialog: React.FC<PartnerInviteDialogProps> = ({ visibl
             <Text style={styles.code}>{inviteCode}</Text>
           </View>
 
+          <View style={styles.shareRow}>
+            <TouchableOpacity style={styles.whatsappButton} onPress={handleWhatsAppShare}>
+              <Ionicons name="logo-whatsapp" size={20} color="#FFFFFF" />
+              <Text style={styles.whatsappText}>WhatsApp</Text>
+            </TouchableOpacity>
+          </View>
           <Button
             title="Share Invite Link"
             onPress={handleShare}

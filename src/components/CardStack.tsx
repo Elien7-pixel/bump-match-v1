@@ -18,9 +18,10 @@ interface CardStackProps {
   onSwipeRight: (name: BabyName) => void;
   onSwipeLeft: (name: BabyName) => void;
   onEmpty?: () => void;
+  onFavorite?: (name: BabyName) => void;
 }
 
-export const CardStack: React.FC<CardStackProps> = ({ names, onSwipeRight, onSwipeLeft, onEmpty }) => {
+export const CardStack: React.FC<CardStackProps> = ({ names, onSwipeRight, onSwipeLeft, onEmpty, onFavorite }) => {
   const { width } = useWindowDimensions();
   const SWIPE_THRESHOLD = width * 0.3;
   const translateX = useSharedValue(0);
@@ -117,7 +118,7 @@ export const CardStack: React.FC<CardStackProps> = ({ names, onSwipeRight, onSwi
 
       <GestureDetector gesture={panGesture}>
         <Animated.View style={[styles.cardContainer, cardStyle]}>
-           <NameCard data={currentProfile} />
+           <NameCard data={currentProfile} onFavorite={onFavorite} />
         </Animated.View>
       </GestureDetector>
     </View>

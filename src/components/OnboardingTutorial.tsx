@@ -33,6 +33,12 @@ const SLIDES: Slide[] = [
     description: 'Swipe right on names you love, left on ones you don\'t. It\'s that simple!',
   },
   {
+    icon: 'arrow-undo',
+    iconColor: '#F59E0B',
+    title: 'Changed Your Mind?',
+    description: 'Tap the undo button to bring back the last name you swiped — perfect for second thoughts.',
+  },
+  {
     icon: 'people-outline',
     iconColor: '#3B82F6',
     title: 'Better Together',
@@ -42,8 +48,8 @@ const SLIDES: Slide[] = [
   {
     icon: 'star-outline',
     iconColor: '#F59E0B',
-    title: 'Favorite Your Top Picks',
-    description: 'Star your absolute favorites in the Liked Names list to keep your top choices front and center.',
+    title: 'Favourite Your Top Picks',
+    description: 'Tap the star on any card to mark a favourite — they\'ll be pinned to the top of your Liked Names.',
   },
   {
     icon: 'options-outline',

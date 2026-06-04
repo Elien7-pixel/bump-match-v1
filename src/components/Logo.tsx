@@ -1,8 +1,11 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet, Platform } from 'react-native';
+import { View, Image, StyleSheet } from 'react-native';
 
-// The coral color matching the heart logo
+// The coral color matching the logo
 export const LOGO_COLOR = '#C9817A';
+
+const logoImage = require('../../assets/bump-match-logo.png');
+const iconImage = require('../../assets/bump-match-icon.png');
 
 interface LogoProps {
   size?: 'small' | 'medium' | 'large';
@@ -18,33 +21,35 @@ export const Logo = ({
   lightText = false,
 }: LogoProps) => {
   const dimensions = {
-    small: { icon: 32, fontSize: 20, italicSize: 20 },
-    medium: { icon: 48, fontSize: 32, italicSize: 32 },
-    large: { icon: 64, fontSize: 42, italicSize: 42 },
+    small: { icon: 32, logoHeight: 28, logoWidth: 100 },
+    medium: { icon: 48, logoHeight: 40, logoWidth: 144 },
+    large: { icon: 64, logoHeight: 56, logoWidth: 200 },
   };
 
-  const { icon, fontSize, italicSize } = dimensions[size];
-  const textColor = lightText ? '#FFFFFF' : LOGO_COLOR;
+  const { icon, logoHeight, logoWidth } = dimensions[size];
+  const tintColor = lightText ? '#FFFFFF' : undefined;
 
   return (
     <View style={styles.container}>
       {showIcon && (
         <Image
-          source={require('../../assets/heart-logo.png')}
-          style={{ width: icon, height: icon }}
+          source={iconImage}
+          style={[{ width: icon, height: icon }, tintColor ? { tintColor } : null]}
           resizeMode="contain"
         />
       )}
       {showText && (
-        <Text style={[styles.logoText, { fontSize, color: textColor }]}>
-          Bump<Text style={[styles.logoTextItalic, { fontSize: italicSize, color: textColor }]}>Match</Text>
-        </Text>
+        <Image
+          source={logoImage}
+          style={[{ width: logoWidth, height: logoHeight, marginTop: 8 }, tintColor ? { tintColor } : null]}
+          resizeMode="contain"
+        />
       )}
     </View>
   );
 };
 
-// Just the text portion of the logo
+// Just the text/logo portion
 export const LogoText = ({
   size = 'medium',
   lightText = false,
@@ -54,18 +59,49 @@ export const LogoText = ({
   lightText?: boolean;
   style?: any;
 }) => {
-  const fontSizes = {
-    small: 20,
-    medium: 32,
-    large: 42,
+  const dimensions = {
+    small: { height: 28, width: 100 },
+    medium: { height: 40, width: 144 },
+    large: { height: 80, width: 288 },
   };
 
-  const textColor = lightText ? '#FFFFFF' : LOGO_COLOR;
+  const { height, width } = dimensions[size];
+  const tintColor = lightText ? '#FFFFFF' : undefined;
 
   return (
-    <Text style={[styles.logoText, { fontSize: fontSizes[size], color: textColor }, style]}>
-      Bump<Text style={[styles.logoTextItalic, { color: textColor }]}>Match</Text>
-    </Text>
+    <Image
+      source={logoImage}
+      style={[{ width, height }, tintColor ? { tintColor } : null, style]}
+      resizeMode="contain"
+    />
+  );
+};
+
+// Just the icon
+export const LogoIcon = ({
+  size = 'medium',
+  lightIcon = false,
+  style,
+}: {
+  size?: 'small' | 'medium' | 'large';
+  lightIcon?: boolean;
+  style?: any;
+}) => {
+  const dimensions = {
+    small: { s: 24 },
+    medium: { s: 40 },
+    large: { s: 56 },
+  };
+
+  const { s } = dimensions[size];
+  const tintColor = lightIcon ? '#FFFFFF' : undefined;
+
+  return (
+    <Image
+      source={iconImage}
+      style={[{ width: s, height: s }, tintColor ? { tintColor } : null, style]}
+      resizeMode="contain"
+    />
   );
 };
 
@@ -73,17 +109,6 @@ const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  logoText: {
-    fontFamily: Platform.OS === 'ios' ? 'Georgia-Bold' : 'serif',
-    fontWeight: '700',
-    letterSpacing: 0.5,
-    marginTop: 8,
-  },
-  logoTextItalic: {
-    fontFamily: Platform.OS === 'ios' ? 'Georgia-BoldItalic' : 'serif',
-    fontStyle: 'italic',
-    fontWeight: '700',
   },
 });
 

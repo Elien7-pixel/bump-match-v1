@@ -52,11 +52,6 @@ export const PartnerScreen = () => {
         token ? { token } : "skip"
     );
 
-    const partnerLikedNames = useQuery(
-        api.names.getPartnerLikedNames,
-        token ? { token } : "skip"
-    );
-
     const matchedNames = useQuery(
         api.names.getMatchedNames,
         token ? { token } : "skip"
@@ -68,16 +63,20 @@ export const PartnerScreen = () => {
     );
 
     // Deadline state
-    const revealDate = useQuery(
+    const revealDateInfo = useQuery(
         api.users.getMatchRevealDate,
         token ? { token } : "skip"
     );
     const setRevealDateMutation = useMutation(api.users.setMatchRevealDate);
+    const confirmRevealDateMutation = useMutation(api.users.confirmRevealDate);
+    const rejectRevealDateMutation = useMutation(api.users.rejectRevealDate);
     const [showDeadlinePicker, setShowDeadlinePicker] = useState(false);
+    const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
-    const hasDeadline = !!revealDate;
-    const deadlinePassed = hasDeadline && Date.now() >= revealDate;
-    const matchesHidden = hasDeadline && !deadlinePassed;
+    const hasDeadline = !!revealDateInfo?.date;
+    const isConfirmed = revealDateInfo?.confirmed || false;
+    const deadlinePassed = hasDeadline && isConfirmed && Date.now() >= revealDateInfo!.date;
+    const matchesVisible = hasDeadline && isConfirmed && deadlinePassed;
 
     // Match reveal state
     const [showMatchReveal, setShowMatchReveal] = useState(false);
@@ -409,7 +408,8 @@ export const PartnerScreen = () => {
     const handleShare = async () => {
         try {
             await Share.share({
-                message: `Join me on BumpMatch to find a name for Baby ${user?.surname || 'ours'}! Use code: ${inviteCode} or tap: ${inviteLink}`,
+                message: `Join me on BumpMatch to find a name for Baby ${user?.surname || 'ours'}! Use code: ${inviteCode}\n\n${inviteLink}`,
+                url: inviteLink,
             });
         } catch (error) {
             console.log(error);
@@ -511,9 +511,10 @@ export const PartnerScreen = () => {
                             </TouchableOpacity>
                         </View>
 
-                        {/* Reveal Deadline */}
+                        {/* Reveal Date Section */}
                         <View style={styles.section}>
                             {!hasDeadline ? (
+                                /* No date set: show "Set a reveal date" button */
                                 <TouchableOpacity
                                     style={[styles.matchedNameCard, { justifyContent: 'center' }]}
                                     onPress={() => setShowDeadlinePicker(true)}
@@ -523,28 +524,123 @@ export const PartnerScreen = () => {
                                         Set a reveal date for your matches
                                     </Text>
                                 </TouchableOpacity>
-                            ) : matchesHidden ? (
+                            ) : !isConfirmed && revealDateInfo?.proposedByMe ? (
+                                /* Date proposed by ME and not confirmed: waiting for partner */
+                                <View style={[styles.matchedNameCard, { flexDirection: 'column', alignItems: 'center', paddingVertical: 20 }]}>
+                                    <Ionicons name="hourglass-outline" size={32} color="#F59E0B" />
+                                    <Text style={[styles.matchedNameText, { color: isDark ? '#FDE68A' : '#92400E', marginTop: 8, textAlign: 'center', fontSize: 15 }]}>
+                                        Waiting for {partnerInfo.firstName} to confirm
+                                    </Text>
+                                    <Text style={[styles.emptySubtext, { marginTop: 4 }]}>
+                                        {revealDateInfo.date <= Date.now()
+                                            ? 'You proposed to reveal matches now'
+                                            : `Proposed date: ${new Date(revealDateInfo.date).toLocaleDateString('en-ZA', { day: 'numeric', month: 'long', year: 'numeric' })}`
+                                        }
+                                    </Text>
+                                    <TouchableOpacity
+                                        style={{ marginTop: 12 }}
+                                        onPress={async () => {
+                                            if (token) {
+                                                try {
+                                                    await rejectRevealDateMutation({ token });
+                                                } catch (e: any) {
+                                                    Alert.alert('Error', e.message || 'Failed to cancel proposal.');
+                                                }
+                                            }
+                                        }}
+                                    >
+                                        <Text style={{ color: theme.colors.destructive, fontFamily: theme.typography.fontFamilyBold, fontSize: 13 }}>
+                                            Cancel proposal
+                                        </Text>
+                                    </TouchableOpacity>
+                                </View>
+                            ) : !isConfirmed && !revealDateInfo?.proposedByMe ? (
+                                /* Date proposed by PARTNER and not confirmed: show Confirm / Edit */
+                                <View style={[styles.matchedNameCard, { flexDirection: 'column', alignItems: 'center', paddingVertical: 20 }]}>
+                                    <Ionicons name="notifications-outline" size={32} color="#F59E0B" />
+                                    <Text style={[styles.matchedNameText, { color: isDark ? '#FDE68A' : '#92400E', marginTop: 8, textAlign: 'center', fontSize: 15 }]}>
+                                        {partnerInfo.firstName} proposed a reveal date
+                                    </Text>
+                                    <Text style={[styles.emptySubtext, { marginTop: 4 }]}>
+                                        {revealDateInfo!.date <= Date.now()
+                                            ? `${partnerInfo.firstName} wants to reveal matches now`
+                                            : new Date(revealDateInfo!.date).toLocaleDateString('en-ZA', { day: 'numeric', month: 'long', year: 'numeric' })
+                                        }
+                                    </Text>
+                                    <View style={{ flexDirection: 'row', marginTop: 16, gap: 12 }}>
+                                        <TouchableOpacity
+                                            style={{
+                                                backgroundColor: '#10B981',
+                                                paddingHorizontal: 20,
+                                                paddingVertical: 10,
+                                                borderRadius: 8,
+                                            }}
+                                            onPress={async () => {
+                                                if (token) {
+                                                    try {
+                                                        await confirmRevealDateMutation({ token });
+                                                        Alert.alert('Confirmed!', 'The reveal date has been confirmed.');
+                                                    } catch (e: any) {
+                                                        Alert.alert('Error', e.message || 'Failed to confirm.');
+                                                    }
+                                                }
+                                            }}
+                                        >
+                                            <Text style={{ color: '#FFFFFF', fontFamily: theme.typography.fontFamilyBold, fontSize: 14 }}>
+                                                Confirm
+                                            </Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity
+                                            style={{
+                                                backgroundColor: isDark ? '#374151' : '#F3F4F6',
+                                                paddingHorizontal: 20,
+                                                paddingVertical: 10,
+                                                borderRadius: 8,
+                                            }}
+                                            onPress={async () => {
+                                                if (token) {
+                                                    try {
+                                                        await rejectRevealDateMutation({ token });
+                                                        setShowDeadlinePicker(true);
+                                                    } catch (e: any) {
+                                                        Alert.alert('Error', e.message || 'Failed to reject.');
+                                                    }
+                                                }
+                                            }}
+                                        >
+                                            <Text style={{ color: theme.colors.text, fontFamily: theme.typography.fontFamilyBold, fontSize: 14 }}>
+                                                Suggest Different Date
+                                            </Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
+                            ) : isConfirmed && !deadlinePassed ? (
+                                /* Date confirmed but not yet reached: locked state */
                                 <View style={[styles.matchedNameCard, { flexDirection: 'column', alignItems: 'center', paddingVertical: 20 }]}>
                                     <Ionicons name="lock-closed" size={32} color="#F59E0B" />
                                     <Text style={[styles.matchedNameText, { color: isDark ? '#FDE68A' : '#92400E', marginTop: 8, textAlign: 'center' }]}>
                                         {matchedNames?.length || 0} {(matchedNames?.length || 0) === 1 ? 'match' : 'matches'} waiting!
                                     </Text>
                                     <Text style={[styles.emptySubtext, { marginTop: 4 }]}>
-                                        Reveals on {new Date(revealDate!).toLocaleDateString('en-ZA', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                        Reveals on {new Date(revealDateInfo!.date).toLocaleDateString('en-ZA', { day: 'numeric', month: 'long', year: 'numeric' })}
                                     </Text>
                                     <TouchableOpacity
                                         style={{ marginTop: 12 }}
                                         onPress={() => {
                                             Alert.alert(
-                                                'Remove Deadline',
-                                                'Want to see your matches now instead?',
+                                                'Reveal Now',
+                                                'This will send a request to your partner. Both of you must agree to reveal early.',
                                                 [
                                                     { text: 'Keep Waiting', style: 'cancel' },
                                                     {
-                                                        text: 'Reveal Now',
+                                                        text: 'Request Reveal Now',
                                                         onPress: async () => {
                                                             if (token) {
-                                                                await setRevealDateMutation({ token, revealDate: Date.now() - 1000 });
+                                                                try {
+                                                                    await setRevealDateMutation({ token, revealDate: Date.now() });
+                                                                } catch (e: any) {
+                                                                    Alert.alert('Error', e.message || 'Failed to request early reveal.');
+                                                                }
                                                             }
                                                         },
                                                     },
@@ -560,27 +656,77 @@ export const PartnerScreen = () => {
                             ) : null}
 
                             {showDeadlinePicker && (
-                                <View style={{ marginVertical: 8 }}>
+                                <View style={{ marginVertical: 8, alignItems: 'center' }}>
                                     <DateTimePicker
-                                        value={new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)}
+                                        value={selectedDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)}
                                         mode="date"
                                         display={Platform.OS === 'ios' ? 'spinner' : 'default'}
                                         minimumDate={new Date(Date.now() + 24 * 60 * 60 * 1000)}
                                         maximumDate={new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)}
-                                        onChange={async (event, selected) => {
-                                            setShowDeadlinePicker(false);
-                                            if (selected && token) {
-                                                await setRevealDateMutation({ token, revealDate: selected.getTime() });
-                                                Alert.alert('Deadline Set!', `Your matches will be revealed on ${selected.toLocaleDateString('en-ZA', { day: 'numeric', month: 'long', year: 'numeric' })}`);
+                                        onChange={(event, selected) => {
+                                            if (Platform.OS === 'android') {
+                                                if (event.type === 'dismissed') {
+                                                    setShowDeadlinePicker(false);
+                                                    return;
+                                                }
                                             }
+                                            if (selected) setSelectedDate(selected);
                                         }}
                                     />
+                                    {selectedDate && (
+                                        <Text style={{ fontFamily: theme.typography.fontFamilyBold, fontSize: 16, color: theme.colors.text, marginTop: 8 }}>
+                                            {selectedDate.toLocaleDateString('en-ZA', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                        </Text>
+                                    )}
+                                    <View style={{ flexDirection: 'row', gap: 12, marginTop: 16 }}>
+                                        <TouchableOpacity
+                                            style={{
+                                                backgroundColor: isDark ? '#374151' : '#F3F4F6',
+                                                paddingHorizontal: 20,
+                                                paddingVertical: 10,
+                                                borderRadius: 8,
+                                            }}
+                                            onPress={() => {
+                                                setShowDeadlinePicker(false);
+                                                setSelectedDate(null);
+                                            }}
+                                        >
+                                            <Text style={{ color: theme.colors.text, fontFamily: theme.typography.fontFamilyBold, fontSize: 14 }}>
+                                                Cancel
+                                            </Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity
+                                            style={{
+                                                backgroundColor: '#10B981',
+                                                paddingHorizontal: 20,
+                                                paddingVertical: 10,
+                                                borderRadius: 8,
+                                            }}
+                                            onPress={async () => {
+                                                const dateToPropose = selectedDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+                                                if (token) {
+                                                    try {
+                                                        await setRevealDateMutation({ token, revealDate: dateToPropose.getTime() });
+                                                        setShowDeadlinePicker(false);
+                                                        setSelectedDate(null);
+                                                        Alert.alert('Date Proposed!', `Your partner will need to confirm: ${dateToPropose.toLocaleDateString('en-ZA', { day: 'numeric', month: 'long', year: 'numeric' })}`);
+                                                    } catch (e: any) {
+                                                        Alert.alert('Error', e.message || 'Failed to set reveal date.');
+                                                    }
+                                                }
+                                            }}
+                                        >
+                                            <Text style={{ color: '#FFFFFF', fontFamily: theme.typography.fontFamilyBold, fontSize: 14 }}>
+                                                Propose Date
+                                            </Text>
+                                        </TouchableOpacity>
+                                    </View>
                                 </View>
                             )}
                         </View>
 
-                        {/* Matched Names */}
-                        {!matchesHidden && (
+                        {/* Matched Names - only visible when confirmed AND deadline passed */}
+                        {matchesVisible && (
                         <View style={styles.section}>
                             <Text style={styles.sectionTitle}>
                                 <Ionicons name="heart" size={16} color={theme.colors.primary} /> Matched Names
@@ -603,26 +749,6 @@ export const PartnerScreen = () => {
                             )}
                         </View>
                         )}
-
-                        {/* Partner's Likes */}
-                        <View style={styles.section}>
-                            <Text style={styles.sectionTitle}>
-                                {partnerInfo.firstName}'s Liked Names
-                            </Text>
-                            {partnerLikedNames && partnerLikedNames.length > 0 ? (
-                                <View style={styles.likesContainer}>
-                                    {partnerLikedNames.map((name: any, index: number) => (
-                                        <View key={index} style={styles.likeChip}>
-                                            <Text style={styles.likeChipText}>{name.name}</Text>
-                                        </View>
-                                    ))}
-                                </View>
-                            ) : (
-                                <Text style={styles.emptySubtext}>
-                                    Your partner hasn't liked any names yet
-                                </Text>
-                            )}
-                        </View>
                     </>
                 ) : (
                     // Not Connected State

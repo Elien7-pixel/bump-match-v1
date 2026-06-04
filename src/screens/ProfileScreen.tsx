@@ -12,6 +12,14 @@ import { Button } from '../components/Button';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const formatDate = (dateStr: string) => {
+  try {
+    const d = new Date(dateStr);
+    return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+  } catch { return dateStr; }
+};
+
 const AVATAR_OPTIONS = [
   { id: 'default', icon: 'person', color: '#3B82F6' },
   { id: 'heart', icon: 'heart', color: '#EC4899' },
@@ -527,6 +535,7 @@ export const ProfileScreen = () => {
               value={editFirstName}
               onChangeText={setEditFirstName}
               placeholder="e.g. Naledi"
+              autoCapitalize="words"
             />
 
             <Input
@@ -534,6 +543,7 @@ export const ProfileScreen = () => {
               value={editSurname}
               onChangeText={setEditSurname}
               placeholder="e.g. Ndlovu"
+              autoCapitalize="words"
             />
 
             <Text style={styles.label}>Date of Birth</Text>
@@ -542,7 +552,7 @@ export const ProfileScreen = () => {
               style={{ backgroundColor: theme.colors.card, borderRadius: 12, padding: 14, marginBottom: 4, borderWidth: 1, borderColor: theme.colors.border }}
             >
               <Text style={{ color: editAge ? theme.colors.text : theme.colors.grey, fontSize: 16, fontFamily: theme.typography.fontFamily }}>
-                {editAge ? new Date(editAge).toLocaleDateString('en-ZA', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Select your date of birth'}
+                {editAge ? formatDate(editAge) : 'Select your date of birth'}
               </Text>
             </TouchableOpacity>
             {showDobPicker && (
@@ -603,7 +613,7 @@ export const ProfileScreen = () => {
                 >
                   <Text style={{ color: editDueDate ? theme.colors.text : theme.colors.grey, fontSize: 16, fontFamily: theme.typography.fontFamily }}>
                     {editDueDate
-                      ? (() => { try { return new Date(editDueDate).toLocaleDateString('en-ZA', { day: 'numeric', month: 'long', year: 'numeric' }); } catch { return editDueDate; } })()
+                      ? formatDate(editDueDate)
                       : 'Select your due date'}
                   </Text>
                 </TouchableOpacity>
@@ -696,8 +706,7 @@ export const ProfileScreen = () => {
                           let years = today.getFullYear() - d.getFullYear();
                           const monthDiff = today.getMonth() - d.getMonth();
                           if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < d.getDate())) years--;
-                          const formatted = d.toLocaleDateString('en-ZA', { day: 'numeric', month: 'long', year: 'numeric' });
-                          return `${formatted} (${years} yrs)`;
+                          return `${formatDate((profile as any).age)} (${years} yrs)`;
                         } catch { return (profile as any).age; }
                       })()
                     : 'Not set'}
@@ -722,7 +731,7 @@ export const ProfileScreen = () => {
                 <Text style={styles.valueText}>{profile.status || 'Not set'}</Text>
                 {profile.status === 'Expecting soon' && profile.dueDate ? (
                   <Text style={[styles.valueText, { fontSize: 13, color: theme.colors.grey, marginTop: 4 }]}>
-                    Due: {(() => { try { return new Date(profile.dueDate).toLocaleDateString('en-ZA', { day: 'numeric', month: 'long', year: 'numeric' }); } catch { return profile.dueDate; } })()}
+                    Due: {formatDate(profile.dueDate)}
                   </Text>
                 ) : null}
               </View>

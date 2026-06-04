@@ -36,7 +36,7 @@ export const LikedNamesScreen = () => {
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [showGenderDropdown, setShowGenderDropdown] = useState(false);
   const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
-  const surname = user?.surname || '';
+  const surname = (user?.surname || '').replace(/^./, (c) => c.toUpperCase());
   const cardRefs = useRef<{ [key: string]: any }>({});
 
   const handleShareName = async (item: LikedNameWithFavorite) => {
@@ -123,12 +123,12 @@ export const LikedNamesScreen = () => {
 
   const handleClearAllFavorites = () => {
     Alert.alert(
-      'Clear All Favorites',
-      `Are you sure you want to unfavorite all ${favoriteCount} names? They will remain in your liked list.`,
+      'Clear All Favourites',
+      `Are you sure you want to unfavourite all ${favoriteCount} names? They will remain in your liked list.`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Clear Favorites',
+          text: 'Clear Favourites',
           style: 'destructive',
           onPress: async () => {
             setLikedNames(prev => prev.map(n => ({ ...n, isFavorite: false })));
@@ -255,12 +255,6 @@ export const LikedNamesScreen = () => {
       fontFamily: theme.typography.fontFamilyBold,
       color: isDark ? '#FFFFFF' : theme.colors.primary,
     },
-    cardSurname: {
-      fontFamily: theme.typography.fontFamilyBold,
-      fontSize: 24,
-      color: theme.colors.textLight,
-      textAlign: 'center',
-    },
     shareButton: {
       position: 'absolute',
       bottom: 8,
@@ -317,13 +311,19 @@ export const LikedNamesScreen = () => {
     },
     cardContent: {
       flex: 1,
-      justifyContent: 'space-between',
+    },
+    nameBlock: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     cardName: {
       fontFamily: theme.typography.fontFamilyBold,
-      fontSize: 24,
+      fontSize: 22,
       color: theme.colors.textLight,
       textAlign: 'center',
+      lineHeight: 26,
+      paddingHorizontal: 4,
     },
     cardGender: {
       fontFamily: theme.typography.fontFamily,
@@ -336,6 +336,7 @@ export const LikedNamesScreen = () => {
       backgroundColor: 'rgba(255, 255, 255, 0.2)',
       borderRadius: theme.borderRadius.m,
       padding: theme.spacing.s,
+      marginBottom: theme.spacing.s,
     },
     cardMeaning: {
       fontFamily: theme.typography.fontFamily,
@@ -431,36 +432,20 @@ export const LikedNamesScreen = () => {
     },
   }), [theme, isDark]);
 
+  // Convex is the source of truth — handles both populated and empty.
   useEffect(() => {
-    loadLikedNames();
-  }, []);
-
-  // Sync with Convex data
-  useEffect(() => {
-    if (convexLikedNames && convexLikedNames.length > 0) {
-      const formattedNames: LikedNameWithFavorite[] = convexLikedNames.map((ln: any) => ({
-        id: ln.id,
-        name: ln.name,
-        gender: ln.gender,
-        origin: ln.origin,
-        meaning: ln.meaning,
-        language: ln.language,
-        isFavorite: ln.isFavorite || false,
-      }));
-      setLikedNames(formattedNames);
-    }
+    if (convexLikedNames === undefined) return;
+    const formattedNames: LikedNameWithFavorite[] = convexLikedNames.map((ln: any) => ({
+      id: ln.id,
+      name: ln.name,
+      gender: ln.gender,
+      origin: ln.origin,
+      meaning: ln.meaning,
+      language: ln.language,
+      isFavorite: ln.isFavorite || false,
+    }));
+    setLikedNames(formattedNames);
   }, [convexLikedNames]);
-
-  const loadLikedNames = async () => {
-    try {
-      const json = await AsyncStorage.getItem('bumpmatch_liked_names');
-      if (json) {
-        setLikedNames(JSON.parse(json));
-      }
-    } catch (e) {
-      console.log('Error loading liked names', e);
-    }
-  };
 
   const handleToggleFavorite = async (nameId: string) => {
     // Optimistic update
@@ -547,14 +532,15 @@ export const LikedNamesScreen = () => {
           </TouchableOpacity>
 
           <View style={styles.cardContent}>
-            <Text style={styles.cardName}>{item.name}</Text>
-            {surname ? (
-              <Text style={styles.cardSurname}>{surname}</Text>
-            ) : null}
-            <Text style={styles.cardGender}>{item.gender.toUpperCase()}</Text>
             <View style={styles.cardInfo}>
               <Text style={styles.cardMeaning} numberOfLines={2}>{item.meaning}</Text>
               <Text style={styles.cardOrigin}>{item.origin}</Text>
+            </View>
+            <View style={styles.nameBlock}>
+              <Text style={styles.cardName} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.5}>
+                {surname ? `${item.name} ${surname}` : item.name}
+              </Text>
+              <Text style={styles.cardGender}>{item.gender.toUpperCase()}</Text>
             </View>
           </View>
         </LinearGradient>
@@ -584,7 +570,7 @@ export const LikedNamesScreen = () => {
                 'What would you like to do?',
                 [
                   { text: 'Cancel', style: 'cancel' },
-                  ...(favoriteCount > 0 ? [{ text: 'Clear All Favorites', onPress: handleClearAllFavorites }] : []),
+                  ...(favoriteCount > 0 ? [{ text: 'Clear All Favourites', onPress: handleClearAllFavorites }] : []),
                   { text: 'Clear All Liked Names', style: 'destructive' as const, onPress: handleClearAllLiked },
                 ]
               );
@@ -612,7 +598,7 @@ export const LikedNamesScreen = () => {
         <View style={styles.favoritesSection}>
           <Ionicons name="star" size={24} color="#F59E0B" />
           <Text style={styles.favoritesSectionText}>
-            {favoriteCount} {favoriteCount === 1 ? 'favorite' : 'favorites'}
+            {favoriteCount} {favoriteCount === 1 ? 'favourite' : 'favourites'}
           </Text>
         </View>
       )}
@@ -625,7 +611,22 @@ export const LikedNamesScreen = () => {
             style={styles.dropdown}
             onPress={() => { setShowGenderDropdown(!showGenderDropdown); setShowLanguageDropdown(false); }}
           >
-            <Ionicons name="male-female-outline" size={14} color={theme.colors.primary} style={{ marginRight: 4 }} />
+            <Ionicons
+              name={
+                genderFilter === 'boy' ? 'male' :
+                genderFilter === 'girl' ? 'female' :
+                genderFilter === 'unisex' ? 'help' :
+                'male-female-outline'
+              }
+              size={14}
+              color={
+                genderFilter === 'boy' ? theme.colors.boyBlue :
+                genderFilter === 'girl' ? theme.colors.girlPink :
+                genderFilter === 'unisex' ? theme.colors.neutralBeige :
+                theme.colors.primary
+              }
+              style={{ marginRight: 4 }}
+            />
             <Text style={styles.dropdownText}>
               {genderFilter === 'all' ? 'All Genders' : genderFilter === 'unisex' ? 'Neutral' : genderFilter.charAt(0).toUpperCase() + genderFilter.slice(1)}
             </Text>
@@ -706,7 +707,7 @@ export const LikedNamesScreen = () => {
             {likedNames.length > 0 ? 'No names match this filter' : 'No liked names yet'}
           </Text>
           <Text style={styles.emptySubtext}>
-            {likedNames.length > 0 ? 'Try changing the filter' : 'Start swiping to add your favorites!'}
+            {likedNames.length > 0 ? 'Try changing the filter' : 'Start swiping to add your favourites!'}
           </Text>
         </View>
       )}

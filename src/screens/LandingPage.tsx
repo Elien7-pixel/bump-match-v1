@@ -96,6 +96,9 @@ const glassStyles = StyleSheet.create({
   },
 });
 
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const formatDate = (d: Date) => `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+
 export const LandingPage = () => {
   const navigation = useNavigation<any>();
   const { theme } = useTheme();
@@ -484,8 +487,8 @@ export const LandingPage = () => {
 
       {/* Dark gradient overlay */}
       <LinearGradient
-        colors={['transparent', 'rgba(0,0,0,0.2)', 'rgba(0,0,0,0.5)']}
-        locations={[0, 0.5, 1]}
+        colors={['transparent', 'rgba(0,0,0,0.15)', 'rgba(0,0,0,0.5)', 'rgba(0,0,0,0.85)']}
+        locations={[0, 0.3, 0.55, 1]}
         style={pageStyles.darkOverlay}
       />
 
@@ -587,6 +590,7 @@ export const LandingPage = () => {
                   placeholder="e.g. Naledi"
                   textContentType="givenName"
                   autoComplete="given-name"
+                  autoCapitalize="words"
                   labelStyle={{ color: '#FFFFFF' }}
                   style={{ backgroundColor: 'rgba(255,255,255,0.9)', color: '#333' }}
                 />
@@ -598,6 +602,7 @@ export const LandingPage = () => {
                   placeholder="e.g. Ndlovu"
                   textContentType="familyName"
                   autoComplete="family-name"
+                  autoCapitalize="words"
                   labelStyle={{ color: '#FFFFFF' }}
                   style={{ backgroundColor: 'rgba(255,255,255,0.9)', color: '#333' }}
                 />
@@ -608,7 +613,7 @@ export const LandingPage = () => {
                   style={{ backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: 12, padding: 14, marginBottom: 4 }}
                 >
                   <Text style={{ color: dateOfBirth ? '#333' : '#999', fontSize: 16, fontFamily: theme.typography.fontFamily }}>
-                    {dateOfBirth ? dateOfBirth.toLocaleDateString('en-ZA', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Select your date of birth'}
+                    {dateOfBirth ? formatDate(dateOfBirth) : 'Select your date of birth'}
                   </Text>
                 </TouchableOpacity>
                 {showDatePicker && (
@@ -674,17 +679,25 @@ export const LandingPage = () => {
 
                 <Text style={pageStyles.label}>What are you expecting?</Text>
                 <View style={pageStyles.row}>
-                  {(['boy', 'girl', 'unknown'] as const).map((e) => (
-                    <TouchableOpacity
-                      key={e}
-                      style={[pageStyles.option, expecting === e && pageStyles.optionSelected]}
-                      onPress={() => setExpecting(e)}
-                    >
-                      <Text style={[pageStyles.optionText, expecting === e && pageStyles.optionTextSelected]}>
-                        {e === 'unknown' ? "Don't Know" : e.charAt(0).toUpperCase() + e.slice(1)}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
+                  {(['boy', 'girl', 'unknown'] as const).map((e) => {
+                    const iconName = e === 'boy' ? 'male' : e === 'girl' ? 'female' : 'help';
+                    const iconColor = expecting === e
+                      ? '#FFFFFF'
+                      : e === 'boy'
+                        ? theme.colors.boyBlue
+                        : e === 'girl'
+                          ? theme.colors.girlPink
+                          : theme.colors.neutralBeige;
+                    return (
+                      <TouchableOpacity
+                        key={e}
+                        style={[pageStyles.option, expecting === e && pageStyles.optionSelected]}
+                        onPress={() => setExpecting(e)}
+                      >
+                        <Ionicons name={iconName as any} size={28} color={iconColor} />
+                      </TouchableOpacity>
+                    );
+                  })}
                 </View>
 
                 <Text style={pageStyles.label}>Status</Text>
@@ -710,7 +723,7 @@ export const LandingPage = () => {
                       style={{ backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: 12, padding: 14, marginBottom: 4 }}
                     >
                       <Text style={{ color: dueDate ? '#333' : '#999', fontSize: 16, fontFamily: theme.typography.fontFamily }}>
-                        {dueDate ? dueDate.toLocaleDateString('en-ZA', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Select your due date'}
+                        {dueDate ? formatDate(dueDate) : 'Select your due date'}
                       </Text>
                     </TouchableOpacity>
                     {showDueDatePicker && (

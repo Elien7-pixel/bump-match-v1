@@ -1,6 +1,6 @@
 import 'react-native-gesture-handler';
-import React, { useEffect, useState } from 'react';
-import { NavigationContainer, LinkingOptions } from '@react-navigation/native';
+import React, { useEffect, useRef, useState } from 'react';
+import { NavigationContainer, LinkingOptions, NavigationContainerRef } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFonts, Inter_400Regular, Inter_700Bold } from '@expo-google-fonts/inter';
@@ -14,9 +14,21 @@ import { ProfileScreen } from './src/screens/ProfileScreen';
 import { LikedNamesScreen } from './src/screens/LikedNamesScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
 import { PartnerScreen } from './src/screens/PartnerScreen';
+import { DictionaryScreen } from './src/screens/DictionaryScreen';
 import { AppTokens } from './src/theme/designTokens';
 import { ThemeProvider } from './src/context/ThemeContext';
 import { AuthProvider } from './src/context/AuthContext';
+let usePushNotifications: any;
+let getNotificationData: any;
+try {
+  const mod = require('./src/hooks/usePushNotifications');
+  usePushNotifications = mod.usePushNotifications;
+  getNotificationData = mod.getNotificationData;
+} catch (e) {
+  console.log('Push notifications not available:', e);
+  usePushNotifications = () => ({ expoPushToken: null, notification: null });
+  getNotificationData = () => null;
+}
 
 // Initialize Convex client
 const convexUrl = process.env.EXPO_PUBLIC_CONVEX_URL || 'https://silent-ermine-169.convex.cloud';
@@ -44,6 +56,20 @@ function AppContent() {
   });
 
   const [initialRoute, setInitialRoute] = useState<string | null>(null);
+  const navigationRef = useRef<NavigationContainerRef<any>>(null);
+
+  // Initialize push notifications
+  const { notification } = usePushNotifications();
+
+  // Handle navigation when a notification is tapped
+  useEffect(() => {
+    if (notification) {
+      const data = getNotificationData(notification);
+      if (data?.screen && navigationRef.current) {
+        navigationRef.current.navigate(data.screen);
+      }
+    }
+  }, [notification]);
 
   useEffect(() => {
     checkOnboarding();
@@ -73,7 +99,7 @@ function AppContent() {
   }
 
   return (
-    <NavigationContainer linking={linking}>
+    <NavigationContainer ref={navigationRef} linking={linking}>
       <Stack.Navigator
         initialRouteName={initialRoute}
         screenOptions={{ headerShown: false }}
@@ -84,6 +110,7 @@ function AppContent() {
         <Stack.Screen name="LikedNames" component={LikedNamesScreen} />
         <Stack.Screen name="Settings" component={SettingsScreen} />
         <Stack.Screen name="Partner" component={PartnerScreen} />
+        <Stack.Screen name="Dictionary" component={DictionaryScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

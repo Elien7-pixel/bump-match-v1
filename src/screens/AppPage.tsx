@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, StatusBar, Alert, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useMutation, useQuery, useAction } from 'convex/react';
+import { useMutation, useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 
 import { CardStack } from '../components/CardStack';
@@ -48,28 +48,17 @@ export const AppPage = () => {
   const [languagePickerVisible, setLanguagePickerVisible] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
   const [showSubmitModal, setShowSubmitModal] = useState(false);
-  const [isSearching, setIsSearching] = useState(false);
-  const [searchDebounceTimer, setSearchDebounceTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
-
-  // Convex mutations & actions
+  // Convex mutations
   const likeNameMutation = useMutation(api.names.likeName);
   const unlikeNameMutation = useMutation(api.names.unlikeName);
-  const vectorSearch = useAction(api.search.searchNames);
+  const likeAndFavoriteMutation = useMutation(api.names.likeAndFavorite);
 
   // Convex queries
   const convexLikedNames = useQuery(
     api.names.getLikedNames,
     token ? { token } : "skip"
   );
-  const matchedNames = useQuery(
-    api.names.getMatchedNames,
-    token ? { token } : "skip"
-  );
-  // Partner's liked names for prioritization
-  const partnerLikedNames = useQuery(
-    api.names.getPartnerLikedNames,
-    token && user?.partnerId ? { token } : "skip"
-  );
+  // Note: matchedNames and partnerLikedNames removed — matches only visible in Partner section
 
   useEffect(() => {
     loadProfile();
@@ -106,55 +95,9 @@ export const AppPage = () => {
     }
   }, [convexLikedNames]);
 
-  // Debounced vector search when typing
   useEffect(() => {
-    if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
-
-    if (meaningSearch.trim().length >= 2) {
-      const timer = setTimeout(() => {
-        performVectorSearch(meaningSearch.trim());
-      }, 500);
-      setSearchDebounceTimer(timer);
-    } else {
-      loadNames();
-    }
-
-    return () => { if (searchDebounceTimer) clearTimeout(searchDebounceTimer); };
-  }, [meaningSearch]);
-
-  useEffect(() => {
-    if (!meaningSearch.trim()) loadNames();
-  }, [genderFilter, languageFilter, popularOnly, celebrityOnly]);
-
-  const performVectorSearch = async (query: string) => {
-    setIsSearching(true);
-    try {
-      const results = await vectorSearch({
-        query,
-        gender: genderFilter !== 'all' ? genderFilter : undefined,
-        limit: 20,
-      });
-
-      // Map vector results back to BabyName objects from static data
-      const resultNameIds = new Set(results.map((r: any) => r.nameId));
-      const allNames = getRandomNames(1000, {}); // get all names
-      const matched = allNames
-        .filter((n) => resultNameIds.has(n.id))
-        .filter((n) => !swipedNameStrings.has(n.name.toLowerCase()));
-
-      // Sort by vector search order
-      const orderMap = new Map(results.map((r: any, i: number) => [r.nameId, i]));
-      matched.sort((a, b) => (orderMap.get(a.id) ?? 999) - (orderMap.get(b.id) ?? 999));
-
-      setNames(matched.length > 0 ? matched : []);
-      setCardHistory([]);
-    } catch (e) {
-      console.log('Vector search failed, falling back to local:', e);
-      loadNames();
-    } finally {
-      setIsSearching(false);
-    }
-  };
+    loadNames();
+  }, [genderFilter, languageFilter, meaningSearch, popularOnly, celebrityOnly]);
 
   const loadProfile = async () => {
     try {
@@ -218,27 +161,18 @@ export const AppPage = () => {
     // Build exclude names from cross-view swiped set
     const excludeNames = [...swipedNameStrings];
 
-    let newNames = getRandomNames(20, {
+    const newNames = getRandomNames(20, {
       gender: genderFilter,
       language: languageFilter,
       excludeNames,
+      meaningSearch: meaningSearch || undefined,
       popularOnly,
       celebrityOnly,
     });
 
-    // Partner prioritization: if partner is linked, sort names the partner has liked to the front
-    if (partnerLikedNames && partnerLikedNames.length > 0) {
-      const partnerNameSet = new Set(partnerLikedNames.map((n: any) => n.name.toLowerCase()));
-      newNames.sort((a, b) => {
-        const aPartner = partnerNameSet.has(a.name.toLowerCase()) ? 0 : 1;
-        const bPartner = partnerNameSet.has(b.name.toLowerCase()) ? 0 : 1;
-        return aPartner - bPartner;
-      });
-    }
-
     setNames(newNames);
     setCardHistory([]);
-  }, [genderFilter, languageFilter, popularOnly, celebrityOnly, swipedNameStrings, partnerLikedNames]);
+  }, [genderFilter, languageFilter, meaningSearch, popularOnly, celebrityOnly, swipedNameStrings]);
 
   const handleSwipeRight = async (name: BabyName) => {
     const updated = [...likedNames, name];
@@ -267,6 +201,36 @@ export const AppPage = () => {
         });
       } catch (e) {
         console.log('Error saving like to Convex', e);
+      }
+    }
+  };
+
+  const handleFavoriteFromCard = async (name: BabyName) => {
+    // Star button on the swipe card: like + favourite in one atomic mutation.
+    const updated = [...likedNames, name];
+    setLikedNames(updated);
+    saveLikedNames(updated);
+    setCardHistory([...cardHistory, name]);
+    setNames(prev => prev.filter(n => n.id !== name.id));
+
+    const newSwiped = new Set(swipedNameStrings);
+    newSwiped.add(name.name.toLowerCase());
+    setSwipedNameStrings(newSwiped);
+    persistSwipedNames(newSwiped);
+
+    if (token) {
+      try {
+        await likeAndFavoriteMutation({
+          token,
+          nameId: name.id,
+          name: name.name,
+          gender: name.gender,
+          origin: name.origin,
+          meaning: name.meaning,
+          language: name.language,
+        });
+      } catch (e) {
+        console.log('Error favouriting from card', e);
       }
     }
   };
@@ -324,14 +288,12 @@ export const AppPage = () => {
       language: languageFilter,
       excludeIds: [...likedNames, ...dislikedNames].map(n => n.id),
       excludeNames,
+      meaningSearch: meaningSearch || undefined,
       popularOnly,
       celebrityOnly,
     });
     setNames(prev => [...prev, ...moreNames]);
   };
-
-  // Check for new matches
-  const matchCount = matchedNames?.length || 0;
 
   // Language filter display text
   const languageDisplayText = languageFilter.includes('All') || languageFilter.length === 0
@@ -363,23 +325,6 @@ export const AppPage = () => {
       fontFamily: theme.typography.fontFamilyBold,
       color: theme.colors.primary,
       fontSize: 20
-    },
-    matchBadge: {
-      position: 'absolute',
-      top: 0,
-      right: 0,
-      backgroundColor: '#10B981',
-      borderRadius: 10,
-      minWidth: 20,
-      height: 20,
-      alignItems: 'center',
-      justifyContent: 'center',
-      paddingHorizontal: 4,
-    },
-    matchBadgeText: {
-      color: '#FFFFFF',
-      fontSize: 12,
-      fontFamily: theme.typography.fontFamilyBold,
     },
     filterBar: {
       flexDirection: 'row',
@@ -525,13 +470,6 @@ export const AppPage = () => {
       paddingBottom: theme.spacing.m,
       fontFamily: theme.typography.fontFamily
     },
-    matchIndicator: {
-      textAlign: 'center',
-      fontSize: 14,
-      color: '#10B981',
-      fontFamily: theme.typography.fontFamilyBold,
-      marginBottom: theme.spacing.s,
-    }
   }), [theme]);
 
   return (
@@ -540,14 +478,13 @@ export const AppPage = () => {
 
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.iconButton} onPress={() => setInviteVisible(true)}>
-          <Ionicons name="person-add-outline" size={24} color={theme.colors.primary} />
-          {matchCount > 0 && (
-            <View style={styles.matchBadge}>
-              <Text style={styles.matchBadgeText}>{matchCount}</Text>
-            </View>
-          )}
-        </TouchableOpacity>
+        {user?.partnerId ? (
+          <View style={styles.iconButton} />
+        ) : (
+          <TouchableOpacity style={styles.iconButton} onPress={() => setInviteVisible(true)}>
+            <Ionicons name="person-add-outline" size={24} color={theme.colors.primary} />
+          </TouchableOpacity>
+        )}
 
         <View style={styles.logoContainer}>
           <LogoText size="small" />
@@ -557,13 +494,6 @@ export const AppPage = () => {
           <Ionicons name="menu-outline" size={24} color={theme.colors.grey} />
         </TouchableOpacity>
       </View>
-
-      {/* Match indicator */}
-      {matchCount > 0 && (
-        <Text style={styles.matchIndicator}>
-          {matchCount} {matchCount === 1 ? 'match' : 'matches'} with your partner!
-        </Text>
-      )}
 
       {/* Pregnancy tracker */}
       {dueDate && <PregnancyTracker dueDate={dueDate} />}
@@ -596,18 +526,13 @@ export const AppPage = () => {
 
       {/* Search & Popular Filter */}
       <View style={styles.searchBar}>
-        <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
-          <TextInput
-            style={[styles.searchInput, { flex: 1 }]}
-            placeholder="Search names by meaning..."
-            placeholderTextColor={theme.colors.grey}
-            value={meaningSearch}
-            onChangeText={setMeaningSearch}
-          />
-          {isSearching && (
-            <Ionicons name="search" size={16} color={theme.colors.primary} style={{ position: 'absolute', right: 10 }} />
-          )}
-        </View>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search by meaning..."
+          placeholderTextColor={theme.colors.grey}
+          value={meaningSearch}
+          onChangeText={setMeaningSearch}
+        />
         <TouchableOpacity
           style={[styles.popularToggle, popularOnly && styles.popularToggleActive]}
           onPress={() => { setPopularOnly(!popularOnly); if (!popularOnly) setCelebrityOnly(false); }}
@@ -633,6 +558,7 @@ export const AppPage = () => {
             onSwipeRight={handleSwipeRight}
             onSwipeLeft={handleSwipeLeft}
             onEmpty={handleEmpty}
+            onFavorite={handleFavoriteFromCard}
           />
         ) : (
           <View style={styles.emptyState}>
@@ -647,7 +573,7 @@ export const AppPage = () => {
       {/* Action Buttons */}
       <View style={styles.actions}>
         <TouchableOpacity style={[styles.actionBtn, styles.rewindBtn]} onPress={handleRewind}>
-          <Ionicons name="reload" size={24} color="#F59E0B" />
+          <Ionicons name="arrow-undo" size={22} color="#F59E0B" />
         </TouchableOpacity>
 
         <TouchableOpacity style={[styles.actionBtn, styles.dislikeBtn]} onPress={() => {

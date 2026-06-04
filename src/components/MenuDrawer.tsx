@@ -9,14 +9,14 @@ import { useTheme } from '../context/ThemeContext';
 interface MenuDrawerProps {
   visible: boolean;
   onClose: () => void;
-  onNavigate: (screen: 'Profile' | 'LikedNames' | 'Settings' | 'Partner' | 'Landing') => void;
+  onNavigate: (screen: 'Profile' | 'LikedNames' | 'Settings' | 'Partner' | 'Landing' | 'Dictionary') => void;
   onSuggestName?: () => void;
 }
 
 export const MenuDrawer: React.FC<MenuDrawerProps> = ({ visible, onClose, onNavigate, onSuggestName }) => {
   const { theme, isDark } = useTheme();
 
-  const handleNavigation = (screen: 'Profile' | 'LikedNames' | 'Settings' | 'Partner') => {
+  const handleNavigation = (screen: 'Profile' | 'LikedNames' | 'Settings' | 'Partner' | 'Dictionary') => {
     onNavigate(screen);
     onClose();
   };
@@ -158,6 +158,15 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({ visible, onClose, onNavi
               >
                 <Ionicons name="people-outline" size={24} color={theme.colors.primary} />
                 <Text style={styles.menuText}>Partner</Text>
+                <Ionicons name="chevron-forward" size={20} color={theme.colors.grey} />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.menuItem}
+                onPress={() => handleNavigation('Dictionary')}
+              >
+                <Ionicons name="book-outline" size={24} color={theme.colors.primary} />
+                <Text style={styles.menuText}>Name Dictionary</Text>
                 <Ionicons name="chevron-forward" size={20} color={theme.colors.grey} />
               </TouchableOpacity>
 

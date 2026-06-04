@@ -8,12 +8,16 @@ import { useAuth } from '../context/AuthContext';
 
 interface NameCardProps {
   data: BabyName;
+  onFavorite?: (name: BabyName) => void;
+  isFavorited?: boolean;
 }
 
-export const NameCard: React.FC<NameCardProps> = ({ data }) => {
+const capitalize = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
+
+export const NameCard: React.FC<NameCardProps> = ({ data, onFavorite, isFavorited }) => {
   const { theme } = useTheme();
   const { user } = useAuth();
-  const surname = user?.surname || '';
+  const surname = capitalize(user?.surname || '');
   const { width } = useWindowDimensions();
   const CARD_WIDTH = Math.min(width * 0.82, 400);
   const CARD_HEIGHT = CARD_WIDTH * 1.3;
@@ -53,21 +57,15 @@ export const NameCard: React.FC<NameCardProps> = ({ data }) => {
     },
     name: {
       fontFamily: theme.typography.fontFamilyBold,
-      fontSize: 48,
+      fontSize: 44,
       color: theme.colors.textLight,
       textShadowColor: 'rgba(0, 0, 0, 0.2)',
       textShadowOffset: { width: 1, height: 1 },
       textShadowRadius: 5,
+      lineHeight: 48,
+      textAlign: 'center',
       marginBottom: theme.spacing.s,
-    },
-    surname: {
-      fontFamily: theme.typography.fontFamilyBold,
-      fontSize: 48,
-      color: theme.colors.textLight,
-      textShadowColor: 'rgba(0, 0, 0, 0.2)',
-      textShadowOffset: { width: 1, height: 1 },
-      textShadowRadius: 5,
-      marginBottom: theme.spacing.s,
+      paddingHorizontal: theme.spacing.s,
     },
     details: {
       fontFamily: theme.typography.fontFamily,
@@ -129,7 +127,19 @@ export const NameCard: React.FC<NameCardProps> = ({ data }) => {
       height: 32,
       alignItems: 'center',
       justifyContent: 'center',
-    }
+    },
+    favoriteButton: {
+      position: 'absolute',
+      top: theme.spacing.m,
+      left: theme.spacing.m,
+      zIndex: 10,
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      backgroundColor: 'rgba(0, 0, 0, 0.25)',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
   }), [theme]);
 
   return (
@@ -140,6 +150,18 @@ export const NameCard: React.FC<NameCardProps> = ({ data }) => {
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       >
+        {onFavorite ? (
+          <TouchableOpacity
+            style={styles.favoriteButton}
+            onPress={() => onFavorite(data)}
+          >
+            <Ionicons
+              name={isFavorited ? 'star' : 'star-outline'}
+              size={22}
+              color={isFavorited ? '#F59E0B' : '#FFFFFF'}
+            />
+          </TouchableOpacity>
+        ) : null}
         {data.celebrity ? (
           <TouchableOpacity
             style={styles.infoButton}
@@ -149,10 +171,9 @@ export const NameCard: React.FC<NameCardProps> = ({ data }) => {
           </TouchableOpacity>
         ) : null}
         <View style={styles.content}>
-          <Text style={styles.name} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.5}>{data.name}</Text>
-          {surname ? (
-            <Text style={styles.surname}>{surname}</Text>
-          ) : null}
+          <Text style={styles.name} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.4}>
+            {surname ? `${data.name} ${surname}` : data.name}
+          </Text>
           <Text style={styles.details}>{data.gender.toUpperCase()}</Text>
 
           <View style={styles.infoBox}>

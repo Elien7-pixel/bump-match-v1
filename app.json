@@ -2,7 +2,7 @@
   "expo": {
     "name": "Bump Match",
     "slug": "bump-match",
-    "version": "1.0.1",
+    "version": "1.0.5",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -14,7 +14,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.orbitai.bumpmatch",
+      "bundleIdentifier": "com.sherbetagency.bumpmatch",
       "buildNumber": "1",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
@@ -28,7 +28,7 @@
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.orbitai.bumpmatch",
-      "versionCode": 2
+      "versionCode": 7
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -41,7 +41,14 @@
     "owner": "elien7",
     "scheme": "bumpmatch",
     "plugins": [
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#C850C0"
+        }
+      ]
     ]
   }
 }

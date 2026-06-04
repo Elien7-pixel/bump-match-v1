@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { Id, Doc } from "./_generated/dataModel";
+import { internal } from "./_generated/api";
 
 // Helper to get user from token
 async function getUserFromToken(ctx: any, token: string): Promise<Doc<"users"> | null> {
@@ -99,6 +100,23 @@ export const updateProfile = mutation({
   },
 });
 
+export const registerPushToken = mutation({
+  args: {
+    token: v.string(),
+    pushToken: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const user = await getUserFromToken(ctx, args.token);
+    if (!user) {
+      throw new Error("Not authenticated");
+    }
+
+    await ctx.db.patch(user._id, { pushToken: args.pushToken });
+
+    return { success: true };
+  },
+});
+
 export const connectPartner = mutation({
   args: {
     token: v.string(),
@@ -135,6 +153,20 @@ export const connectPartner = mutation({
     // Connect both users
     await ctx.db.patch(user._id, { partnerId: partner._id });
     await ctx.db.patch(partner._id, { partnerId: user._id });
+
+    // Notify both users about the connection
+    await ctx.scheduler.runAfter(0, internal.pushNotifications.notifyUser, {
+      userId: partner._id,
+      title: "You're connected!",
+      body: `You're now connected with ${user.firstName}!`,
+      data: { screen: "Partner" },
+    });
+    await ctx.scheduler.runAfter(0, internal.pushNotifications.notifyUser, {
+      userId: user._id,
+      title: "You're connected!",
+      body: `You're now connected with ${partner.firstName}!`,
+      data: { screen: "Partner" },
+    });
 
     return {
       success: true,
@@ -208,12 +240,112 @@ export const setMatchRevealDate = mutation({
       throw new Error("Not authenticated");
     }
 
-    await ctx.db.patch(user._id, { matchRevealDate: args.revealDate });
-
-    // Also set on partner if connected
-    if (user.partnerId) {
-      await ctx.db.patch(user.partnerId, { matchRevealDate: args.revealDate });
+    if (!user.partnerId) {
+      throw new Error("You must be connected with a partner to set a reveal date");
     }
+
+    // Set the date on both users, mark as proposed by current user and pending confirmation
+    await ctx.db.patch(user._id, {
+      matchRevealDate: args.revealDate,
+      revealDateProposedBy: user._id,
+      revealDateConfirmed: false,
+    });
+
+    await ctx.db.patch(user.partnerId, {
+      matchRevealDate: args.revealDate,
+      revealDateProposedBy: user._id,
+      revealDateConfirmed: false,
+    });
+
+    // Notify partner about the proposed reveal date
+    const dateStr = new Date(args.revealDate).toLocaleDateString("en-ZA", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+    await ctx.scheduler.runAfter(0, internal.pushNotifications.notifyPartner, {
+      userId: user._id,
+      title: "Reveal Date Proposed",
+      body: `${user.firstName} proposed a reveal date: ${dateStr}. Open BumpMatch to confirm.`,
+      data: { screen: "Partner" },
+    });
+
+    return { success: true };
+  },
+});
+
+export const confirmRevealDate = mutation({
+  args: {
+    token: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const user = await getUserFromToken(ctx, args.token);
+    if (!user) {
+      throw new Error("Not authenticated");
+    }
+
+    if (!user.partnerId) {
+      throw new Error("You must be connected with a partner");
+    }
+
+    if (!user.matchRevealDate) {
+      throw new Error("No reveal date to confirm");
+    }
+
+    if (user.revealDateProposedBy === user._id) {
+      throw new Error("You cannot confirm your own proposal");
+    }
+
+    // Confirm on both users
+    await ctx.db.patch(user._id, { revealDateConfirmed: true });
+    await ctx.db.patch(user.partnerId, { revealDateConfirmed: true });
+
+    // Notify the proposer that the date was confirmed
+    await ctx.scheduler.runAfter(0, internal.pushNotifications.notifyPartner, {
+      userId: user._id,
+      title: "Reveal Date Confirmed!",
+      body: `${user.firstName} confirmed the reveal date!`,
+      data: { screen: "Partner" },
+    });
+
+    return { success: true };
+  },
+});
+
+export const rejectRevealDate = mutation({
+  args: {
+    token: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const user = await getUserFromToken(ctx, args.token);
+    if (!user) {
+      throw new Error("Not authenticated");
+    }
+
+    if (!user.partnerId) {
+      throw new Error("You must be connected with a partner");
+    }
+
+    // Clear reveal date fields on both users
+    await ctx.db.patch(user._id, {
+      matchRevealDate: undefined,
+      revealDateProposedBy: undefined,
+      revealDateConfirmed: undefined,
+    });
+
+    await ctx.db.patch(user.partnerId, {
+      matchRevealDate: undefined,
+      revealDateProposedBy: undefined,
+      revealDateConfirmed: undefined,
+    });
+
+    // Notify partner that the reveal date was rejected
+    await ctx.scheduler.runAfter(0, internal.pushNotifications.notifyPartner, {
+      userId: user._id,
+      title: "Reveal Date Changed",
+      body: `${user.firstName} changed their mind about the reveal date.`,
+      data: { screen: "Partner" },
+    });
 
     return { success: true };
   },
@@ -229,6 +361,27 @@ export const getMatchRevealDate = query({
       return null;
     }
 
-    return user.matchRevealDate || null;
+    if (!user.matchRevealDate) {
+      return null;
+    }
+
+    // Look up who proposed it
+    let proposedByName: string | null = null;
+    if (user.revealDateProposedBy) {
+      if (user.revealDateProposedBy === user._id) {
+        proposedByName = "you";
+      } else {
+        const proposer = await ctx.db.get(user.revealDateProposedBy) as Doc<"users"> | null;
+        proposedByName = proposer?.firstName || "your partner";
+      }
+    }
+
+    return {
+      date: user.matchRevealDate,
+      proposedBy: user.revealDateProposedBy || null,
+      proposedByMe: user.revealDateProposedBy === user._id,
+      proposedByName,
+      confirmed: user.revealDateConfirmed || false,
+    };
   },
 });

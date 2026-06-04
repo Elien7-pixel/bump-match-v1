@@ -15,11 +15,14 @@ export default defineSchema({
     status: v.string(),
     partnerId: v.optional(v.id("users")),
     matchRevealDate: v.optional(v.number()),
+    revealDateProposedBy: v.optional(v.id("users")),
+    revealDateConfirmed: v.optional(v.boolean()),
     inviteCode: v.string(),
     createdAt: v.number(),
     // Password reset fields
     resetToken: v.optional(v.string()),
     resetTokenExpiry: v.optional(v.number()),
+    pushToken: v.optional(v.string()),
   })
     .index("by_email", ["email"])
     .index("by_invite_code", ["inviteCode"]),

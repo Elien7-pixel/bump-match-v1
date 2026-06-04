@@ -660,6 +660,66 @@ const rawData: BabyName[] = [
   { id: '615', name: 'Livingston', gender: 'boy', origin: 'Scottish', meaning: 'From Levi\'s town, dear friend\'s place', language: 'English', celebrity: 'Matthew McConaughey & Camila Alves' },
 ];
 
+// Synonym groups for smarter search
+const SYNONYMS: Record<string, string[]> = {
+  // Strength & courage
+  strong: ['strength', 'powerful', 'mighty', 'brave', 'warrior', 'firm', 'resolute', 'bold'],
+  brave: ['courage', 'courageous', 'fearless', 'valiant', 'bold', 'warrior', 'strong', 'hero'],
+  warrior: ['fighter', 'battle', 'war', 'brave', 'strong', 'mighty', 'soldier'],
+  power: ['powerful', 'mighty', 'strong', 'strength', 'force'],
+  // Beauty & grace
+  beautiful: ['beauty', 'pretty', 'lovely', 'fair', 'graceful', 'handsome', 'radiant'],
+  grace: ['graceful', 'elegant', 'favor', 'gracious', 'gentle', 'beautiful'],
+  pretty: ['beautiful', 'lovely', 'fair', 'radiant'],
+  // Light & brightness
+  light: ['bright', 'radiant', 'shine', 'shining', 'luminous', 'dawn', 'sun', 'star', 'glow'],
+  bright: ['light', 'radiant', 'shine', 'shining', 'brilliant', 'luminous', 'clear'],
+  star: ['stellar', 'light', 'bright', 'shine', 'celestial', 'heaven'],
+  // Love & joy
+  love: ['beloved', 'dear', 'loving', 'affection', 'cherished', 'heart'],
+  beloved: ['love', 'dear', 'cherished', 'precious', 'adored'],
+  joy: ['happy', 'happiness', 'joyful', 'delight', 'cheerful', 'glad', 'bliss'],
+  happy: ['joy', 'joyful', 'happiness', 'cheerful', 'delight', 'glad', 'blessed'],
+  // Nature
+  flower: ['bloom', 'blossom', 'rose', 'lily', 'garden', 'petal', 'floral'],
+  ocean: ['sea', 'water', 'wave', 'marine', 'tide', 'river', 'lake'],
+  sea: ['ocean', 'water', 'wave', 'marine', 'tide'],
+  river: ['water', 'stream', 'flow', 'brook', 'creek'],
+  earth: ['land', 'ground', 'nature', 'world', 'soil'],
+  sky: ['heaven', 'celestial', 'air', 'cloud', 'above'],
+  moon: ['lunar', 'night', 'moonlight', 'celestial'],
+  sun: ['solar', 'light', 'bright', 'radiant', 'dawn'],
+  fire: ['flame', 'burn', 'blaze', 'fiery', 'spark', 'heat'],
+  // Wisdom & knowledge
+  wise: ['wisdom', 'knowledge', 'intelligent', 'sage', 'learned', 'clever'],
+  wisdom: ['wise', 'knowledge', 'sage', 'intelligent', 'understanding'],
+  // Royalty & nobility
+  king: ['royal', 'ruler', 'crown', 'kingdom', 'sovereign', 'noble', 'prince', 'reign'],
+  queen: ['royal', 'ruler', 'crown', 'noble', 'princess', 'sovereign'],
+  royal: ['king', 'queen', 'noble', 'crown', 'prince', 'princess', 'ruler', 'reign'],
+  noble: ['royal', 'honor', 'worthy', 'dignified', 'great', 'noble'],
+  prince: ['royal', 'king', 'noble', 'ruler'],
+  princess: ['royal', 'queen', 'noble'],
+  // Peace & calm
+  peace: ['peaceful', 'calm', 'tranquil', 'serene', 'harmony', 'gentle', 'quiet'],
+  calm: ['peace', 'peaceful', 'tranquil', 'serene', 'gentle', 'quiet', 'still'],
+  // Faith & spirituality
+  god: ['divine', 'holy', 'sacred', 'lord', 'heaven', 'blessed', 'spiritual'],
+  holy: ['sacred', 'divine', 'blessed', 'pure', 'god', 'spiritual'],
+  blessed: ['holy', 'divine', 'grace', 'favor', 'fortunate', 'happy'],
+  // Protection & guardian
+  protect: ['guardian', 'defender', 'shield', 'safe', 'guard', 'protector'],
+  guardian: ['protect', 'protector', 'defender', 'keeper', 'watch', 'guard'],
+  // Life & vitality
+  life: ['alive', 'living', 'vital', 'birth', 'spirit', 'soul'],
+  // Victory
+  victory: ['conquer', 'winner', 'triumph', 'champion', 'success'],
+  // Home & family
+  home: ['house', 'family', 'household', 'hearth', 'dwelling'],
+  // Pure & innocent
+  pure: ['purity', 'innocent', 'clean', 'chaste', 'holy', 'virgin'],
+};
+
 interface FilterOptions {
   excludeIds?: string[];
   excludeNames?: string[];
@@ -695,10 +755,37 @@ export const getRandomNames = (count: number, options: FilterOptions = {}): Baby
     filtered = filtered.filter((item) => item.language === language);
   }
 
-  // Meaning search
+  // Fuzzy multi-field search with synonyms
   if (meaningSearch && meaningSearch.trim()) {
-    const search = meaningSearch.toLowerCase().trim();
-    filtered = filtered.filter((item) => item.meaning.toLowerCase().includes(search));
+    const words = meaningSearch.toLowerCase().trim().split(/\s+/).filter(w => w.length > 1);
+    if (words.length > 0) {
+      // Expand words with synonyms
+      const expanded = new Set<string>();
+      for (const word of words) {
+        expanded.add(word);
+        const syns = SYNONYMS[word];
+        if (syns) syns.forEach(s => expanded.add(s));
+      }
+      const searchTerms = [...expanded];
+
+      // Score each name by how many search terms match across meaning, origin, and name
+      const scored = filtered.map((item) => {
+        const fields = `${item.meaning} ${item.origin} ${item.name}`.toLowerCase();
+        let score = 0;
+        for (const term of searchTerms) {
+          if (fields.includes(term)) {
+            // Direct word match scores higher than synonym match
+            score += words.includes(term) ? 2 : 1;
+          }
+        }
+        return { item, score };
+      });
+      // Keep only names that match at least one term, sort by score descending
+      filtered = scored
+        .filter(s => s.score > 0)
+        .sort((a, b) => b.score - a.score)
+        .map(s => s.item);
+    }
   }
 
   // Popular only
