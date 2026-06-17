@@ -99,6 +99,104 @@ const glassStyles = StyleSheet.create({
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const formatDate = (d: Date) => `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
 
+// Date picker presented in its own bottom sheet on iOS so the inline spinner
+// never clips or steals scroll gestures inside the constrained sign-up modal.
+// On Android the native dialog is triggered by mounting the picker directly.
+const DatePickerSheet = ({
+  visible,
+  value,
+  title,
+  minimumDate,
+  maximumDate,
+  primaryColor,
+  fontFamily,
+  fontFamilyBold,
+  onChange,
+  onClose,
+}: {
+  visible: boolean;
+  value: Date;
+  title: string;
+  minimumDate?: Date;
+  maximumDate?: Date;
+  primaryColor: string;
+  fontFamily?: string;
+  fontFamilyBold?: string;
+  onChange: (d: Date) => void;
+  onClose: () => void;
+}) => {
+  if (!visible) return null;
+
+  if (Platform.OS !== 'ios') {
+    return (
+      <DateTimePicker
+        value={value}
+        mode="date"
+        display="default"
+        minimumDate={minimumDate}
+        maximumDate={maximumDate}
+        onChange={(_event, selected) => {
+          onClose();
+          if (selected) onChange(selected);
+        }}
+      />
+    );
+  }
+
+  return (
+    <Modal visible transparent animationType="slide" onRequestClose={onClose}>
+      <TouchableOpacity style={sheetStyles.backdrop} activeOpacity={1} onPress={onClose} />
+      <View style={sheetStyles.sheet}>
+        <View style={sheetStyles.sheetHeader}>
+          <Text style={[sheetStyles.sheetTitle, { fontFamily }]}>{title}</Text>
+          <TouchableOpacity onPress={onClose} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+            <Text style={[sheetStyles.doneText, { color: primaryColor, fontFamily: fontFamilyBold }]}>Done</Text>
+          </TouchableOpacity>
+        </View>
+        <DateTimePicker
+          value={value}
+          mode="date"
+          display="spinner"
+          minimumDate={minimumDate}
+          maximumDate={maximumDate}
+          onChange={(_event, selected) => {
+            if (selected) onChange(selected);
+          }}
+          textColor="#FFFFFF"
+          themeVariant="dark"
+        />
+      </View>
+    </Modal>
+  );
+};
+
+const sheetStyles = StyleSheet.create({
+  backdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  sheet: {
+    backgroundColor: '#1E1E2E',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingBottom: 32,
+    paddingHorizontal: 16,
+  },
+  sheetHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 14,
+  },
+  sheetTitle: {
+    fontSize: 16,
+    color: 'rgba(255, 255, 255, 0.9)',
+  },
+  doneText: {
+    fontSize: 16,
+  },
+});
+
 export const LandingPage = () => {
   const navigation = useNavigation<any>();
   const { theme } = useTheme();
@@ -616,26 +714,18 @@ export const LandingPage = () => {
                     {dateOfBirth ? formatDate(dateOfBirth) : 'Select your date of birth'}
                   </Text>
                 </TouchableOpacity>
-                {showDatePicker && (
-                  <DateTimePicker
-                    value={dateOfBirth || new Date(1995, 0, 1)}
-                    mode="date"
-                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                    maximumDate={new Date()}
-                    minimumDate={new Date(1940, 0, 1)}
-                    onChange={(event, selected) => {
-                      if (Platform.OS === 'android') setShowDatePicker(false);
-                      if (selected) setDateOfBirth(selected);
-                    }}
-                    textColor="#FFFFFF"
-                    themeVariant="dark"
-                  />
-                )}
-                {showDatePicker && Platform.OS === 'ios' && (
-                  <TouchableOpacity onPress={() => setShowDatePicker(false)} style={{ alignItems: 'center', paddingVertical: 8 }}>
-                    <Text style={{ color: theme.colors.primary, fontFamily: theme.typography.fontFamilyBold, fontSize: 15 }}>Done</Text>
-                  </TouchableOpacity>
-                )}
+                <DatePickerSheet
+                  visible={showDatePicker}
+                  value={dateOfBirth || new Date(1995, 0, 1)}
+                  title="Date of Birth"
+                  maximumDate={new Date()}
+                  minimumDate={new Date(1940, 0, 1)}
+                  primaryColor={theme.colors.primary}
+                  fontFamily={theme.typography.fontFamily}
+                  fontFamilyBold={theme.typography.fontFamilyBold}
+                  onChange={setDateOfBirth}
+                  onClose={() => setShowDatePicker(false)}
+                />
 
                 <Input
                   label="Email"
@@ -726,26 +816,18 @@ export const LandingPage = () => {
                         {dueDate ? formatDate(dueDate) : 'Select your due date'}
                       </Text>
                     </TouchableOpacity>
-                    {showDueDatePicker && (
-                      <DateTimePicker
-                        value={dueDate || new Date()}
-                        mode="date"
-                        display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                        minimumDate={new Date()}
-                        maximumDate={new Date(Date.now() + 10 * 30 * 24 * 60 * 60 * 1000)}
-                        onChange={(event, selected) => {
-                          if (Platform.OS === 'android') setShowDueDatePicker(false);
-                          if (selected) setDueDate(selected);
-                        }}
-                        textColor="#FFFFFF"
-                        themeVariant="dark"
-                      />
-                    )}
-                    {showDueDatePicker && Platform.OS === 'ios' && (
-                      <TouchableOpacity onPress={() => setShowDueDatePicker(false)} style={{ alignItems: 'center', paddingVertical: 8 }}>
-                        <Text style={{ color: theme.colors.primary, fontFamily: theme.typography.fontFamilyBold, fontSize: 15 }}>Done</Text>
-                      </TouchableOpacity>
-                    )}
+                    <DatePickerSheet
+                      visible={showDueDatePicker}
+                      value={dueDate || new Date()}
+                      title="When are you expecting?"
+                      minimumDate={new Date()}
+                      maximumDate={new Date(Date.now() + 10 * 30 * 24 * 60 * 60 * 1000)}
+                      primaryColor={theme.colors.primary}
+                      fontFamily={theme.typography.fontFamily}
+                      fontFamilyBold={theme.typography.fontFamilyBold}
+                      onChange={setDueDate}
+                      onClose={() => setShowDueDatePicker(false)}
+                    />
                   </>
                 )}
 
