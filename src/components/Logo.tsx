@@ -1,11 +1,16 @@
 import React from 'react';
 import { View, Image, StyleSheet } from 'react-native';
+import { Brand } from '../theme/designTokens';
 
-// The coral color matching the logo
-export const LOGO_COLOR = '#C9817A';
+// Brand primary colour (pastel purple from the Bump Match CI)
+export const LOGO_COLOR = Brand.purple;
 
-const logoImage = require('../../assets/bump-match-logo.png');
-const iconImage = require('../../assets/bump-match-icon.png');
+// Horizontal wordmark with tagline (1755x484 → aspect ratio ~3.63:1)
+const logoImage = require('../../assets/brand/logo-horizontal-tagline.png');
+const logoImageWhite = require('../../assets/brand/logo-horizontal-tagline-white.png');
+// "B" mother-and-baby mark (1735x2443 → taller than wide)
+const iconImage = require('../../assets/brand/logo-mark-purple.png');
+const iconImageWhite = require('../../assets/brand/logo-mark-white.png');
 
 interface LogoProps {
   size?: 'small' | 'medium' | 'large';
@@ -27,21 +32,20 @@ export const Logo = ({
   };
 
   const { icon, logoHeight, logoWidth } = dimensions[size];
-  const tintColor = lightText ? '#FFFFFF' : undefined;
 
   return (
     <View style={styles.container}>
       {showIcon && (
         <Image
-          source={iconImage}
-          style={[{ width: icon, height: icon }, tintColor ? { tintColor } : null]}
+          source={lightText ? iconImageWhite : iconImage}
+          style={{ width: icon, height: icon }}
           resizeMode="contain"
         />
       )}
       {showText && (
         <Image
-          source={logoImage}
-          style={[{ width: logoWidth, height: logoHeight, marginTop: 8 }, tintColor ? { tintColor } : null]}
+          source={lightText ? logoImageWhite : logoImage}
+          style={{ width: logoWidth, height: logoHeight, marginTop: 8 }}
           resizeMode="contain"
         />
       )}
@@ -66,12 +70,11 @@ export const LogoText = ({
   };
 
   const { height, width } = dimensions[size];
-  const tintColor = lightText ? '#FFFFFF' : undefined;
 
   return (
     <Image
-      source={logoImage}
-      style={[{ width, height }, tintColor ? { tintColor } : null, style]}
+      source={lightText ? logoImageWhite : logoImage}
+      style={[{ width, height }, style]}
       resizeMode="contain"
     />
   );
@@ -94,12 +97,11 @@ export const LogoIcon = ({
   };
 
   const { s } = dimensions[size];
-  const tintColor = lightIcon ? '#FFFFFF' : undefined;
 
   return (
     <Image
-      source={iconImage}
-      style={[{ width: s, height: s }, tintColor ? { tintColor } : null, style]}
+      source={lightIcon ? iconImageWhite : iconImage}
+      style={[{ width: s, height: s }, style]}
       resizeMode="contain"
     />
   );

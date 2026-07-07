@@ -80,16 +80,20 @@ export const LanguagePickerModal: React.FC<LanguagePickerModalProps> = ({
     },
     backdrop: {
       ...StyleSheet.absoluteFillObject,
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      backgroundColor: 'rgba(74, 68, 89, 0.45)',
     },
     modal: {
-      backgroundColor: theme.colors.background,
+      backgroundColor: theme.colors.card,
       borderTopLeftRadius: theme.borderRadius.xl,
       borderTopRightRadius: theme.borderRadius.xl,
       maxHeight: '70%',
       width: '100%',
       zIndex: 1,
-      elevation: 10,
+      shadowColor: theme.colors.shadow,
+      shadowOffset: { width: 0, height: -4 },
+      shadowOpacity: 1,
+      shadowRadius: 12,
+      elevation: 4,
     },
 
     header: {
@@ -101,7 +105,7 @@ export const LanguagePickerModal: React.FC<LanguagePickerModalProps> = ({
       borderBottomColor: theme.colors.border,
     },
     title: {
-      fontFamily: theme.typography.fontFamilyBold,
+      fontFamily: theme.typography.fontFamilyDisplay,
       fontSize: theme.typography.sizes.h2,
       color: theme.colors.text,
     },
@@ -120,21 +124,15 @@ export const LanguagePickerModal: React.FC<LanguagePickerModalProps> = ({
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      padding: theme.spacing.l,
+      paddingVertical: theme.spacing.m,
+      paddingHorizontal: theme.spacing.l,
       marginHorizontal: theme.spacing.m,
       marginVertical: 4,
-      backgroundColor: theme.colors.card,
-      borderRadius: theme.borderRadius.m,
-      shadowColor: theme.colors.shadow,
-      shadowOffset: { width: 0, height: 1 },
-      shadowOpacity: 0.05,
-      shadowRadius: 2,
-      elevation: 2,
+      backgroundColor: isDark ? theme.colors.background : theme.brand.purpleSoft,
+      borderRadius: theme.borderRadius.round,
     },
     languageItemActive: {
-      backgroundColor: isDark ? theme.colors.primary : '#E0F2FE',
-      borderWidth: 1,
-      borderColor: theme.colors.primary,
+      backgroundColor: theme.colors.primary,
     },
     languageText: {
       fontFamily: theme.typography.fontFamily,
@@ -142,21 +140,22 @@ export const LanguagePickerModal: React.FC<LanguagePickerModalProps> = ({
       color: theme.colors.text,
     },
     languageTextActive: {
-      fontFamily: theme.typography.fontFamilyBold,
-      color: isDark ? 'white' : theme.colors.primary,
+      fontFamily: theme.typography.fontFamilySemiBold,
+      color: theme.colors.textLight,
     },
     checkbox: {
       width: 24,
       height: 24,
-      borderRadius: 6,
+      borderRadius: 8,
       borderWidth: 2,
-      borderColor: theme.colors.border,
+      borderColor: isDark ? theme.colors.border : '#FFFFFF',
+      backgroundColor: isDark ? 'transparent' : '#FFFFFF',
       alignItems: 'center',
       justifyContent: 'center',
     },
     checkboxActive: {
-      backgroundColor: theme.colors.primary,
-      borderColor: theme.colors.primary,
+      backgroundColor: theme.colors.textLight,
+      borderColor: theme.colors.textLight,
     },
     doneButton: {
       margin: theme.spacing.m,
@@ -166,9 +165,9 @@ export const LanguagePickerModal: React.FC<LanguagePickerModalProps> = ({
       alignItems: 'center',
     },
     doneButtonText: {
-      fontFamily: theme.typography.fontFamilyBold,
+      fontFamily: theme.typography.fontFamilySemiBold,
       fontSize: theme.typography.sizes.body,
-      color: '#FFFFFF',
+      color: theme.colors.textLight,
     },
   }), [theme, isDark]);
 
@@ -213,7 +212,7 @@ export const LanguagePickerModal: React.FC<LanguagePickerModalProps> = ({
                     </Text>
                     <View style={[styles.checkbox, active && styles.checkboxActive]}>
                       {active && (
-                        <Ionicons name="checkmark" size={16} color="#FFFFFF" />
+                        <Ionicons name="checkmark" size={16} color={theme.colors.primary} />
                       )}
                     </View>
                   </TouchableOpacity>

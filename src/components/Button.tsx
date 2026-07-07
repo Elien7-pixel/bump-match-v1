@@ -28,7 +28,7 @@ export const Button: React.FC<ButtonProps> = ({
     if (disabled) return theme.colors.grey;
     switch (variant) {
       case 'primary': return theme.colors.primary;
-      case 'secondary': return theme.colors.secondary;
+      case 'secondary': return theme.colors.card;
       case 'outline': return 'transparent';
       case 'ghost': return 'transparent';
       default: return theme.colors.primary;
@@ -39,7 +39,7 @@ export const Button: React.FC<ButtonProps> = ({
     if (disabled) return theme.colors.textDim;
     switch (variant) {
       case 'primary': return theme.colors.textLight;
-      case 'secondary': return theme.colors.textLight;
+      case 'secondary': return theme.colors.text;
       case 'outline': return theme.colors.primary;
       case 'ghost': return theme.colors.primary;
       default: return theme.colors.textLight;
@@ -50,16 +50,20 @@ export const Button: React.FC<ButtonProps> = ({
     container: {
       paddingVertical: theme.spacing.m,
       paddingHorizontal: theme.spacing.l,
-      borderRadius: theme.borderRadius.l,
+      borderRadius: theme.borderRadius.m,
       alignItems: 'center',
       justifyContent: 'center',
+    },
+    secondary: {
+      borderWidth: 1,
+      borderColor: theme.colors.border,
     },
     outline: {
       borderWidth: 1,
       borderColor: theme.colors.primary,
     },
     text: {
-      fontFamily: theme.typography.fontFamilyBold,
+      fontFamily: theme.typography.fontFamilySemiBold,
       fontSize: theme.typography.sizes.body,
     },
   }), [theme]);
@@ -71,6 +75,7 @@ export const Button: React.FC<ButtonProps> = ({
       style={[
         styles.container,
         { backgroundColor: getBackgroundColor() },
+        variant === 'secondary' && !disabled && styles.secondary,
         variant === 'outline' && styles.outline,
         style,
       ]}

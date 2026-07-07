@@ -12,9 +12,9 @@ import {
   Platform,
   Alert,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api';
@@ -119,16 +119,20 @@ export const SubmitNameModal: React.FC<SubmitNameModalProps> = ({ visible, onClo
     },
     backdrop: {
       ...StyleSheet.absoluteFillObject,
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      backgroundColor: 'rgba(74, 68, 89, 0.45)',
     },
     drawer: {
-      backgroundColor: theme.colors.background,
-      borderTopLeftRadius: theme.borderRadius.xl,
-      borderTopRightRadius: theme.borderRadius.xl,
+      backgroundColor: theme.colors.card,
+      borderTopLeftRadius: theme.borderRadius.l,
+      borderTopRightRadius: theme.borderRadius.l,
       maxHeight: '85%',
       width: '100%',
       zIndex: 1,
-      elevation: 10,
+      shadowColor: theme.colors.shadow,
+      shadowOpacity: 1,
+      shadowRadius: 16,
+      shadowOffset: { width: 0, height: -4 },
+      elevation: 4,
     },
     header: {
       flexDirection: 'row',
@@ -139,7 +143,7 @@ export const SubmitNameModal: React.FC<SubmitNameModalProps> = ({ visible, onClo
       borderBottomColor: theme.colors.border,
     },
     title: {
-      fontFamily: theme.typography.fontFamilyBold,
+      fontFamily: theme.typography.fontFamilyDisplay,
       fontSize: theme.typography.sizes.h2,
       color: theme.colors.text,
     },
@@ -156,7 +160,7 @@ export const SubmitNameModal: React.FC<SubmitNameModalProps> = ({ visible, onClo
       marginBottom: theme.spacing.l,
     },
     label: {
-      fontFamily: theme.typography.fontFamily,
+      fontFamily: theme.typography.fontFamilyMedium,
       fontSize: 13,
       color: theme.colors.text,
       marginBottom: theme.spacing.s,
@@ -188,18 +192,18 @@ export const SubmitNameModal: React.FC<SubmitNameModalProps> = ({ visible, onClo
       color: theme.colors.text,
     },
     genderTextSelected: {
-      color: '#FFFFFF',
-      fontFamily: theme.typography.fontFamilyBold,
+      color: theme.colors.textLight,
+      fontFamily: theme.typography.fontFamilySemiBold,
     },
     languageSelector: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
       padding: theme.spacing.m,
-      backgroundColor: isDark ? theme.colors.card : '#F3F4F6',
+      backgroundColor: theme.colors.card,
       borderRadius: theme.borderRadius.m,
       borderWidth: 1,
-      borderColor: isDark ? theme.colors.border : 'transparent',
+      borderColor: theme.colors.border,
       marginBottom: theme.spacing.m,
     },
     languageSelectorText: {
@@ -222,7 +226,7 @@ export const SubmitNameModal: React.FC<SubmitNameModalProps> = ({ visible, onClo
       borderBottomColor: theme.colors.border,
     },
     languageItemSelected: {
-      backgroundColor: isDark ? 'rgba(200, 100, 180, 0.15)' : 'rgba(200, 100, 180, 0.08)',
+      backgroundColor: isDark ? 'rgba(170, 160, 221, 0.22)' : theme.brand.purpleSoft,
     },
     languageItemText: {
       fontFamily: theme.typography.fontFamily,
@@ -230,24 +234,31 @@ export const SubmitNameModal: React.FC<SubmitNameModalProps> = ({ visible, onClo
       color: theme.colors.text,
     },
     languageItemTextSelected: {
-      fontFamily: theme.typography.fontFamilyBold,
-      color: theme.colors.primary,
+      fontFamily: theme.typography.fontFamilySemiBold,
+      color: isDark ? theme.colors.primary : theme.brand.purpleDeep,
     },
     submitButton: {
-      borderRadius: theme.borderRadius.l,
+      borderRadius: theme.borderRadius.m,
       overflow: 'hidden',
       marginTop: theme.spacing.l,
+      backgroundColor: theme.colors.primary,
+      shadowColor: theme.colors.shadow,
+      shadowOpacity: 1,
+      shadowRadius: 8,
+      shadowOffset: { width: 0, height: 3 },
+      elevation: 3,
     },
     submitButtonGradient: {
       paddingVertical: 16,
       alignItems: 'center',
       justifyContent: 'center',
       flexDirection: 'row',
+      backgroundColor: theme.colors.primary,
     },
     submitButtonText: {
-      fontFamily: theme.typography.fontFamilyBold,
+      fontFamily: theme.typography.fontFamilySemiBold,
       fontSize: 17,
-      color: '#FFFFFF',
+      color: theme.colors.textLight,
     },
     disabledButton: {
       opacity: 0.6,
@@ -261,8 +272,15 @@ export const SubmitNameModal: React.FC<SubmitNameModalProps> = ({ visible, onClo
     successIcon: {
       marginBottom: theme.spacing.l,
     },
+    successStar: {
+      position: 'absolute',
+      top: -12,
+      right: -26,
+      width: 34,
+      height: 34,
+    },
     successTitle: {
-      fontFamily: theme.typography.fontFamilyBold,
+      fontFamily: theme.typography.fontFamilyDisplay,
       fontSize: theme.typography.sizes.h2,
       color: theme.colors.text,
       textAlign: 'center',
@@ -277,18 +295,25 @@ export const SubmitNameModal: React.FC<SubmitNameModalProps> = ({ visible, onClo
       marginBottom: theme.spacing.xl,
     },
     doneButton: {
-      borderRadius: theme.borderRadius.l,
+      borderRadius: theme.borderRadius.m,
       overflow: 'hidden',
       width: '100%',
+      backgroundColor: theme.colors.primary,
+      shadowColor: theme.colors.shadow,
+      shadowOpacity: 1,
+      shadowRadius: 8,
+      shadowOffset: { width: 0, height: 3 },
+      elevation: 3,
     },
     doneButtonGradient: {
       paddingVertical: 16,
       alignItems: 'center',
+      backgroundColor: theme.colors.primary,
     },
     doneButtonText: {
-      fontFamily: theme.typography.fontFamilyBold,
+      fontFamily: theme.typography.fontFamilySemiBold,
       fontSize: 17,
-      color: '#FFFFFF',
+      color: theme.colors.textLight,
     },
     submitAnotherButton: {
       paddingVertical: 12,
@@ -296,9 +321,9 @@ export const SubmitNameModal: React.FC<SubmitNameModalProps> = ({ visible, onClo
       marginTop: theme.spacing.m,
     },
     submitAnotherText: {
-      fontFamily: theme.typography.fontFamilyBold,
+      fontFamily: theme.typography.fontFamilySemiBold,
       fontSize: 15,
-      color: theme.colors.primary,
+      color: isDark ? theme.colors.primary : theme.brand.purpleDeep,
     },
   }), [theme, isDark]);
 
@@ -324,26 +349,27 @@ export const SubmitNameModal: React.FC<SubmitNameModalProps> = ({ visible, onClo
 
             {submitted ? (
               <View style={styles.successContainer}>
-                <Ionicons
-                  name="checkmark-circle"
-                  size={64}
-                  color="#10B981"
-                  style={styles.successIcon}
-                />
+                <View style={styles.successIcon}>
+                  <Ionicons
+                    name="checkmark-circle"
+                    size={64}
+                    color={theme.brand.tealDeep}
+                  />
+                  <Image
+                    source={require('../../assets/brand/icons/star-2.png')}
+                    style={styles.successStar}
+                    resizeMode="contain"
+                  />
+                </View>
                 <Text style={styles.successTitle}>Name Submitted!</Text>
                 <Text style={styles.successMessage}>
                   Name submitted for review and added to your likes!
                 </Text>
 
                 <TouchableOpacity style={styles.doneButton} onPress={handleClose} activeOpacity={0.9}>
-                  <LinearGradient
-                    colors={[theme.colors.primary, 'hsl(316, 69%, 62%)']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                    style={styles.doneButtonGradient}
-                  >
+                  <View style={styles.doneButtonGradient}>
                     <Text style={styles.doneButtonText}>Done</Text>
-                  </LinearGradient>
+                  </View>
                 </TouchableOpacity>
 
                 <TouchableOpacity
@@ -423,18 +449,13 @@ export const SubmitNameModal: React.FC<SubmitNameModalProps> = ({ visible, onClo
                       disabled={isSubmitting}
                       activeOpacity={0.9}
                     >
-                      <LinearGradient
-                        colors={[theme.colors.primary, 'hsl(316, 69%, 62%)']}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 0 }}
-                        style={styles.submitButtonGradient}
-                      >
+                      <View style={styles.submitButtonGradient}>
                         {isSubmitting ? (
-                          <ActivityIndicator color="#FFFFFF" />
+                          <ActivityIndicator color={theme.colors.textLight} />
                         ) : (
                           <Text style={styles.submitButtonText}>Submit Name</Text>
                         )}
-                      </LinearGradient>
+                      </View>
                     </TouchableOpacity>
                   </View>
                 </ScrollView>

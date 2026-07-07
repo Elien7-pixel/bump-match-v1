@@ -12,15 +12,16 @@ import { Button } from '../components/Button';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { formatDate, calculateAge } from '../utils/date';
+import { Brand } from '../theme/designTokens';
 
 
 const AVATAR_OPTIONS = [
-  { id: 'default', icon: 'person', color: '#3B82F6' },
-  { id: 'heart', icon: 'heart', color: '#EC4899' },
-  { id: 'star', icon: 'star', color: '#F59E0B' },
-  { id: 'flower', icon: 'flower', color: '#10B981' },
-  { id: 'happy', icon: 'happy', color: '#8B5CF6' },
-  { id: 'sunny', icon: 'sunny', color: '#F97316' },
+  { id: 'default', icon: 'person', color: Brand.purpleDeep },
+  { id: 'heart', icon: 'heart', color: Brand.pinkDeep },
+  { id: 'star', icon: 'star', color: Brand.yellowDeep },
+  { id: 'flower', icon: 'flower', color: Brand.tealDeep },
+  { id: 'happy', icon: 'happy', color: Brand.purple },
+  { id: 'sunny', icon: 'sunny', color: Brand.pink },
 ];
 
 export const ProfileScreen = () => {
@@ -86,7 +87,7 @@ export const ProfileScreen = () => {
       padding: theme.spacing.s,
     },
     headerTitle: {
-      fontFamily: theme.typography.fontFamilyBold,
+      fontFamily: theme.typography.fontFamilyDisplay,
       fontSize: theme.typography.sizes.h2,
       color: theme.colors.text,
     },
@@ -140,12 +141,14 @@ export const ProfileScreen = () => {
     infoRow: {
       backgroundColor: theme.colors.card,
       padding: theme.spacing.l,
-      borderRadius: theme.borderRadius.m,
+      borderRadius: theme.borderRadius.l,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
       marginBottom: theme.spacing.m,
       shadowColor: theme.colors.shadow,
-      shadowOffset: { width: 0, height: 1 },
-      shadowOpacity: 0.05,
-      shadowRadius: 2,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 1,
+      shadowRadius: 6,
       elevation: 2,
     },
     infoLabel: {
@@ -154,11 +157,12 @@ export const ProfileScreen = () => {
       marginBottom: theme.spacing.s,
     },
     labelText: {
-      fontFamily: theme.typography.fontFamily,
+      fontFamily: theme.typography.fontFamilyMedium,
       fontSize: theme.typography.sizes.small,
       color: theme.colors.grey,
       marginLeft: theme.spacing.s,
       textTransform: 'uppercase',
+      letterSpacing: 0.5,
     },
     valueText: {
       fontFamily: theme.typography.fontFamilyBold,
@@ -166,7 +170,7 @@ export const ProfileScreen = () => {
       color: theme.colors.text,
     },
     label: {
-      fontFamily: theme.typography.fontFamily,
+      fontFamily: theme.typography.fontFamilyMedium,
       fontSize: theme.typography.sizes.small,
       color: theme.colors.text,
       marginBottom: theme.spacing.s,
@@ -181,7 +185,8 @@ export const ProfileScreen = () => {
       paddingHorizontal: theme.spacing.m,
       borderRadius: theme.borderRadius.m,
       borderWidth: 1,
-      borderColor: theme.colors.grey,
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.card,
       alignItems: 'center',
       flex: 1,
       marginHorizontal: 4,
@@ -194,7 +199,8 @@ export const ProfileScreen = () => {
       paddingHorizontal: theme.spacing.m,
       borderRadius: theme.borderRadius.m,
       borderWidth: 1,
-      borderColor: theme.colors.grey,
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.card,
       alignItems: 'center',
       marginBottom: 8,
     },
@@ -208,7 +214,7 @@ export const ProfileScreen = () => {
     },
     optionTextSelected: {
       color: theme.colors.textLight,
-      fontFamily: theme.typography.fontFamilyBold,
+      fontFamily: theme.typography.fontFamilySemiBold,
     },
     buttonRow: {
       flexDirection: 'row',
@@ -225,7 +231,7 @@ export const ProfileScreen = () => {
       color: theme.colors.grey,
     },
     inviteCodeBanner: {
-      backgroundColor: isDark ? '#1E3A8A' : '#E0F2FE',
+      backgroundColor: isDark ? theme.colors.card : theme.brand.purpleSoft,
       padding: theme.spacing.m,
       borderRadius: theme.borderRadius.m,
       marginTop: theme.spacing.l,
@@ -240,23 +246,23 @@ export const ProfileScreen = () => {
     inviteCodeValue: {
       fontFamily: theme.typography.fontFamilyBold,
       fontSize: theme.typography.sizes.body,
-      color: theme.colors.primary,
+      color: isDark ? theme.colors.primary : theme.brand.purpleDeep,
       marginLeft: theme.spacing.s,
     },
     deleteButton: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: isDark ? '#7F1D1D' : '#FEE2E2',
+      backgroundColor: isDark ? theme.colors.card : theme.brand.pinkSoft,
       padding: theme.spacing.m,
       borderRadius: theme.borderRadius.m,
       marginTop: theme.spacing.xl,
       marginBottom: theme.spacing.xxl,
     },
     deleteButtonText: {
-      fontFamily: theme.typography.fontFamilyBold,
+      fontFamily: theme.typography.fontFamilySemiBold,
       fontSize: theme.typography.sizes.body,
-      color: isDark ? '#FECACA' : '#EF4444',
+      color: theme.colors.destructive,
       marginLeft: theme.spacing.s,
     },
     heritageContainer: {
@@ -270,8 +276,8 @@ export const ProfileScreen = () => {
       paddingHorizontal: 12,
       borderRadius: theme.borderRadius.round,
       borderWidth: 1,
-      borderColor: theme.colors.border,
-      backgroundColor: theme.colors.card,
+      borderColor: theme.brand.purpleSoft,
+      backgroundColor: theme.brand.purpleSoft,
     },
     heritageChipSelected: {
       backgroundColor: theme.colors.primary,
@@ -280,11 +286,11 @@ export const ProfileScreen = () => {
     heritageChipText: {
       fontFamily: theme.typography.fontFamily,
       fontSize: 12,
-      color: theme.colors.text,
+      color: theme.brand.ink,
     },
     heritageChipTextSelected: {
-      color: '#FFFFFF',
-      fontFamily: theme.typography.fontFamilyBold,
+      color: theme.colors.textLight,
+      fontFamily: theme.typography.fontFamilySemiBold,
     },
     heritageDisplay: {
       flexDirection: 'row',
@@ -296,12 +302,12 @@ export const ProfileScreen = () => {
       paddingVertical: 3,
       paddingHorizontal: 8,
       borderRadius: theme.borderRadius.round,
-      backgroundColor: isDark ? '#1E3A8A' : '#E0F2FE',
+      backgroundColor: theme.brand.tealSoft,
     },
     heritageTagText: {
-      fontFamily: theme.typography.fontFamily,
+      fontFamily: theme.typography.fontFamilyMedium,
       fontSize: 11,
-      color: isDark ? '#93C5FD' : '#1E40AF',
+      color: theme.brand.tealDeep,
     },
   }), [theme, isDark]);
 
@@ -543,7 +549,7 @@ export const ProfileScreen = () => {
             <Text style={styles.label}>Date of Birth</Text>
             <TouchableOpacity
               onPress={() => setShowDobPicker(true)}
-              style={{ backgroundColor: theme.colors.card, borderRadius: 12, padding: 14, marginBottom: 4, borderWidth: 1, borderColor: theme.colors.border }}
+              style={{ backgroundColor: theme.colors.card, borderRadius: theme.borderRadius.m, padding: 14, marginBottom: 4, borderWidth: 1, borderColor: theme.colors.border }}
             >
               <Text style={{ color: editAge ? theme.colors.text : theme.colors.grey, fontSize: 16, fontFamily: theme.typography.fontFamily }}>
                 {editAge ? formatDate(editAge) : 'Select your date of birth'}
@@ -564,7 +570,7 @@ export const ProfileScreen = () => {
             )}
             {showDobPicker && Platform.OS === 'ios' && (
               <TouchableOpacity onPress={() => setShowDobPicker(false)} style={{ alignItems: 'center', paddingVertical: 8 }}>
-                <Text style={{ color: theme.colors.primary, fontFamily: theme.typography.fontFamilyBold, fontSize: 15 }}>Done</Text>
+                <Text style={{ color: theme.colors.primary, fontFamily: theme.typography.fontFamilySemiBold, fontSize: 15 }}>Done</Text>
               </TouchableOpacity>
             )}
 
@@ -603,7 +609,7 @@ export const ProfileScreen = () => {
                 <Text style={styles.label}>When are you expecting?</Text>
                 <TouchableOpacity
                   onPress={() => setShowDueDatePicker(true)}
-                  style={{ backgroundColor: theme.colors.card, borderRadius: 12, padding: 14, marginBottom: 4, borderWidth: 1, borderColor: theme.colors.border }}
+                  style={{ backgroundColor: theme.colors.card, borderRadius: theme.borderRadius.m, padding: 14, marginBottom: 4, borderWidth: 1, borderColor: theme.colors.border }}
                 >
                   <Text style={{ color: editDueDate ? theme.colors.text : theme.colors.grey, fontSize: 16, fontFamily: theme.typography.fontFamily }}>
                     {editDueDate
@@ -626,7 +632,7 @@ export const ProfileScreen = () => {
                 )}
                 {showDueDatePicker && Platform.OS === 'ios' && (
                   <TouchableOpacity onPress={() => setShowDueDatePicker(false)} style={{ alignItems: 'center', paddingVertical: 8 }}>
-                    <Text style={{ color: theme.colors.primary, fontFamily: theme.typography.fontFamilyBold, fontSize: 15 }}>Done</Text>
+                    <Text style={{ color: theme.colors.primary, fontFamily: theme.typography.fontFamilySemiBold, fontSize: 15 }}>Done</Text>
                   </TouchableOpacity>
                 )}
               </>
@@ -754,7 +760,7 @@ export const ProfileScreen = () => {
 
               {/* Delete Account Button */}
               <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteAccount}>
-                <Ionicons name="trash-outline" size={24} color={isDark ? '#FECACA' : '#EF4444'} />
+                <Ionicons name="trash-outline" size={24} color={theme.colors.destructive} />
                 <Text style={styles.deleteButtonText}>Delete Account</Text>
               </TouchableOpacity>
             </View>
@@ -770,8 +776,8 @@ export const ProfileScreen = () => {
 
       {/* Delete Account Password Modal */}
       <Modal visible={deleteModalVisible} animationType="fade" transparent>
-        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', padding: 24 }}>
-          <View style={{ backgroundColor: theme.colors.card, borderRadius: 16, padding: 24 }}>
+        <View style={{ flex: 1, backgroundColor: 'rgba(74, 68, 89, 0.5)', justifyContent: 'center', padding: 24 }}>
+          <View style={{ backgroundColor: theme.colors.card, borderRadius: theme.borderRadius.l, padding: 24 }}>
             <Text style={{ fontFamily: theme.typography.fontFamilyBold, fontSize: 20, color: theme.colors.text, marginBottom: 8 }}>
               Confirm Deletion
             </Text>
@@ -781,12 +787,13 @@ export const ProfileScreen = () => {
             <TextInput
               style={{
                 backgroundColor: theme.colors.background,
-                borderRadius: 10,
+                borderRadius: theme.borderRadius.m,
                 padding: 14,
                 fontSize: 16,
+                fontFamily: theme.typography.fontFamily,
                 color: theme.colors.text,
                 borderWidth: 1,
-                borderColor: isDark ? 'rgba(255,255,255,0.15)' : '#D1D5DB',
+                borderColor: theme.colors.border,
                 marginBottom: 20,
               }}
               placeholder="Enter your password"
@@ -798,18 +805,18 @@ export const ProfileScreen = () => {
             />
             <View style={{ flexDirection: 'row', gap: 12 }}>
               <TouchableOpacity
-                style={{ flex: 1, padding: 14, borderRadius: 10, backgroundColor: theme.colors.background, alignItems: 'center' }}
+                style={{ flex: 1, padding: 14, borderRadius: theme.borderRadius.m, backgroundColor: theme.colors.card, borderWidth: 1, borderColor: theme.colors.border, alignItems: 'center' }}
                 onPress={() => { setDeleteModalVisible(false); setIsDeleting(false); }}
                 disabled={isDeleting}
               >
-                <Text style={{ fontFamily: theme.typography.fontFamilyBold, fontSize: 16, color: theme.colors.text }}>Cancel</Text>
+                <Text style={{ fontFamily: theme.typography.fontFamilySemiBold, fontSize: 16, color: theme.colors.text }}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={{ flex: 1, padding: 14, borderRadius: 10, backgroundColor: '#DC2626', alignItems: 'center', opacity: isDeleting ? 0.6 : 1 }}
+                style={{ flex: 1, padding: 14, borderRadius: theme.borderRadius.m, backgroundColor: theme.colors.destructive, alignItems: 'center', opacity: isDeleting ? 0.6 : 1 }}
                 onPress={confirmDeleteAccount}
                 disabled={isDeleting || !deletePassword.trim()}
               >
-                <Text style={{ fontFamily: theme.typography.fontFamilyBold, fontSize: 16, color: '#FFFFFF' }}>
+                <Text style={{ fontFamily: theme.typography.fontFamilySemiBold, fontSize: 16, color: theme.colors.textLight }}>
                   {isDeleting ? 'Deleting...' : 'Delete'}
                 </Text>
               </TouchableOpacity>

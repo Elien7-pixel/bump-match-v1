@@ -23,10 +23,10 @@ export const NameCard: React.FC<NameCardProps> = ({ data, onFavorite, isFavorite
   const CARD_HEIGHT = CARD_WIDTH * 1.3;
 
   const getGradientColors = () => {
-    if (data.gender === 'boy') return [theme.colors.boyBlue, '#3B82F6'] as const;
-    if (data.gender === 'girl') return [theme.colors.girlPink, '#EC4899'] as const;
-    // Neutral beige/yellow gradient for unisex
-    return [theme.colors.neutralBeige, '#E8C547'] as const;
+    if (data.gender === 'boy') return [theme.colors.boyBlue, theme.brand.tealDeep] as const;
+    if (data.gender === 'girl') return [theme.colors.girlPink, theme.brand.pinkDeep] as const;
+    // Pastel yellow gradient for unisex
+    return [theme.colors.neutralBeige, theme.brand.yellowDeep] as const;
   };
 
   const styles = React.useMemo(() => StyleSheet.create({
@@ -39,9 +39,9 @@ export const NameCard: React.FC<NameCardProps> = ({ data, onFavorite, isFavorite
         width: 0,
         height: 4,
       },
-      shadowOpacity: 0.30,
-      shadowRadius: 4.65,
-      elevation: 8,
+      shadowOpacity: 1,
+      shadowRadius: 6,
+      elevation: 4,
     },
     card: {
       flex: 1,
@@ -56,21 +56,22 @@ export const NameCard: React.FC<NameCardProps> = ({ data, onFavorite, isFavorite
       paddingVertical: theme.spacing.m,
     },
     name: {
-      fontFamily: theme.typography.fontFamilyBold,
+      fontFamily: theme.typography.fontFamilyDisplay,
       fontSize: 44,
       color: theme.colors.textLight,
-      textShadowColor: 'rgba(0, 0, 0, 0.2)',
-      textShadowOffset: { width: 1, height: 1 },
-      textShadowRadius: 5,
-      lineHeight: 48,
+      textShadowColor: 'rgba(74, 68, 89, 0.25)',
+      textShadowOffset: { width: 1, height: 2 },
+      textShadowRadius: 4,
+      lineHeight: 52,
       textAlign: 'center',
       marginBottom: theme.spacing.s,
       paddingHorizontal: theme.spacing.s,
     },
     details: {
-      fontFamily: theme.typography.fontFamily,
+      fontFamily: theme.typography.fontFamilySemiBold,
       fontSize: theme.typography.sizes.h3,
       color: 'rgba(255, 255, 255, 0.9)',
+      letterSpacing: 2,
       marginBottom: theme.spacing.xl,
     },
     infoBox: {
@@ -81,9 +82,10 @@ export const NameCard: React.FC<NameCardProps> = ({ data, onFavorite, isFavorite
       alignItems: 'center',
     },
     meaningTitle: {
-      fontFamily: theme.typography.fontFamilyBold,
+      fontFamily: theme.typography.fontFamilySemiBold,
       fontSize: theme.typography.sizes.small,
       color: 'rgba(255, 255, 255, 0.8)',
+      letterSpacing: 1,
       textTransform: 'uppercase',
     },
     meaning: {
@@ -97,9 +99,10 @@ export const NameCard: React.FC<NameCardProps> = ({ data, onFavorite, isFavorite
       height: theme.spacing.s,
     },
     originTitle: {
-      fontFamily: theme.typography.fontFamilyBold,
+      fontFamily: theme.typography.fontFamilySemiBold,
       fontSize: theme.typography.sizes.small,
       color: 'rgba(255, 255, 255, 0.8)',
+      letterSpacing: 1,
       textTransform: 'uppercase',
     },
     origin: {
@@ -114,9 +117,19 @@ export const NameCard: React.FC<NameCardProps> = ({ data, onFavorite, isFavorite
       marginBottom: theme.spacing.s,
     },
     hint: {
-      color: 'rgba(255,255,255, 0.6)',
-      fontFamily: theme.typography.fontFamilyBold,
+      fontFamily: theme.typography.fontFamilySemiBold,
       fontSize: 12,
+      backgroundColor: 'rgba(255, 255, 255, 0.9)',
+      paddingHorizontal: theme.spacing.m,
+      paddingVertical: 6,
+      borderRadius: theme.borderRadius.round,
+      overflow: 'hidden',
+    },
+    hintDislike: {
+      color: theme.colors.dislike,
+    },
+    hintLike: {
+      color: theme.colors.like,
     },
     infoButton: {
       position: 'absolute',
@@ -136,7 +149,7 @@ export const NameCard: React.FC<NameCardProps> = ({ data, onFavorite, isFavorite
       width: 40,
       height: 40,
       borderRadius: 20,
-      backgroundColor: 'rgba(0, 0, 0, 0.25)',
+      backgroundColor: 'rgba(74, 68, 89, 0.28)',
       alignItems: 'center',
       justifyContent: 'center',
     },
@@ -158,7 +171,7 @@ export const NameCard: React.FC<NameCardProps> = ({ data, onFavorite, isFavorite
             <Ionicons
               name={isFavorited ? 'star' : 'star-outline'}
               size={22}
-              color={isFavorited ? '#F59E0B' : '#FFFFFF'}
+              color={isFavorited ? theme.brand.yellowDeep : theme.colors.textLight}
             />
           </TouchableOpacity>
         ) : null}
@@ -186,8 +199,8 @@ export const NameCard: React.FC<NameCardProps> = ({ data, onFavorite, isFavorite
         </View>
 
         <View style={styles.footer}>
-          <Text style={styles.hint}>← Dislike</Text>
-          <Text style={styles.hint}>Like →</Text>
+          <Text style={[styles.hint, styles.hintDislike]}>← Dislike</Text>
+          <Text style={[styles.hint, styles.hintLike]}>Like →</Text>
         </View>
       </LinearGradient>
     </View>

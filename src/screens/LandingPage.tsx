@@ -11,7 +11,7 @@ import {
   Platform,
   ScrollView,
   useWindowDimensions,
-  ImageBackground,
+  Image,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
@@ -36,6 +36,7 @@ import { useMutation, useAction } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useTheme } from '../context/ThemeContext';
+import { Brand } from '../theme/designTokens';
 import { useAuth } from '../context/AuthContext';
 import { formatDate } from '../utils/date';
 import { cleanErrorMessage } from '../utils/errors';
@@ -43,7 +44,7 @@ import { cleanErrorMessage } from '../utils/errors';
 // Tablet breakpoint
 const TABLET_MIN_WIDTH = 600;
 
-// Futuristic Glass Card Component - works on both platforms
+// Solid white brand card (formerly a dark glass panel) - works on both platforms
 const GlassCard = ({
   children,
   style,
@@ -53,48 +54,31 @@ const GlassCard = ({
   style?: any;
   intensity?: number;
 }) => {
-  if (Platform.OS === 'ios') {
-    return (
-      <View style={[glassStyles.glassOuter, style]}>
-        <BlurView
-          intensity={20}
-          tint="light"
-          style={StyleSheet.absoluteFill}
-        />
-        <View style={[glassStyles.glassInnerOverlay, { backgroundColor: 'rgba(255, 255, 255, 0.08)' }]}>
-          {children}
-        </View>
-      </View>
-    );
-  }
-
-  // Android - simple semi-transparent background without blur
   return (
-    <View style={[glassStyles.glassOuter, glassStyles.glassOuterAndroid, style]}>
-      {children}
+    <View style={[glassStyles.glassOuter, style]}>
+      <View style={glassStyles.glassInnerOverlay}>
+        {children}
+      </View>
     </View>
   );
 };
 
-// Shared styles for glass effect
+// Shared styles for the white brand card
 const glassStyles = StyleSheet.create({
   glassOuter: {
     borderRadius: 24,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.5)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
-    elevation: Platform.OS === 'ios' ? 10 : 0,
-  },
-  glassOuterAndroid: {
-    backgroundColor: 'rgba(255, 255, 255, 0.18)',
-    borderColor: 'rgba(255, 255, 255, 0.4)',
+    borderColor: '#F0E9E1',                    // theme.colors.border
+    backgroundColor: '#FFFFFF',                // theme.colors.card
+    shadowColor: 'rgba(140, 127, 201, 0.18)',  // theme.colors.shadow (soft purple)
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 1,
+    shadowRadius: 16,
+    elevation: 3,
   },
   glassInnerOverlay: {
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    backgroundColor: 'transparent',
   },
 });
 
@@ -162,8 +146,7 @@ const DatePickerSheet = ({
           onChange={(_event, selected) => {
             if (selected) onChange(selected);
           }}
-          textColor="#FFFFFF"
-          themeVariant="dark"
+          themeVariant="light"
         />
       </View>
     </Modal>
@@ -173,10 +156,10 @@ const DatePickerSheet = ({
 const sheetStyles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(74, 68, 89, 0.45)',   // ink-based scrim
   },
   sheet: {
-    backgroundColor: '#1E1E2E',
+    backgroundColor: '#FFFFFF',                  // theme.colors.card
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     paddingBottom: 32,
@@ -190,7 +173,7 @@ const sheetStyles = StyleSheet.create({
   },
   sheetTitle: {
     fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.9)',
+    color: Brand.ink,
   },
   doneText: {
     fontSize: 16,
@@ -292,9 +275,7 @@ export const LandingPage = () => {
       flex: 1,
       width: '100%',
       height: '100%',
-    },
-    darkOverlay: {
-      ...StyleSheet.absoluteFillObject,
+      backgroundColor: theme.colors.background,
     },
     overlay: {
       flex: 1,
@@ -317,28 +298,45 @@ export const LandingPage = () => {
       alignItems: 'center',
     },
     title: {
-      fontFamily: theme.typography.fontFamilyBold,
+      fontFamily: theme.typography.fontFamilyDisplay,
       fontSize: isTablet ? 48 : 42,
-      color: '#FFFFFF',
+      color: theme.colors.text,
       marginBottom: 12,
       letterSpacing: 1,
-      ...(Platform.OS === 'ios' && {
-        textShadowColor: 'rgba(0, 0, 0, 0.3)',
-        textShadowOffset: { width: 0, height: 2 },
-        textShadowRadius: 4,
-      }),
     },
     subtitle: {
       fontFamily: theme.typography.fontFamily,
       fontSize: isTablet ? 19 : 17,
-      color: 'rgba(255, 255, 255, 0.95)',
+      color: theme.colors.text,
       textAlign: 'center',
       lineHeight: 24,
-      ...(Platform.OS === 'ios' && {
-        textShadowColor: 'rgba(0, 0, 0, 0.2)',
-        textShadowOffset: { width: 0, height: 1 },
-        textShadowRadius: 2,
-      }),
+    },
+    stickerOverlay: {
+      ...StyleSheet.absoluteFillObject,
+    },
+    stickerHeart: {
+      position: 'absolute',
+      top: -16,
+      left: -6,
+      width: 38,
+      height: 38,
+      transform: [{ rotate: '-14deg' }],
+    },
+    stickerStar: {
+      position: 'absolute',
+      top: -12,
+      right: 2,
+      width: 32,
+      height: 32,
+      transform: [{ rotate: '16deg' }],
+    },
+    stickerFlower: {
+      position: 'absolute',
+      top: 118,
+      right: -10,
+      width: 40,
+      height: 40,
+      transform: [{ rotate: '10deg' }],
     },
     buttonContainer: {
       width: '100%',
@@ -346,51 +344,51 @@ export const LandingPage = () => {
     },
     primaryButton: {
       width: '100%',
-      borderRadius: 30,
+      borderRadius: theme.borderRadius.m,
       overflow: 'hidden',
-      shadowColor: theme.colors.primary,
+      shadowColor: theme.colors.shadow,
       shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.4,
-      shadowRadius: 12,
-      elevation: 5,
+      shadowOpacity: 1,
+      shadowRadius: 8,
+      elevation: 3,
     },
     primaryButtonGradient: {
       paddingVertical: 16,
       alignItems: 'center',
     },
     primaryButtonText: {
-      fontFamily: theme.typography.fontFamilyBold,
+      fontFamily: theme.typography.fontFamilySemiBold,
       fontSize: 17,
-      color: '#FFFFFF',
+      color: theme.colors.textLight,
     },
     secondaryButton: {
       width: '100%',
-      borderRadius: 30,
+      borderRadius: theme.borderRadius.m,
       overflow: 'hidden',
     },
     secondaryButtonPressed: {
-      shadowColor: theme.colors.primary,
+      shadowColor: theme.colors.shadow,
       shadowOffset: { width: 0, height: 0 },
-      shadowOpacity: 0.5,
-      shadowRadius: 10,
-      elevation: 5,
+      shadowOpacity: 1,
+      shadowRadius: 8,
+      elevation: 3,
     },
     secondaryButtonInner: {
       paddingVertical: 16,
       alignItems: 'center',
-      backgroundColor: 'rgba(255, 255, 255, 0.2)',
+      backgroundColor: theme.colors.card,
       borderWidth: 1,
-      borderColor: 'rgba(255, 255, 255, 0.4)',
-      borderRadius: 30,
+      borderColor: theme.colors.border,
+      borderRadius: theme.borderRadius.m,
     },
     secondaryButtonText: {
-      fontFamily: theme.typography.fontFamilyBold,
+      fontFamily: theme.typography.fontFamilySemiBold,
       fontSize: 17,
-      color: '#FFFFFF',
+      color: theme.colors.text,
     },
     modalOverlay: {
       flex: 1,
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      backgroundColor: 'rgba(74, 68, 89, 0.45)',
       justifyContent: 'center',
       alignItems: 'center',
       padding: 20,
@@ -414,24 +412,24 @@ export const LandingPage = () => {
     },
     closeButton: {
       padding: 4,
-      backgroundColor: 'rgba(255, 255, 255, 0.15)',
+      backgroundColor: theme.brand.purpleSoft,
       borderRadius: 20,
     },
     modalTitle: {
-      fontFamily: theme.typography.fontFamilyBold,
+      fontFamily: theme.typography.fontFamilyDisplay,
       fontSize: 24,
-      color: '#FFFFFF',
+      color: theme.colors.text,
     },
     modalSubtitle: {
       fontFamily: theme.typography.fontFamily,
       fontSize: 16,
-      color: 'rgba(255, 255, 255, 0.7)',
+      color: theme.colors.textDim,
       marginBottom: 24,
     },
     loginSubtitle: {
       fontFamily: theme.typography.fontFamily,
       fontSize: 16,
-      color: 'rgba(255, 255, 255, 0.7)',
+      color: theme.colors.textDim,
       textAlign: 'center',
       marginBottom: 24,
     },
@@ -446,16 +444,16 @@ export const LandingPage = () => {
     switchAuthText: {
       fontFamily: theme.typography.fontFamily,
       fontSize: 15,
-      color: 'rgba(255, 255, 255, 0.7)',
+      color: theme.colors.textDim,
     },
     switchAuthHighlight: {
-      color: theme.colors.primary,
+      color: theme.brand.purpleDeep,
       fontFamily: theme.typography.fontFamilyBold,
     },
     label: {
-      fontFamily: theme.typography.fontFamily,
+      fontFamily: theme.typography.fontFamilyMedium,
       fontSize: 13,
-      color: 'rgba(255, 255, 255, 0.9)',
+      color: theme.colors.text,
       marginBottom: 8,
       marginTop: 16,
     },
@@ -466,10 +464,10 @@ export const LandingPage = () => {
     option: {
       paddingVertical: 12,
       paddingHorizontal: 16,
-      borderRadius: 12,
+      borderRadius: theme.borderRadius.round,
       borderWidth: 1,
-      borderColor: 'rgba(255, 255, 255, 0.3)',
-      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.card,
       alignItems: 'center',
       flex: 1,
       marginHorizontal: 4,
@@ -480,24 +478,36 @@ export const LandingPage = () => {
     statusOption: {
       paddingVertical: 12,
       paddingHorizontal: 16,
-      borderRadius: 12,
+      borderRadius: theme.borderRadius.round,
       borderWidth: 1,
-      borderColor: 'rgba(255, 255, 255, 0.3)',
-      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.card,
       alignItems: 'center',
       marginBottom: 8,
     },
     optionSelected: {
-      backgroundColor: theme.colors.primary,
+      backgroundColor: theme.brand.purpleSoft,
       borderColor: theme.colors.primary,
+    },
+    optionSelectedBoy: {
+      backgroundColor: theme.brand.tealSoft,
+      borderColor: theme.brand.tealDeep,
+    },
+    optionSelectedGirl: {
+      backgroundColor: theme.brand.pinkSoft,
+      borderColor: theme.brand.pinkDeep,
+    },
+    optionSelectedNeutral: {
+      backgroundColor: theme.brand.yellowSoft,
+      borderColor: theme.brand.yellowDeep,
     },
     optionText: {
       fontFamily: theme.typography.fontFamily,
-      color: 'rgba(255, 255, 255, 0.9)',
+      color: theme.colors.text,
     },
     optionTextSelected: {
-      color: '#FFFFFF',
-      fontFamily: theme.typography.fontFamilyBold,
+      color: theme.brand.purpleDeep,
+      fontFamily: theme.typography.fontFamilySemiBold,
     },
     modalActions: {
       flexDirection: 'row',
@@ -575,32 +585,45 @@ export const LandingPage = () => {
   };
 
   return (
-    <ImageBackground
-      source={require('../../assets/background.png')}
+    <LinearGradient
+      colors={theme.gradients.g3}
+      start={{ x: 0.5, y: 0 }}
+      end={{ x: 0.5, y: 1 }}
       style={pageStyles.background}
-      resizeMode="cover"
     >
       {/* Animated Scattered Name Cards */}
       <AnimatedNameCards />
 
-      {/* Dark gradient overlay */}
-      <LinearGradient
-        colors={['transparent', 'rgba(0,0,0,0.15)', 'rgba(0,0,0,0.5)', 'rgba(0,0,0,0.85)']}
-        locations={[0, 0.3, 0.55, 1]}
-        style={pageStyles.darkOverlay}
-      />
-
       <View style={pageStyles.overlay}>
         <View style={pageStyles.content}>
-          {/* Main Glass Card */}
+          {/* Main White Card */}
           <GlassCard style={pageStyles.glassContainer} intensity={40}>
             <View style={pageStyles.glassInner}>
-              <LogoText size="large" lightText={true} />
+              <LogoText size="large" lightText={false} />
               <Text style={pageStyles.subtitle}>
                 Find the perfect name for your little one, together.
               </Text>
             </View>
           </GlassCard>
+
+          {/* Decorative sticker accents around the hero logo */}
+          <View style={pageStyles.stickerOverlay} pointerEvents="none">
+            <Image
+              source={require('../../assets/brand/icons/heart-2.png')}
+              style={pageStyles.stickerHeart}
+              resizeMode="contain"
+            />
+            <Image
+              source={require('../../assets/brand/icons/star-1.png')}
+              style={pageStyles.stickerStar}
+              resizeMode="contain"
+            />
+            <Image
+              source={require('../../assets/brand/icons/flower-1.png')}
+              style={pageStyles.stickerFlower}
+              resizeMode="contain"
+            />
+          </View>
 
           {/* Auth Buttons */}
           <View style={pageStyles.buttonContainer}>
@@ -613,8 +636,8 @@ export const LandingPage = () => {
             >
               <LinearGradient
                 colors={[
-                  isSignUpPressed ? 'hsl(316, 69%, 52%)' : theme.colors.primary,
-                  isSignUpPressed ? 'hsl(316, 69%, 42%)' : 'hsl(316, 69%, 62%)'
+                  isSignUpPressed ? theme.brand.purpleDeep : theme.colors.primary,
+                  isSignUpPressed ? theme.brand.purpleDeep : theme.colors.primary
                 ]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
@@ -637,7 +660,7 @@ export const LandingPage = () => {
               <View
                 style={[
                   pageStyles.secondaryButtonInner,
-                  isLogInPressed && { backgroundColor: theme.colors.primary, borderColor: theme.colors.primary }
+                  isLogInPressed && { backgroundColor: theme.brand.purpleSoft, borderColor: theme.colors.primary }
                 ]}
               >
                 <Text style={pageStyles.secondaryButtonText}>Log In</Text>
@@ -658,7 +681,7 @@ export const LandingPage = () => {
           {Platform.OS === 'android' && (
             <BlurView
               intensity={80}
-              tint="dark"
+              tint="light"
               style={StyleSheet.absoluteFill}
               experimentalBlurMethod="dimezisBlurView"
             />
@@ -676,7 +699,7 @@ export const LandingPage = () => {
                     onPress={() => setSignUpModalVisible(false)}
                     style={pageStyles.closeButton}
                   >
-                    <Ionicons name="close" size={24} color="rgba(255,255,255,0.8)" />
+                    <Ionicons name="close" size={24} color={theme.colors.text} />
                   </TouchableOpacity>
                 </View>
                 <Text style={pageStyles.modalSubtitle}>Tell us a bit about yourself.</Text>
@@ -689,8 +712,8 @@ export const LandingPage = () => {
                   textContentType="givenName"
                   autoComplete="given-name"
                   autoCapitalize="words"
-                  labelStyle={{ color: '#FFFFFF' }}
-                  style={{ backgroundColor: 'rgba(255,255,255,0.9)', color: '#333' }}
+                  labelStyle={{ color: theme.colors.text }}
+                  style={{ backgroundColor: theme.colors.card, color: theme.colors.text, borderWidth: 1, borderColor: theme.colors.border }}
                 />
 
                 <Input
@@ -701,16 +724,16 @@ export const LandingPage = () => {
                   textContentType="familyName"
                   autoComplete="family-name"
                   autoCapitalize="words"
-                  labelStyle={{ color: '#FFFFFF' }}
-                  style={{ backgroundColor: 'rgba(255,255,255,0.9)', color: '#333' }}
+                  labelStyle={{ color: theme.colors.text }}
+                  style={{ backgroundColor: theme.colors.card, color: theme.colors.text, borderWidth: 1, borderColor: theme.colors.border }}
                 />
 
                 <Text style={pageStyles.label}>Date of Birth</Text>
                 <TouchableOpacity
                   onPress={() => setShowDatePicker(true)}
-                  style={{ backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: 12, padding: 14, marginBottom: 4 }}
+                  style={{ backgroundColor: theme.colors.card, borderWidth: 1, borderColor: theme.colors.border, borderRadius: theme.borderRadius.m, padding: 14, marginBottom: 4 }}
                 >
-                  <Text style={{ color: dateOfBirth ? '#333' : '#999', fontSize: 16, fontFamily: theme.typography.fontFamily }}>
+                  <Text style={{ color: dateOfBirth ? theme.colors.text : theme.colors.grey, fontSize: 16, fontFamily: theme.typography.fontFamily }}>
                     {dateOfBirth ? formatDate(dateOfBirth) : 'Select your date of birth'}
                   </Text>
                 </TouchableOpacity>
@@ -720,7 +743,7 @@ export const LandingPage = () => {
                   title="Date of Birth"
                   maximumDate={new Date()}
                   minimumDate={new Date(1940, 0, 1)}
-                  primaryColor={theme.colors.primary}
+                  primaryColor={theme.brand.purpleDeep}
                   fontFamily={theme.typography.fontFamily}
                   fontFamilyBold={theme.typography.fontFamilyBold}
                   onChange={setDateOfBirth}
@@ -736,8 +759,8 @@ export const LandingPage = () => {
                   autoCapitalize="none"
                   textContentType="emailAddress"
                   autoComplete="email"
-                  labelStyle={{ color: '#FFFFFF' }}
-                  style={{ backgroundColor: 'rgba(255,255,255,0.9)', color: '#333' }}
+                  labelStyle={{ color: theme.colors.text }}
+                  style={{ backgroundColor: theme.colors.card, color: theme.colors.text, borderWidth: 1, borderColor: theme.colors.border }}
                 />
 
                 <Input
@@ -748,8 +771,8 @@ export const LandingPage = () => {
                   secureTextEntry
                   textContentType="newPassword"
                   autoComplete="new-password"
-                  labelStyle={{ color: '#FFFFFF' }}
-                  style={{ backgroundColor: 'rgba(255,255,255,0.9)', color: '#333' }}
+                  labelStyle={{ color: theme.colors.text }}
+                  style={{ backgroundColor: theme.colors.card, color: theme.colors.text, borderWidth: 1, borderColor: theme.colors.border }}
                 />
 
                 <Text style={pageStyles.label}>I am a...</Text>
@@ -772,16 +795,25 @@ export const LandingPage = () => {
                   {(['boy', 'girl', 'unknown'] as const).map((e) => {
                     const iconName = e === 'boy' ? 'male' : e === 'girl' ? 'female' : 'help';
                     const iconColor = expecting === e
-                      ? '#FFFFFF'
+                      ? (e === 'boy'
+                          ? theme.brand.tealDeep
+                          : e === 'girl'
+                            ? theme.brand.pinkDeep
+                            : theme.brand.yellowDeep)
                       : e === 'boy'
                         ? theme.colors.boyBlue
                         : e === 'girl'
                           ? theme.colors.girlPink
                           : theme.colors.neutralBeige;
+                    const selectedStyle = e === 'boy'
+                      ? pageStyles.optionSelectedBoy
+                      : e === 'girl'
+                        ? pageStyles.optionSelectedGirl
+                        : pageStyles.optionSelectedNeutral;
                     return (
                       <TouchableOpacity
                         key={e}
-                        style={[pageStyles.option, expecting === e && pageStyles.optionSelected]}
+                        style={[pageStyles.option, expecting === e && selectedStyle]}
                         onPress={() => setExpecting(e)}
                       >
                         <Ionicons name={iconName as any} size={28} color={iconColor} />
@@ -810,9 +842,9 @@ export const LandingPage = () => {
                     <Text style={pageStyles.label}>When are you expecting?</Text>
                     <TouchableOpacity
                       onPress={() => setShowDueDatePicker(true)}
-                      style={{ backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: 12, padding: 14, marginBottom: 4 }}
+                      style={{ backgroundColor: theme.colors.card, borderWidth: 1, borderColor: theme.colors.border, borderRadius: theme.borderRadius.m, padding: 14, marginBottom: 4 }}
                     >
-                      <Text style={{ color: dueDate ? '#333' : '#999', fontSize: 16, fontFamily: theme.typography.fontFamily }}>
+                      <Text style={{ color: dueDate ? theme.colors.text : theme.colors.grey, fontSize: 16, fontFamily: theme.typography.fontFamily }}>
                         {dueDate ? formatDate(dueDate) : 'Select your due date'}
                       </Text>
                     </TouchableOpacity>
@@ -822,7 +854,7 @@ export const LandingPage = () => {
                       title="When are you expecting?"
                       minimumDate={new Date()}
                       maximumDate={new Date(Date.now() + 10 * 30 * 24 * 60 * 60 * 1000)}
-                      primaryColor={theme.colors.primary}
+                      primaryColor={theme.brand.purpleDeep}
                       fontFamily={theme.typography.fontFamily}
                       fontFamilyBold={theme.typography.fontFamilyBold}
                       onChange={setDueDate}
@@ -863,7 +895,7 @@ export const LandingPage = () => {
           {Platform.OS === 'android' && (
             <BlurView
               intensity={80}
-              tint="dark"
+              tint="light"
               style={StyleSheet.absoluteFill}
               experimentalBlurMethod="dimezisBlurView"
             />
@@ -878,7 +910,7 @@ export const LandingPage = () => {
                       onPress={() => setLoginModalVisible(false)}
                       style={pageStyles.closeButton}
                     >
-                      <Ionicons name="close" size={24} color="rgba(255,255,255,0.8)" />
+                      <Ionicons name="close" size={24} color={theme.colors.text} />
                     </TouchableOpacity>
                   </View>
 
@@ -897,8 +929,8 @@ export const LandingPage = () => {
                     autoCapitalize="none"
                     textContentType="emailAddress"
                     autoComplete="email"
-                    labelStyle={{ color: '#FFFFFF' }}
-                    style={{ backgroundColor: 'rgba(255,255,255,0.9)', color: '#333' }}
+                    labelStyle={{ color: theme.colors.text }}
+                    style={{ backgroundColor: theme.colors.card, color: theme.colors.text, borderWidth: 1, borderColor: theme.colors.border }}
                   />
 
                   <Input
@@ -909,8 +941,8 @@ export const LandingPage = () => {
                     secureTextEntry
                     textContentType="password"
                     autoComplete="password"
-                    labelStyle={{ color: '#FFFFFF' }}
-                    style={{ backgroundColor: 'rgba(255,255,255,0.9)', color: '#333' }}
+                    labelStyle={{ color: theme.colors.text }}
+                    style={{ backgroundColor: theme.colors.card, color: theme.colors.text, borderWidth: 1, borderColor: theme.colors.border }}
                   />
 
                   <Button
@@ -953,7 +985,7 @@ export const LandingPage = () => {
                       }}
                       style={pageStyles.closeButton}
                     >
-                      <Ionicons name="close" size={24} color="rgba(255,255,255,0.8)" />
+                      <Ionicons name="close" size={24} color={theme.colors.text} />
                     </TouchableOpacity>
                   </View>
 
@@ -972,8 +1004,8 @@ export const LandingPage = () => {
                     autoCapitalize="none"
                     textContentType="emailAddress"
                     autoComplete="email"
-                    labelStyle={{ color: '#FFFFFF' }}
-                    style={{ backgroundColor: 'rgba(255,255,255,0.9)', color: '#333' }}
+                    labelStyle={{ color: theme.colors.text }}
+                    style={{ backgroundColor: theme.colors.card, color: theme.colors.text, borderWidth: 1, borderColor: theme.colors.border }}
                   />
 
                   <Button
@@ -1007,7 +1039,7 @@ export const LandingPage = () => {
                       }}
                       style={pageStyles.closeButton}
                     >
-                      <Ionicons name="close" size={24} color="rgba(255,255,255,0.8)" />
+                      <Ionicons name="close" size={24} color={theme.colors.text} />
                     </TouchableOpacity>
                   </View>
 
@@ -1023,8 +1055,8 @@ export const LandingPage = () => {
                     onChangeText={setResetCode}
                     placeholder="Enter reset code"
                     autoCapitalize="characters"
-                    labelStyle={{ color: '#FFFFFF' }}
-                    style={{ backgroundColor: 'rgba(255,255,255,0.9)', color: '#333' }}
+                    labelStyle={{ color: theme.colors.text }}
+                    style={{ backgroundColor: theme.colors.card, color: theme.colors.text, borderWidth: 1, borderColor: theme.colors.border }}
                   />
 
                   <Input
@@ -1035,8 +1067,8 @@ export const LandingPage = () => {
                     secureTextEntry
                     textContentType="newPassword"
                     autoComplete="new-password"
-                    labelStyle={{ color: '#FFFFFF' }}
-                    style={{ backgroundColor: 'rgba(255,255,255,0.9)', color: '#333' }}
+                    labelStyle={{ color: theme.colors.text }}
+                    style={{ backgroundColor: theme.colors.card, color: theme.colors.text, borderWidth: 1, borderColor: theme.colors.border }}
                   />
 
                   <Button
@@ -1064,7 +1096,7 @@ export const LandingPage = () => {
           </GlassCard>
         </View>
       </Modal>
-    </ImageBackground>
+    </LinearGradient>
   );
 };
 
@@ -1154,35 +1186,13 @@ const AnimatedCard = ({
     ],
   }));
 
-  const cardStyle = [
-    scatteredGlassStyles.cardOuter,
-    Platform.OS === 'android' && scatteredGlassStyles.cardOuterAndroid,
-  ];
+  const cardStyle = [scatteredGlassStyles.cardOuter];
 
-  if (Platform.OS === 'ios') {
-    return (
-      <Animated.View style={[cardStyle, animatedStyle]}>
-        <BlurView
-          intensity={18}
-          tint="light"
-          style={StyleSheet.absoluteFill}
-        />
-        <View style={[scatteredGlassStyles.cardInnerOverlay, { backgroundColor: 'rgba(255, 255, 255, 0.06)' }]}>
-          <View style={scatteredGlassStyles.cardContent}>
-            <Text style={scatteredGlassStyles.cardText}>{name}</Text>
-            <Ionicons name="heart" size={14} color="rgba(255, 255, 255, 0.9)" />
-          </View>
-        </View>
-      </Animated.View>
-    );
-  }
-
-  // Android
   return (
     <Animated.View style={[cardStyle, animatedStyle]}>
       <View style={scatteredGlassStyles.cardContent}>
         <Text style={scatteredGlassStyles.cardText}>{name}</Text>
-        <Ionicons name="heart" size={14} color="rgba(255, 255, 255, 0.9)" />
+        <Ionicons name="heart" size={14} color={Brand.pink} />
       </View>
     </Animated.View>
   );
@@ -1227,28 +1237,22 @@ const AnimatedNameCards = () => {
   );
 };
 
-// Styles for scattered glass cards
+// Styles for scattered floating name cards
 const scatteredGlassStyles = StyleSheet.create({
   cardOuter: {
     position: 'absolute',
     top: 0,
     left: 0,
-    borderRadius: 16,
+    borderRadius: 999,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.5)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.2,
-    shadowRadius: 10,
-    elevation: Platform.OS === 'ios' ? 6 : 0,
-  },
-  cardOuterAndroid: {
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    borderColor: 'rgba(255, 255, 255, 0.3)',
-  },
-  cardInnerOverlay: {
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    borderColor: '#F0E9E1',                    // theme.colors.border
+    backgroundColor: '#FFFFFF',                // theme.colors.card
+    shadowColor: 'rgba(140, 127, 201, 0.18)',  // theme.colors.shadow (soft purple)
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 1,
+    shadowRadius: 8,
+    elevation: 2,
   },
   cardContent: {
     paddingVertical: 12,
@@ -1258,13 +1262,8 @@ const scatteredGlassStyles = StyleSheet.create({
     gap: 8,
   },
   cardText: {
-    fontFamily: 'Nunito-Regular',
+    fontFamily: 'Poppins-Medium',
     fontSize: 18,
-    color: '#FFFFFF',
-    ...(Platform.OS === 'ios' && {
-      textShadowColor: 'rgba(0, 0, 0, 0.2)',
-      textShadowOffset: { width: 0, height: 1 },
-      textShadowRadius: 2,
-    }),
+    color: Brand.ink,
   },
 });

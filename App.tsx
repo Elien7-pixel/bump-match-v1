@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { NavigationContainer, LinkingOptions, NavigationContainerRef } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useFonts, Inter_400Regular, Inter_700Bold } from '@expo-google-fonts/inter';
+import { useFonts } from 'expo-font';
 import { View, ActivityIndicator } from 'react-native';
 import { ConvexProvider, ConvexReactClient } from 'convex/react';
 import * as Linking from 'expo-linking';
@@ -51,8 +51,11 @@ const linking: LinkingOptions<any> = {
 
 function AppContent() {
   const [fontsLoaded] = useFonts({
-    Inter_400Regular,
-    Inter_700Bold,
+    'Poppins-Regular': require('./assets/fonts/Poppins-Regular.ttf'),
+    'Poppins-Medium': require('./assets/fonts/Poppins-Medium.ttf'),
+    'Poppins-SemiBold': require('./assets/fonts/Poppins-SemiBold.ttf'),
+    'Poppins-Bold': require('./assets/fonts/Poppins-Bold.ttf'),
+    'BigBerry': require('./assets/fonts/BigBerry.ttf'),
   });
 
   const [initialRoute, setInitialRoute] = useState<string | null>(null);
@@ -92,7 +95,7 @@ function AppContent() {
 
   if (!fontsLoaded || !initialRoute) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: AppTokens.colors.background }}>
         <ActivityIndicator size="large" color={AppTokens.colors.primary} />
       </View>
     );

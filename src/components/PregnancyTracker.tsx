@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../context/ThemeContext';
 
 interface PregnancyTrackerProps {
@@ -84,19 +85,32 @@ export const PregnancyTracker: React.FC<PregnancyTrackerProps> = ({ dueDate }) =
 
   if (week < 4 || week > 42) return null;
 
+  const progressPercent = Math.max(0, Math.min(100, Math.round((week / 40) * 100)));
+
   return (
     <View style={[styles.container, {
-      backgroundColor: isDark ? '#1C1917' : '#FFFBEB',
-      borderColor: isDark ? '#78350F' : '#FDE68A',
+      backgroundColor: isDark ? theme.colors.card : theme.brand.yellowSoft,
+      borderColor: isDark ? theme.colors.border : theme.brand.yellow,
+      shadowColor: theme.colors.shadow,
     }]}>
       <Text style={styles.emoji}>{milestone.emoji}</Text>
       <View style={styles.textContainer}>
-        <Text style={[styles.title, { color: theme.colors.text, fontFamily: theme.typography.fontFamilyBold }]}>
+        <Text style={[styles.title, { color: theme.colors.text, fontFamily: theme.typography.fontFamilySemiBold }]}>
           Week {week} — Baby is the size of a {milestone.fruit.toLowerCase()}!
         </Text>
         <Text style={[styles.subtitle, { color: theme.colors.grey, fontFamily: theme.typography.fontFamily }]}>
           About {milestone.size} long{weeksLeft > 0 ? ` · ${weeksLeft} ${weeksLeft === 1 ? 'week' : 'weeks'} to go` : ' · Any day now!'}
         </Text>
+        <View style={[styles.progressTrack, {
+          backgroundColor: isDark ? theme.colors.background : theme.brand.pinkSoft,
+        }]}>
+          <LinearGradient
+            colors={theme.gradients.g1}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={[styles.progressFill, { width: `${progressPercent}%` }]}
+          />
+        </View>
       </View>
     </View>
   );
@@ -109,8 +123,12 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginBottom: 8,
     padding: 12,
-    borderRadius: 12,
+    borderRadius: 16,
     borderWidth: 1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 1,
+    shadowRadius: 6,
+    elevation: 2,
   },
   emoji: {
     fontSize: 32,
@@ -125,5 +143,15 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 11,
+  },
+  progressTrack: {
+    height: 8,
+    borderRadius: 999,
+    overflow: 'hidden',
+    marginTop: 8,
+  },
+  progressFill: {
+    height: '100%',
+    borderRadius: 999,
   },
 });

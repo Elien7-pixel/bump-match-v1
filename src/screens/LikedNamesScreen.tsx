@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, StatusBar, FlatList, useWindowDimensions, Share, Platform, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, StatusBar, FlatList, useWindowDimensions, Share, Platform, Alert, Image } from 'react-native';
 import ViewShot, { captureRef } from 'react-native-view-shot';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
@@ -181,7 +181,7 @@ export const LikedNamesScreen = () => {
       padding: theme.spacing.s,
     },
     headerTitle: {
-      fontFamily: theme.typography.fontFamilyBold,
+      fontFamily: theme.typography.fontFamilyDisplay,
       fontSize: theme.typography.sizes.h2,
       color: theme.colors.text,
     },
@@ -219,8 +219,8 @@ export const LikedNamesScreen = () => {
       borderColor: theme.colors.border,
     },
     favoritesChipActive: {
-      backgroundColor: '#FEF3C7',
-      borderColor: '#F59E0B',
+      backgroundColor: theme.brand.yellowSoft,
+      borderColor: theme.brand.yellowDeep,
     },
     dropdownMenu: {
       position: 'absolute',
@@ -233,9 +233,9 @@ export const LikedNamesScreen = () => {
       borderColor: theme.colors.border,
       shadowColor: theme.colors.shadow,
       shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.15,
+      shadowOpacity: 1,
       shadowRadius: 8,
-      elevation: 10,
+      elevation: 4,
       minWidth: 140,
       overflow: 'hidden',
     },
@@ -244,7 +244,7 @@ export const LikedNamesScreen = () => {
       paddingHorizontal: 14,
     },
     dropdownItemActive: {
-      backgroundColor: isDark ? theme.colors.primary : '#E0F2FE',
+      backgroundColor: isDark ? theme.colors.primary : theme.brand.purpleSoft,
     },
     dropdownItemText: {
       fontSize: 13,
@@ -253,7 +253,7 @@ export const LikedNamesScreen = () => {
     },
     dropdownItemTextActive: {
       fontFamily: theme.typography.fontFamilyBold,
-      color: isDark ? '#FFFFFF' : theme.colors.primary,
+      color: isDark ? theme.colors.textLight : theme.brand.purpleDeep,
     },
     shareButton: {
       position: 'absolute',
@@ -261,8 +261,8 @@ export const LikedNamesScreen = () => {
       right: 8,
       width: 32,
       height: 32,
-      borderRadius: 16,
-      backgroundColor: 'rgba(0,0,0,0.35)',
+      borderRadius: theme.borderRadius.round,
+      backgroundColor: theme.brand.purpleSoft,
       alignItems: 'center',
       justifyContent: 'center',
       zIndex: 10,
@@ -273,8 +273,8 @@ export const LikedNamesScreen = () => {
       left: 8,
       width: 32,
       height: 32,
-      borderRadius: 16,
-      backgroundColor: 'rgba(220,38,38,0.5)',
+      borderRadius: theme.borderRadius.round,
+      backgroundColor: theme.brand.pinkSoft,
       alignItems: 'center',
       justifyContent: 'center',
       zIndex: 10,
@@ -303,11 +303,13 @@ export const LikedNamesScreen = () => {
       flex: 1,
       borderRadius: theme.borderRadius.l,
       padding: theme.spacing.m,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
       shadowColor: theme.colors.shadow,
       shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.2,
-      shadowRadius: 3,
-      elevation: 4,
+      shadowOpacity: 1,
+      shadowRadius: 4,
+      elevation: 3,
     },
     cardContent: {
       flex: 1,
@@ -318,22 +320,23 @@ export const LikedNamesScreen = () => {
       justifyContent: 'center',
     },
     cardName: {
-      fontFamily: theme.typography.fontFamilyBold,
+      fontFamily: theme.typography.fontFamilyDisplay,
       fontSize: 22,
-      color: theme.colors.textLight,
+      color: theme.colors.text,
       textAlign: 'center',
       lineHeight: 26,
       paddingHorizontal: 4,
     },
     cardGender: {
-      fontFamily: theme.typography.fontFamily,
+      fontFamily: theme.typography.fontFamilyMedium,
       fontSize: 10,
-      color: 'rgba(255, 255, 255, 0.8)',
+      color: theme.colors.textDim,
       textAlign: 'center',
       marginTop: 4,
+      letterSpacing: 1,
     },
     cardInfo: {
-      backgroundColor: 'rgba(255, 255, 255, 0.2)',
+      backgroundColor: theme.brand.pinkSoft,
       borderRadius: theme.borderRadius.m,
       padding: theme.spacing.s,
       marginBottom: theme.spacing.s,
@@ -341,29 +344,29 @@ export const LikedNamesScreen = () => {
     cardMeaning: {
       fontFamily: theme.typography.fontFamily,
       fontSize: 11,
-      color: theme.colors.textLight,
+      color: theme.brand.ink,
       textAlign: 'center',
       marginBottom: 4,
     },
     cardOrigin: {
       fontFamily: theme.typography.fontFamilyBold,
       fontSize: 10,
-      color: 'rgba(255, 255, 255, 0.9)',
+      color: theme.brand.pinkDeep,
       textAlign: 'center',
     },
     matchBadge: {
       position: 'absolute',
       top: 8,
       right: 8,
-      backgroundColor: '#10B981',
-      borderRadius: 12,
+      backgroundColor: theme.brand.pinkDeep,
+      borderRadius: theme.borderRadius.round,
       paddingHorizontal: 8,
       paddingVertical: 4,
       flexDirection: 'row',
       alignItems: 'center',
     },
     matchBadgeText: {
-      color: '#FFFFFF',
+      color: theme.colors.textLight,
       fontSize: 10,
       fontFamily: theme.typography.fontFamilyBold,
       marginLeft: 4,
@@ -374,8 +377,8 @@ export const LikedNamesScreen = () => {
       left: 8,
       width: 32,
       height: 32,
-      borderRadius: 16,
-      backgroundColor: 'rgba(0,0,0,0.35)',
+      borderRadius: theme.borderRadius.round,
+      backgroundColor: theme.brand.yellowSoft,
       alignItems: 'center',
       justifyContent: 'center',
       zIndex: 10,
@@ -386,8 +389,12 @@ export const LikedNamesScreen = () => {
       justifyContent: 'center',
       paddingHorizontal: theme.spacing.xl,
     },
+    emptyImage: {
+      width: 140,
+      height: 140,
+    },
     emptyText: {
-      fontFamily: theme.typography.fontFamilyBold,
+      fontFamily: theme.typography.fontFamilyDisplay,
       fontSize: theme.typography.sizes.h2,
       color: theme.colors.text,
       marginTop: theme.spacing.l,
@@ -401,7 +408,7 @@ export const LikedNamesScreen = () => {
       textAlign: 'center',
     },
     matchSummary: {
-      backgroundColor: isDark ? '#064E3B' : '#ECFDF5',
+      backgroundColor: isDark ? theme.colors.card : theme.brand.pinkSoft,
       marginHorizontal: theme.spacing.m,
       marginBottom: theme.spacing.m,
       padding: theme.spacing.m,
@@ -410,13 +417,13 @@ export const LikedNamesScreen = () => {
       alignItems: 'center',
     },
     matchSummaryText: {
-      fontFamily: theme.typography.fontFamilyBold,
+      fontFamily: theme.typography.fontFamilySemiBold,
       fontSize: theme.typography.sizes.body,
-      color: isDark ? '#D1FAE5' : '#065F46',
+      color: isDark ? theme.colors.text : theme.brand.pinkDeep,
       marginLeft: theme.spacing.s,
     },
     favoritesSection: {
-      backgroundColor: isDark ? '#78350F' : '#FFFBEB',
+      backgroundColor: isDark ? theme.colors.card : theme.brand.yellowSoft,
       marginHorizontal: theme.spacing.m,
       marginBottom: theme.spacing.m,
       padding: theme.spacing.m,
@@ -425,9 +432,9 @@ export const LikedNamesScreen = () => {
       alignItems: 'center',
     },
     favoritesSectionText: {
-      fontFamily: theme.typography.fontFamilyBold,
+      fontFamily: theme.typography.fontFamilySemiBold,
       fontSize: theme.typography.sizes.body,
-      color: isDark ? '#FDE68A' : '#92400E',
+      color: isDark ? theme.brand.yellow : theme.brand.yellowDeep,
       marginLeft: theme.spacing.s,
     },
   }), [theme, isDark]);
@@ -467,9 +474,10 @@ export const LikedNamesScreen = () => {
   };
 
   const getGradientColors = (gender: string) => {
-    if (gender === 'boy') return [theme.colors.boyBlue, '#3B82F6'] as const;
-    if (gender === 'girl') return [theme.colors.girlPink, '#EC4899'] as const;
-    return [theme.colors.neutralBeige, '#E8C547'] as const;
+    if (isDark) return [theme.colors.card, theme.colors.card] as const;
+    if (gender === 'boy') return [theme.colors.card, theme.brand.tealSoft] as const;
+    if (gender === 'girl') return [theme.colors.card, theme.brand.pinkSoft] as const;
+    return [theme.colors.card, theme.brand.yellowSoft] as const;
   };
 
   // Get unique languages from liked names
@@ -505,13 +513,13 @@ export const LikedNamesScreen = () => {
             <Ionicons
               name={item.isFavorite ? "star" : "star-outline"}
               size={18}
-              color={item.isFavorite ? '#F59E0B' : '#FFFFFF'}
+              color={item.isFavorite ? theme.brand.yellowDeep : theme.colors.grey}
             />
           </TouchableOpacity>
 
           {isMatch && (
             <View style={styles.matchBadge}>
-              <Ionicons name="heart" size={12} color="#FFFFFF" />
+              <Ionicons name="heart" size={12} color={theme.colors.textLight} />
               <Text style={styles.matchBadgeText}>MATCH</Text>
             </View>
           )}
@@ -520,7 +528,7 @@ export const LikedNamesScreen = () => {
             style={styles.shareButton}
             onPress={() => handleShareName(item)}
           >
-            <Ionicons name="share-outline" size={16} color="#FFFFFF" />
+            <Ionicons name="share-outline" size={16} color={theme.brand.purpleDeep} />
           </TouchableOpacity>
 
           {/* Delete button */}
@@ -528,7 +536,7 @@ export const LikedNamesScreen = () => {
             style={styles.deleteCardButton}
             onPress={() => handleDeleteName(item)}
           >
-            <Ionicons name="trash-outline" size={16} color="#FFFFFF" />
+            <Ionicons name="trash-outline" size={16} color={theme.colors.destructive} />
           </TouchableOpacity>
 
           <View style={styles.cardContent}>
@@ -586,7 +594,7 @@ export const LikedNamesScreen = () => {
       {/* Match summary */}
       {matchCount > 0 && user?.partnerId && (
         <View style={styles.matchSummary}>
-          <Ionicons name="heart-circle" size={24} color="#10B981" />
+          <Ionicons name="heart-circle" size={24} color={theme.colors.like} />
           <Text style={styles.matchSummaryText}>
             {matchCount} {matchCount === 1 ? 'name' : 'names'} matched with your partner!
           </Text>
@@ -596,7 +604,7 @@ export const LikedNamesScreen = () => {
       {/* Favorites summary */}
       {favoriteCount > 0 && (
         <View style={styles.favoritesSection}>
-          <Ionicons name="star" size={24} color="#F59E0B" />
+          <Ionicons name="star" size={24} color={theme.brand.yellowDeep} />
           <Text style={styles.favoritesSectionText}>
             {favoriteCount} {favoriteCount === 1 ? 'favourite' : 'favourites'}
           </Text>
@@ -685,7 +693,7 @@ export const LikedNamesScreen = () => {
           style={[styles.favoritesChip, showFavoritesOnly && styles.favoritesChipActive]}
           onPress={() => setShowFavoritesOnly(!showFavoritesOnly)}
         >
-          <Ionicons name="star" size={12} color={showFavoritesOnly ? '#F59E0B' : theme.colors.grey} />
+          <Ionicons name="star" size={12} color={showFavoritesOnly ? theme.brand.yellowDeep : theme.colors.grey} />
           <Text style={styles.favoritesChipText}>Favs</Text>
         </TouchableOpacity>
       </View>
@@ -702,7 +710,11 @@ export const LikedNamesScreen = () => {
         />
       ) : (
         <View style={styles.emptyState}>
-          <Ionicons name="heart-outline" size={64} color={theme.colors.grey} />
+          <Image
+            source={require('../../assets/brand/characters/flowwie.png')}
+            style={styles.emptyImage}
+            resizeMode="contain"
+          />
           <Text style={styles.emptyText}>
             {likedNames.length > 0 ? 'No names match this filter' : 'No liked names yet'}
           </Text>

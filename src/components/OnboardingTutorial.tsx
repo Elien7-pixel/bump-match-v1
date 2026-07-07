@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
+import { Brand } from '../theme/designTokens';
 
 interface OnboardingTutorialProps {
   visible: boolean;
@@ -28,32 +29,32 @@ interface Slide {
 const SLIDES: Slide[] = [
   {
     icon: 'heart-outline',
-    iconColor: '#EC4899',
+    iconColor: Brand.pinkDeep,
     title: 'Swipe to Discover',
     description: 'Swipe right on names you love, left on ones you don\'t. It\'s that simple!',
   },
   {
     icon: 'arrow-undo',
-    iconColor: '#F59E0B',
+    iconColor: Brand.yellowDeep,
     title: 'Changed Your Mind?',
     description: 'Tap the undo button to bring back the last name you swiped — perfect for second thoughts.',
   },
   {
     icon: 'people-outline',
-    iconColor: '#3B82F6',
+    iconColor: Brand.purpleDeep,
     title: 'Better Together',
     description: 'Are you doing this solo or with a partner? Link up to discover names you both love!',
     type: 'partner-prompt',
   },
   {
     icon: 'star-outline',
-    iconColor: '#F59E0B',
+    iconColor: Brand.yellowDeep,
     title: 'Favourite Your Top Picks',
     description: 'Tap the star on any card to mark a favourite — they\'ll be pinned to the top of your Liked Names.',
   },
   {
     icon: 'options-outline',
-    iconColor: '#10B981',
+    iconColor: Brand.tealDeep,
     title: 'Filter & Explore',
     description: 'Filter by gender, language, meaning, and popularity. Find names from 20+ cultures.',
   },
@@ -102,7 +103,7 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
       <View style={[styles.iconCircle, { backgroundColor: `${item.iconColor}15` }]}>
         <Ionicons name={item.icon as any} size={64} color={item.iconColor} />
       </View>
-      <Text style={[styles.title, { color: theme.colors.text, fontFamily: theme.typography.fontFamilyBold }]}>
+      <Text style={[styles.title, { color: theme.colors.text, fontFamily: theme.typography.fontFamilyDisplay }]}>
         {item.title}
       </Text>
       <Text style={[styles.description, { color: theme.colors.grey, fontFamily: theme.typography.fontFamily }]}>
@@ -113,8 +114,17 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={handleSkip}>
-      <View style={[styles.overlay, { backgroundColor: 'rgba(0,0,0,0.6)' }]}>
-        <View style={[styles.card, { backgroundColor: theme.colors.card }]}>
+      <View style={[styles.overlay, { backgroundColor: 'rgba(74, 68, 89, 0.45)' }]}>
+        <View
+          style={[
+            styles.card,
+            {
+              backgroundColor: theme.colors.card,
+              borderColor: theme.colors.border,
+              shadowColor: theme.colors.shadow,
+            },
+          ]}
+        >
           <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
             <Text style={[styles.skipText, { color: theme.colors.grey, fontFamily: theme.typography.fontFamily }]}>
               Skip
@@ -153,7 +163,7 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
                 style={[
                   styles.dot,
                   {
-                    backgroundColor: index === currentIndex ? theme.colors.primary : theme.colors.border,
+                    backgroundColor: index === currentIndex ? theme.colors.primary : theme.brand.purpleSoft,
                   },
                 ]}
               />
@@ -166,8 +176,8 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
                 style={[styles.partnerButton, { backgroundColor: theme.colors.primary }]}
                 onPress={handleAddPartner}
               >
-                <Ionicons name="people" size={18} color="#FFFFFF" style={{ marginRight: 6 }} />
-                <Text style={[styles.nextText, { fontFamily: theme.typography.fontFamilyBold }]}>
+                <Ionicons name="people" size={18} color={theme.colors.textLight} style={{ marginRight: 6 }} />
+                <Text style={[styles.nextText, { color: theme.colors.textLight, fontFamily: theme.typography.fontFamilySemiBold }]}>
                   Add Partner Now
                 </Text>
               </TouchableOpacity>
@@ -175,7 +185,7 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
                 style={[styles.soloButton, { borderColor: theme.colors.border }]}
                 onPress={handleNext}
               >
-                <Text style={[styles.soloText, { color: theme.colors.text, fontFamily: theme.typography.fontFamily }]}>
+                <Text style={[styles.soloText, { color: theme.colors.text, fontFamily: theme.typography.fontFamilyMedium }]}>
                   I'll do this solo / Add later
                 </Text>
               </TouchableOpacity>
@@ -185,7 +195,7 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
               style={[styles.nextButton, { backgroundColor: theme.colors.primary }]}
               onPress={handleNext}
             >
-              <Text style={[styles.nextText, { fontFamily: theme.typography.fontFamilyBold }]}>
+              <Text style={[styles.nextText, { color: theme.colors.textLight, fontFamily: theme.typography.fontFamilySemiBold }]}>
                 {currentIndex === SLIDES.length - 1 ? "Let's Go!" : 'Next'}
               </Text>
             </TouchableOpacity>
@@ -209,11 +219,11 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 400,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
-    elevation: 10,
+    borderWidth: 1,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 1,
+    shadowRadius: 12,
+    elevation: 4,
   },
   skipButton: {
     alignSelf: 'flex-end',
@@ -261,11 +271,10 @@ const styles = StyleSheet.create({
   nextButton: {
     width: '100%',
     paddingVertical: 14,
-    borderRadius: 30,
+    borderRadius: 16,
     alignItems: 'center',
   },
   nextText: {
-    color: '#FFFFFF',
     fontSize: 16,
   },
   partnerButtons: {
@@ -275,7 +284,7 @@ const styles = StyleSheet.create({
   partnerButton: {
     width: '100%',
     paddingVertical: 14,
-    borderRadius: 30,
+    borderRadius: 16,
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
@@ -283,7 +292,7 @@ const styles = StyleSheet.create({
   soloButton: {
     width: '100%',
     paddingVertical: 12,
-    borderRadius: 30,
+    borderRadius: 16,
     alignItems: 'center',
     borderWidth: 1,
   },

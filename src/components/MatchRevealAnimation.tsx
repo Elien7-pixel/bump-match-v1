@@ -11,6 +11,7 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../context/ThemeContext';
 
 interface MatchRevealAnimationProps {
@@ -19,7 +20,7 @@ interface MatchRevealAnimationProps {
   onDismiss: () => void;
 }
 
-const Heart = ({ delay, x, y }: { delay: number; x: number; y: number }) => {
+const Heart = ({ delay, x, y, color }: { delay: number; x: number; y: number; color: string }) => {
   const translateY = useSharedValue(0);
   const opacity = useSharedValue(0);
   const scale = useSharedValue(0.5);
@@ -51,7 +52,7 @@ const Heart = ({ delay, x, y }: { delay: number; x: number; y: number }) => {
 
   return (
     <Animated.View style={style}>
-      <Ionicons name="heart" size={24} color="#EC4899" />
+      <Ionicons name="heart" size={24} color={color} />
     </Animated.View>
   );
 };
@@ -104,6 +105,14 @@ export const MatchRevealAnimation: React.FC<MatchRevealAnimationProps> = ({
     y: 100 + Math.random() * 300,
   }));
 
+  // Brand pastel confetti colours: purple, pink, teal, yellow
+  const particleColors = [
+    theme.colors.primary,
+    theme.colors.accent,
+    theme.colors.secondary,
+    theme.brand.yellow,
+  ];
+
   return (
     <Modal
       visible={visible}
@@ -114,16 +123,35 @@ export const MatchRevealAnimation: React.FC<MatchRevealAnimationProps> = ({
       <Pressable style={styles.overlay} onPress={onDismiss}>
         <View style={styles.heartsContainer} pointerEvents="none">
           {hearts.map((heart, i) => (
-            <Heart key={i} delay={heart.delay} x={heart.x} y={heart.y} />
+            <Heart
+              key={i}
+              delay={heart.delay}
+              x={heart.x}
+              y={heart.y}
+              color={particleColors[i % particleColors.length]}
+            />
           ))}
         </View>
 
-        <Animated.View style={[styles.card, containerStyle, { backgroundColor: theme.colors.card }]}>
-          <Animated.View style={titleStyle}>
-            <Ionicons name="heart-circle" size={64} color="#10B981" />
-            <Text style={[styles.title, { color: theme.colors.text, fontFamily: theme.typography.fontFamilyBold }]}>
-              It's a Match!
-            </Text>
+        <Animated.View
+          style={[
+            styles.card,
+            containerStyle,
+            { backgroundColor: theme.colors.card, shadowColor: theme.colors.shadow },
+          ]}
+        >
+          <Animated.View style={[titleStyle, styles.titleWrap]}>
+            <Ionicons name="heart-circle" size={64} color={theme.colors.like} />
+            <LinearGradient
+              colors={theme.gradients.g2}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.titleBanner}
+            >
+              <Text style={[styles.title, { color: theme.colors.textLight, fontFamily: theme.typography.fontFamilyDisplay }]}>
+                It's a Match!
+              </Text>
+            </LinearGradient>
             <Text style={[styles.subtitle, { color: theme.colors.grey, fontFamily: theme.typography.fontFamily }]}>
               You and your partner both liked {matchedNames.length === 1 ? 'this name' : 'these names'}!
             </Text>
@@ -131,9 +159,9 @@ export const MatchRevealAnimation: React.FC<MatchRevealAnimationProps> = ({
 
           <Animated.View style={[styles.namesList, namesStyle]}>
             {matchedNames.slice(0, 5).map((name, index) => (
-              <View key={index} style={[styles.nameChip, { backgroundColor: '#ECFDF5' }]}>
-                <Ionicons name="heart" size={14} color="#10B981" />
-                <Text style={[styles.nameText, { fontFamily: theme.typography.fontFamilyBold }]}>
+              <View key={index} style={[styles.nameChip, { backgroundColor: theme.brand.pinkSoft }]}>
+                <Ionicons name="heart" size={14} color={theme.colors.like} />
+                <Text style={[styles.nameText, { color: theme.brand.pinkDeep, fontFamily: theme.typography.fontFamilyBold }]}>
                   {name}
                 </Text>
               </View>
@@ -157,7 +185,7 @@ export const MatchRevealAnimation: React.FC<MatchRevealAnimationProps> = ({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
+    backgroundColor: 'rgba(74, 68, 89, 0.55)', // warm ink scrim (Brand.ink), no pure black
     justifyContent: 'center',
     alignItems: 'center',
     padding: 24,
@@ -171,16 +199,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '100%',
     maxWidth: 340,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
-    elevation: 10,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 1, // shadow colour token carries its own alpha
+    shadowRadius: 12,
+    elevation: 4,
+  },
+  titleWrap: {
+    alignItems: 'center',
+  },
+  titleBanner: {
+    borderRadius: 999,
+    paddingVertical: 10,
+    paddingHorizontal: 28,
+    marginTop: 12,
   },
   title: {
     fontSize: 28,
     textAlign: 'center',
-    marginTop: 12,
   },
   subtitle: {
     fontSize: 14,
@@ -198,12 +233,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 10,
     paddingHorizontal: 20,
-    borderRadius: 20,
+    borderRadius: 999,
     gap: 8,
   },
   nameText: {
     fontSize: 18,
-    color: '#065F46',
   },
   moreText: {
     fontSize: 14,

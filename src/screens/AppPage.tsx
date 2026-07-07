@@ -322,7 +322,7 @@ export const AppPage = () => {
       alignItems: 'center',
     },
     logoText: {
-      fontFamily: theme.typography.fontFamilyBold,
+      fontFamily: theme.typography.fontFamilyDisplay,
       color: theme.colors.primary,
       fontSize: 20
     },
@@ -337,19 +337,17 @@ export const AppPage = () => {
       flexDirection: 'row',
       alignItems: 'center',
       padding: theme.spacing.s,
-      backgroundColor: theme.colors.card,
-      borderRadius: theme.borderRadius.m,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
+      backgroundColor: theme.brand.purpleSoft,
+      borderRadius: theme.borderRadius.round,
     },
     filterText: {
-      fontFamily: theme.typography.fontFamily,
+      fontFamily: theme.typography.fontFamilyMedium,
       marginRight: 4,
-      color: theme.colors.text,
+      color: theme.brand.purpleDeep,
     },
     genderSwitch: {
       flexDirection: 'row',
-      backgroundColor: theme.colors.border,
+      backgroundColor: theme.brand.purpleSoft,
       borderRadius: theme.borderRadius.round,
       padding: 2,
     },
@@ -362,8 +360,8 @@ export const AppPage = () => {
       backgroundColor: theme.colors.card,
       shadowColor: theme.colors.shadow,
       shadowOffset: { width: 0, height: 1 },
-      shadowOpacity: 0.1,
-      shadowRadius: 1,
+      shadowOpacity: 1,
+      shadowRadius: 2,
       elevation: 2,
     },
     genderText: {
@@ -372,8 +370,8 @@ export const AppPage = () => {
       fontFamily: theme.typography.fontFamily,
     },
     genderTextActive: {
-      color: theme.colors.text,
-      fontFamily: theme.typography.fontFamilyBold,
+      color: theme.brand.purpleDeep,
+      fontFamily: theme.typography.fontFamilySemiBold,
     },
     searchBar: {
       flexDirection: 'row',
@@ -406,8 +404,8 @@ export const AppPage = () => {
       borderColor: theme.colors.border,
     },
     popularToggleActive: {
-      backgroundColor: '#FEF3C7',
-      borderColor: '#F59E0B',
+      backgroundColor: theme.brand.yellowSoft,
+      borderColor: theme.brand.yellowDeep,
     },
     popularToggleText: {
       fontSize: 11,
@@ -426,9 +424,9 @@ export const AppPage = () => {
       justifyContent: 'center'
     },
     emptyText: {
-      fontFamily: theme.typography.fontFamilyBold,
-      fontSize: 20,
-      color: theme.colors.grey,
+      fontFamily: theme.typography.fontFamilyDisplay,
+      fontSize: 22,
+      color: theme.colors.text,
       marginBottom: 10
     },
     retryText: {
@@ -451,9 +449,9 @@ export const AppPage = () => {
       marginHorizontal: theme.spacing.m,
       shadowColor: theme.colors.shadow,
       shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
-      shadowRadius: 3.84,
-      elevation: 5,
+      shadowOpacity: 1,
+      shadowRadius: 4,
+      elevation: 4,
     },
     rewindBtn: {
       width: 40,
@@ -491,7 +489,7 @@ export const AppPage = () => {
         </View>
 
         <TouchableOpacity style={styles.iconButton} onPress={() => setMenuVisible(true)}>
-          <Ionicons name="menu-outline" size={24} color={theme.colors.grey} />
+          <Ionicons name="menu-outline" size={24} color={theme.colors.text} />
         </TouchableOpacity>
       </View>
 
@@ -501,11 +499,11 @@ export const AppPage = () => {
       {/* Filter Bar */}
       <View style={styles.filterBar}>
         <TouchableOpacity style={styles.languageButton} onPress={() => setLanguagePickerVisible(true)}>
-          <Ionicons name="globe-outline" size={16} color={theme.colors.primary} style={{ marginRight: 4 }} />
-          <Text style={[styles.filterText, { color: theme.colors.text }]}>
+          <Ionicons name="globe-outline" size={16} color={theme.brand.purpleDeep} style={{ marginRight: 4 }} />
+          <Text style={styles.filterText}>
             {languageDisplayText === 'All' ? 'All Languages' : languageDisplayText}
           </Text>
-          <Ionicons name="chevron-down" size={16} color={theme.colors.text} />
+          <Ionicons name="chevron-down" size={16} color={theme.brand.purpleDeep} />
         </TouchableOpacity>
 
         <View style={styles.genderSwitch}>
@@ -537,14 +535,14 @@ export const AppPage = () => {
           style={[styles.popularToggle, popularOnly && styles.popularToggleActive]}
           onPress={() => { setPopularOnly(!popularOnly); if (!popularOnly) setCelebrityOnly(false); }}
         >
-          <Ionicons name="star" size={14} color={popularOnly ? '#F59E0B' : theme.colors.grey} />
+          <Ionicons name="star" size={14} color={popularOnly ? theme.brand.yellowDeep : theme.colors.grey} />
           <Text style={styles.popularToggleText}>Trending</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.popularToggle, celebrityOnly && { backgroundColor: '#EC489920', borderColor: '#EC4899' }]}
+          style={[styles.popularToggle, celebrityOnly && { backgroundColor: theme.brand.pinkSoft, borderColor: theme.brand.pinkDeep }]}
           onPress={() => { setCelebrityOnly(!celebrityOnly); if (!celebrityOnly) setPopularOnly(false); }}
         >
-          <Ionicons name="sparkles" size={14} color={celebrityOnly ? '#EC4899' : theme.colors.grey} />
+          <Ionicons name="sparkles" size={14} color={celebrityOnly ? theme.brand.pinkDeep : theme.colors.grey} />
           <Text style={styles.popularToggleText}>Celebrity</Text>
         </TouchableOpacity>
       </View>
@@ -573,19 +571,19 @@ export const AppPage = () => {
       {/* Action Buttons */}
       <View style={styles.actions}>
         <TouchableOpacity style={[styles.actionBtn, styles.rewindBtn]} onPress={handleRewind}>
-          <Ionicons name="arrow-undo" size={22} color="#F59E0B" />
+          <Ionicons name="arrow-undo" size={22} color={theme.brand.yellowDeep} />
         </TouchableOpacity>
 
         <TouchableOpacity style={[styles.actionBtn, styles.dislikeBtn]} onPress={() => {
           if (names.length > 0) handleSwipeLeft(names[0]);
         }}>
-          <Ionicons name="close" size={32} color={theme.colors.grey} />
+          <Ionicons name="close" size={32} color={theme.colors.dislike} />
         </TouchableOpacity>
 
         <TouchableOpacity style={[styles.actionBtn, styles.likeBtn]} onPress={() => {
           if (names.length > 0) handleSwipeRight(names[0]);
         }}>
-          <Ionicons name="heart" size={32} color={theme.colors.primary} />
+          <Ionicons name="heart" size={32} color={theme.colors.like} />
         </TouchableOpacity>
       </View>
 

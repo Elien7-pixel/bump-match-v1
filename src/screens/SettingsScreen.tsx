@@ -38,7 +38,7 @@ export const SettingsScreen = () => {
       padding: theme.spacing.s,
     },
     headerTitle: {
-      fontFamily: theme.typography.fontFamilyBold,
+      fontFamily: theme.typography.fontFamilyDisplay,
       fontSize: theme.typography.sizes.h2,
       color: theme.colors.text,
     },
@@ -63,12 +63,14 @@ export const SettingsScreen = () => {
       justifyContent: 'space-between',
       backgroundColor: theme.colors.card,
       padding: theme.spacing.m,
-      borderRadius: theme.borderRadius.m,
+      borderRadius: theme.borderRadius.l,
       marginBottom: theme.spacing.s,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
       shadowColor: theme.colors.shadow,
-      shadowOffset: { width: 0, height: 1 },
-      shadowOpacity: 0.05,
-      shadowRadius: 2,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 1,
+      shadowRadius: 4,
       elevation: 2,
     },
     settingLeft: {
@@ -95,31 +97,38 @@ export const SettingsScreen = () => {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: isDark ? '#7F1D1D' : '#FEE2E2',
+      backgroundColor: theme.colors.destructive,
       padding: theme.spacing.m,
       borderRadius: theme.borderRadius.m,
       marginTop: theme.spacing.m,
       marginBottom: theme.spacing.xl,
+      shadowColor: theme.colors.shadow,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 1,
+      shadowRadius: 4,
+      elevation: 2,
     },
     logoutText: {
-      fontFamily: theme.typography.fontFamilyBold,
+      fontFamily: theme.typography.fontFamilySemiBold,
       fontSize: theme.typography.sizes.body,
-      color: isDark ? '#FECACA' : '#EF4444',
+      color: theme.colors.textLight,
       marginLeft: theme.spacing.s,
     },
     userInfo: {
-      backgroundColor: isDark ? '#1E3A8A' : '#E0F2FE',
+      backgroundColor: isDark ? theme.colors.card : theme.brand.purpleSoft,
       borderRadius: theme.borderRadius.l,
       padding: theme.spacing.l,
       marginBottom: theme.spacing.l,
       flexDirection: 'row',
       alignItems: 'center',
+      borderWidth: 1,
+      borderColor: theme.colors.border,
     },
     userAvatar: {
       width: 50,
       height: 50,
       borderRadius: 25,
-      backgroundColor: theme.colors.card,
+      backgroundColor: isDark ? theme.colors.background : theme.colors.card,
       alignItems: 'center',
       justifyContent: 'center',
     },
@@ -307,8 +316,8 @@ export const SettingsScreen = () => {
               <Switch
                 value={notificationsEnabled}
                 onValueChange={setNotificationsEnabled}
-                trackColor={{ false: '#E5E7EB', true: theme.colors.primary }}
-                thumbColor="#FFFFFF"
+                trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
+                thumbColor={theme.colors.textLight}
               />
             }
           />
@@ -320,8 +329,8 @@ export const SettingsScreen = () => {
               <Switch
                 value={isDark}
                 onValueChange={toggleTheme}
-                trackColor={{ false: '#E5E7EB', true: theme.colors.primary }}
-                thumbColor="#FFFFFF"
+                trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
+                thumbColor={theme.colors.textLight}
               />
             }
           />
@@ -382,7 +391,7 @@ export const SettingsScreen = () => {
 
         {/* Logout Button */}
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Ionicons name="log-out-outline" size={24} color={isDark ? '#FECACA' : '#EF4444'} />
+          <Ionicons name="log-out-outline" size={24} color={theme.colors.textLight} />
           <Text style={styles.logoutText}>Log Out</Text>
         </TouchableOpacity>
       </ScrollView>
@@ -391,7 +400,7 @@ export const SettingsScreen = () => {
       <Modal visible={helpModalVisible} animationType="slide" presentationStyle="pageSheet">
         <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16 }}>
-            <Text style={{ fontFamily: theme.typography.fontFamilyBold, fontSize: 20, color: theme.colors.text }}>Help & FAQ</Text>
+            <Text style={{ fontFamily: theme.typography.fontFamilyDisplay, fontSize: 20, color: theme.colors.text }}>Help & FAQ</Text>
             <TouchableOpacity onPress={() => setHelpModalVisible(false)}>
               <Ionicons name="close" size={24} color={theme.colors.text} />
             </TouchableOpacity>
@@ -429,7 +438,7 @@ export const SettingsScreen = () => {
       <Modal visible={privacyModalVisible} animationType="slide" presentationStyle="pageSheet">
         <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16 }}>
-            <Text style={{ fontFamily: theme.typography.fontFamilyBold, fontSize: 20, color: theme.colors.text }}>Privacy Policy</Text>
+            <Text style={{ fontFamily: theme.typography.fontFamilyDisplay, fontSize: 20, color: theme.colors.text }}>Privacy Policy</Text>
             <TouchableOpacity onPress={() => setPrivacyModalVisible(false)}>
               <Ionicons name="close" size={24} color={theme.colors.text} />
             </TouchableOpacity>
@@ -484,7 +493,7 @@ export const SettingsScreen = () => {
       <Modal visible={termsModalVisible} animationType="slide" presentationStyle="pageSheet">
         <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16 }}>
-            <Text style={{ fontFamily: theme.typography.fontFamilyBold, fontSize: 20, color: theme.colors.text }}>Terms of Service</Text>
+            <Text style={{ fontFamily: theme.typography.fontFamilyDisplay, fontSize: 20, color: theme.colors.text }}>Terms of Service</Text>
             <TouchableOpacity onPress={() => setTermsModalVisible(false)}>
               <Ionicons name="close" size={24} color={theme.colors.text} />
             </TouchableOpacity>

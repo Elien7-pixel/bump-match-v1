@@ -10,30 +10,30 @@ interface InputProps extends TextInputProps {
 }
 
 export const Input: React.FC<InputProps> = ({ label, containerStyle, labelStyle, style, ...props }) => {
-  const { theme, isDark } = useTheme();
+  const { theme } = useTheme();
 
   const styles = React.useMemo(() => StyleSheet.create({
     container: {
       marginBottom: theme.spacing.m,
     },
     label: {
-      fontFamily: theme.typography.fontFamily,
+      fontFamily: theme.typography.fontFamilyMedium,
       fontSize: theme.typography.sizes.small,
       color: theme.colors.text,
       marginBottom: theme.spacing.xs,
       marginLeft: theme.spacing.xs,
     },
     input: {
-      backgroundColor: isDark ? theme.colors.card : '#F3F4F6', // Dark card or light grey
+      backgroundColor: theme.colors.card, // white on cream (warm card in dark mode)
       borderRadius: theme.borderRadius.m,
       padding: theme.spacing.m,
       fontSize: theme.typography.sizes.body,
       fontFamily: theme.typography.fontFamily,
       color: theme.colors.text,
       borderWidth: 1,
-      borderColor: isDark ? theme.colors.border : 'transparent',
+      borderColor: theme.colors.border,
     },
-  }), [theme, isDark]);
+  }), [theme]);
 
   return (
     <View style={[styles.container, containerStyle]}>

@@ -10,13 +10,13 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#FEFAF6"
     },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.sherbetagency.bumpmatch",
       "icon": "./assets/icon-ios.png",
-      "buildNumber": "4",
+      "buildNumber": "5",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -24,7 +24,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#AAA0DD"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
@@ -47,9 +47,10 @@
         "expo-notifications",
         {
           "icon": "./assets/icon.png",
-          "color": "#C850C0"
+          "color": "#AAA0DD"
         }
-      ]
+      ],
+      "expo-font"
     ]
   }
 }

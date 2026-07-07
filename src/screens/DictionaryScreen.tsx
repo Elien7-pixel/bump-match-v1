@@ -11,6 +11,7 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -74,7 +75,7 @@ export const DictionaryScreen = () => {
     },
     backButton: { padding: theme.spacing.s },
     headerTitle: {
-      fontFamily: theme.typography.fontFamilyBold,
+      fontFamily: theme.typography.fontFamilyDisplay,
       fontSize: theme.typography.sizes.h2,
       color: theme.colors.text,
       marginLeft: theme.spacing.s,
@@ -117,8 +118,8 @@ export const DictionaryScreen = () => {
       minWidth: 80,
     },
     buttonText: {
-      color: '#FFFFFF',
-      fontFamily: theme.typography.fontFamilyBold,
+      color: theme.colors.textLight,
+      fontFamily: theme.typography.fontFamilySemiBold,
       fontSize: 14,
     },
     resultArea: {
@@ -131,9 +132,13 @@ export const DictionaryScreen = () => {
       marginTop: 60,
       paddingHorizontal: theme.spacing.l,
     },
+    placeholderImage: {
+      width: 120,
+      height: 120,
+    },
     placeholderTitle: {
-      fontFamily: theme.typography.fontFamilyBold,
-      fontSize: 18,
+      fontFamily: theme.typography.fontFamilyDisplay,
+      fontSize: theme.typography.sizes.h3,
       color: theme.colors.text,
       marginTop: 16,
       textAlign: 'center',
@@ -149,30 +154,32 @@ export const DictionaryScreen = () => {
     card: {
       backgroundColor: theme.colors.card,
       borderRadius: theme.borderRadius.l,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
       padding: theme.spacing.l,
       shadowColor: theme.colors.shadow,
       shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
-      shadowRadius: 8,
-      elevation: 4,
+      shadowOpacity: 1,
+      shadowRadius: 6,
+      elevation: 3,
       marginBottom: theme.spacing.l,
     },
     nameRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
     name: {
-      fontFamily: theme.typography.fontFamilyBold,
-      fontSize: 32,
+      fontFamily: theme.typography.fontFamilyDisplay,
+      fontSize: theme.typography.sizes.h1,
       color: theme.colors.text,
     },
     genderBadge: {
       paddingHorizontal: 10,
       paddingVertical: 4,
-      borderRadius: 12,
+      borderRadius: theme.borderRadius.round,
       marginLeft: 12,
     },
     genderBadgeText: {
       fontFamily: theme.typography.fontFamilyBold,
       fontSize: 11,
-      color: '#FFFFFF',
+      color: theme.brand.ink,
       textTransform: 'uppercase',
     },
     pronunciation: {
@@ -185,7 +192,7 @@ export const DictionaryScreen = () => {
     sectionLabel: {
       fontFamily: theme.typography.fontFamilyBold,
       fontSize: 11,
-      color: theme.colors.grey,
+      color: theme.brand.purpleDeep,
       textTransform: 'uppercase',
       letterSpacing: 1,
       marginBottom: 4,
@@ -199,15 +206,28 @@ export const DictionaryScreen = () => {
     },
     variantsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 4 },
     variantPill: {
-      paddingHorizontal: 10,
+      paddingHorizontal: 12,
       paddingVertical: 4,
-      borderRadius: 12,
-      backgroundColor: isDark ? '#374151' : '#F3F4F6',
+      borderRadius: theme.borderRadius.round,
+      backgroundColor: theme.brand.purpleSoft,
     },
     variantText: {
-      fontFamily: theme.typography.fontFamily,
+      fontFamily: theme.typography.fontFamilyMedium,
       fontSize: 13,
-      color: theme.colors.text,
+      color: theme.brand.purpleDeep,
+    },
+    originChip: {
+      alignSelf: 'flex-start',
+      paddingHorizontal: 12,
+      paddingVertical: 5,
+      borderRadius: theme.borderRadius.round,
+      backgroundColor: theme.brand.tealSoft,
+      marginTop: 2,
+    },
+    originChipText: {
+      fontFamily: theme.typography.fontFamilyMedium,
+      fontSize: 13,
+      color: theme.brand.tealDeep,
     },
     famousItem: {
       flexDirection: 'row',
@@ -280,7 +300,7 @@ export const DictionaryScreen = () => {
             disabled={loading}
           >
             {loading ? (
-              <ActivityIndicator color="#FFFFFF" />
+              <ActivityIndicator color={theme.colors.textLight} />
             ) : (
               <Text style={styles.buttonText}>Look up</Text>
             )}
@@ -290,7 +310,11 @@ export const DictionaryScreen = () => {
         <ScrollView style={styles.resultArea} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
           {!result && !loading && (
             <View style={styles.placeholder}>
-              <Ionicons name="book-outline" size={48} color={theme.colors.grey} />
+              <Image
+                source={require('../../assets/brand/characters/starro.png')}
+                style={styles.placeholderImage}
+                resizeMode="contain"
+              />
               <Text style={styles.placeholderTitle}>Look up any baby name</Text>
               <Text style={styles.placeholderBody}>
                 Get the meaning, origin, pronunciation, common spellings and famous bearers.
@@ -330,7 +354,9 @@ export const DictionaryScreen = () => {
               {result.origin ? (
                 <>
                   <Text style={styles.sectionLabel}>Origin</Text>
-                  <Text style={styles.sectionBody}>{result.origin}</Text>
+                  <View style={styles.originChip}>
+                    <Text style={styles.originChipText}>{result.origin}</Text>
+                  </View>
                 </>
               ) : null}
 

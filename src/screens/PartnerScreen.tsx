@@ -12,6 +12,7 @@ import {
     TextInput,
     ActivityIndicator,
     Platform,
+    Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -134,7 +135,7 @@ export const PartnerScreen = () => {
             padding: theme.spacing.s,
         },
         headerTitle: {
-            fontFamily: theme.typography.fontFamilyBold,
+            fontFamily: theme.typography.fontFamilyDisplay,
             fontSize: theme.typography.sizes.h2,
             color: theme.colors.text,
         },
@@ -143,8 +144,10 @@ export const PartnerScreen = () => {
             paddingHorizontal: theme.spacing.l,
         },
         connectedCard: {
-            backgroundColor: isDark ? '#1E3A8A' : '#E0F2FE',
+            backgroundColor: isDark ? theme.colors.card : theme.brand.purpleSoft,
             borderRadius: theme.borderRadius.l,
+            borderWidth: 1.5,
+            borderColor: isDark ? theme.colors.border : theme.colors.primary,
             padding: theme.spacing.l,
             marginBottom: theme.spacing.l,
         },
@@ -197,7 +200,7 @@ export const PartnerScreen = () => {
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'space-between',
-            backgroundColor: isDark ? '#064E3B' : '#ECFDF5',
+            backgroundColor: isDark ? theme.colors.card : theme.brand.tealSoft,
             padding: theme.spacing.m,
             borderRadius: theme.borderRadius.m,
             marginBottom: theme.spacing.s,
@@ -205,13 +208,15 @@ export const PartnerScreen = () => {
         matchedNameText: {
             fontFamily: theme.typography.fontFamilyBold,
             fontSize: theme.typography.sizes.h3,
-            color: isDark ? '#D1FAE5' : '#065F46',
+            color: isDark ? theme.brand.teal : theme.brand.tealDeep,
         },
         emptyMatches: {
             alignItems: 'center',
             padding: theme.spacing.xl,
-            backgroundColor: isDark ? theme.colors.card : '#F9FAFB',
+            backgroundColor: theme.colors.card,
             borderRadius: theme.borderRadius.l,
+            borderWidth: 1.5,
+            borderColor: theme.colors.border,
         },
         emptyText: {
             fontFamily: theme.typography.fontFamilyBold,
@@ -232,7 +237,7 @@ export const PartnerScreen = () => {
             gap: 8,
         },
         likeChip: {
-            backgroundColor: isDark ? '#7F1D1D' : '#FEE2E2',
+            backgroundColor: isDark ? theme.colors.card : theme.brand.pinkSoft,
             paddingHorizontal: theme.spacing.m,
             paddingVertical: theme.spacing.s,
             borderRadius: theme.borderRadius.round,
@@ -240,7 +245,7 @@ export const PartnerScreen = () => {
         likeChipText: {
             fontFamily: theme.typography.fontFamily,
             fontSize: theme.typography.sizes.small,
-            color: isDark ? '#FECACA' : '#991B1B',
+            color: isDark ? theme.brand.pink : theme.brand.pinkDeep,
         },
         inviteSection: {
             alignItems: 'center',
@@ -250,13 +255,13 @@ export const PartnerScreen = () => {
             width: 100,
             height: 100,
             borderRadius: 50,
-            backgroundColor: isDark ? '#1E3A8A' : '#E0F2FE',
+            backgroundColor: isDark ? theme.colors.card : theme.brand.purpleSoft,
             alignItems: 'center',
             justifyContent: 'center',
             marginBottom: theme.spacing.l,
         },
         inviteTitle: {
-            fontFamily: theme.typography.fontFamilyBold,
+            fontFamily: theme.typography.fontFamilyDisplay,
             fontSize: theme.typography.sizes.h2,
             color: theme.colors.text,
             marginBottom: theme.spacing.s,
@@ -271,12 +276,14 @@ export const PartnerScreen = () => {
         qrCard: {
             backgroundColor: theme.colors.card,
             borderRadius: theme.borderRadius.l,
+            borderWidth: 1.5,
+            borderColor: theme.colors.border,
             padding: theme.spacing.l,
             alignItems: 'center',
             shadowColor: theme.colors.shadow,
             shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.1,
-            shadowRadius: 4,
+            shadowOpacity: 1,
+            shadowRadius: 6,
             elevation: 3,
             marginBottom: theme.spacing.l,
         },
@@ -288,14 +295,16 @@ export const PartnerScreen = () => {
         },
         qrContainer: {
             padding: theme.spacing.m,
-            backgroundColor: 'white',
+            backgroundColor: '#FFFFFF',
             borderRadius: theme.borderRadius.m,
+            borderWidth: 1,
+            borderColor: theme.colors.border,
             marginBottom: theme.spacing.m,
         },
         codeBox: {
             flexDirection: 'row',
             alignItems: 'center',
-            backgroundColor: isDark ? theme.colors.background : '#F3F4F6',
+            backgroundColor: isDark ? theme.colors.background : theme.brand.purpleSoft,
             padding: theme.spacing.m,
             borderRadius: theme.borderRadius.m,
             width: '100%',
@@ -381,7 +390,7 @@ export const PartnerScreen = () => {
             width: 48,
             height: 48,
             borderRadius: 24,
-            backgroundColor: isDark ? '#1E3A8A' : '#E0F2FE',
+            backgroundColor: isDark ? theme.colors.card : theme.brand.tealSoft,
             alignItems: 'center',
             justifyContent: 'center',
         },
@@ -495,7 +504,11 @@ export const PartnerScreen = () => {
                         <View style={styles.connectedCard}>
                             <View style={styles.connectedHeader}>
                                 <View style={styles.partnerAvatar}>
-                                    <Ionicons name="heart" size={32} color={theme.colors.primary} />
+                                    <Image
+                                        source={require('../../assets/brand/characters/crownie.png')}
+                                        style={{ width: 46, height: 46 }}
+                                        resizeMode="contain"
+                                    />
                                 </View>
                                 <View style={styles.partnerInfo}>
                                     <Text style={styles.partnerName}>
@@ -516,19 +529,19 @@ export const PartnerScreen = () => {
                             {!hasDeadline ? (
                                 /* No date set: show "Set a reveal date" button */
                                 <TouchableOpacity
-                                    style={[styles.matchedNameCard, { justifyContent: 'center' }]}
+                                    style={[styles.matchedNameCard, { justifyContent: 'center', backgroundColor: isDark ? theme.colors.card : theme.brand.yellowSoft }]}
                                     onPress={() => setShowDeadlinePicker(true)}
                                 >
-                                    <Ionicons name="calendar-outline" size={20} color="#F59E0B" style={{ marginRight: 8 }} />
-                                    <Text style={[styles.matchedNameText, { color: isDark ? '#FDE68A' : '#92400E', fontSize: 14 }]}>
+                                    <Ionicons name="calendar-outline" size={20} color={theme.brand.yellowDeep} style={{ marginRight: 8 }} />
+                                    <Text style={[styles.matchedNameText, { color: isDark ? theme.brand.yellow : theme.colors.text, fontSize: 14 }]}>
                                         Set a reveal date for your matches
                                     </Text>
                                 </TouchableOpacity>
                             ) : !isConfirmed && revealDateInfo?.proposedByMe ? (
                                 /* Date proposed by ME and not confirmed: waiting for partner */
-                                <View style={[styles.matchedNameCard, { flexDirection: 'column', alignItems: 'center', paddingVertical: 20 }]}>
-                                    <Ionicons name="hourglass-outline" size={32} color="#F59E0B" />
-                                    <Text style={[styles.matchedNameText, { color: isDark ? '#FDE68A' : '#92400E', marginTop: 8, textAlign: 'center', fontSize: 15 }]}>
+                                <View style={[styles.matchedNameCard, { flexDirection: 'column', alignItems: 'center', paddingVertical: 20, backgroundColor: isDark ? theme.colors.card : theme.brand.yellowSoft }]}>
+                                    <Ionicons name="hourglass-outline" size={32} color={theme.brand.yellowDeep} />
+                                    <Text style={[styles.matchedNameText, { color: isDark ? theme.brand.yellow : theme.colors.text, marginTop: 8, textAlign: 'center', fontSize: 15 }]}>
                                         Waiting for {partnerInfo.firstName} to confirm
                                     </Text>
                                     <Text style={[styles.emptySubtext, { marginTop: 4 }]}>
@@ -556,9 +569,9 @@ export const PartnerScreen = () => {
                                 </View>
                             ) : !isConfirmed && !revealDateInfo?.proposedByMe ? (
                                 /* Date proposed by PARTNER and not confirmed: show Confirm / Edit */
-                                <View style={[styles.matchedNameCard, { flexDirection: 'column', alignItems: 'center', paddingVertical: 20 }]}>
-                                    <Ionicons name="notifications-outline" size={32} color="#F59E0B" />
-                                    <Text style={[styles.matchedNameText, { color: isDark ? '#FDE68A' : '#92400E', marginTop: 8, textAlign: 'center', fontSize: 15 }]}>
+                                <View style={[styles.matchedNameCard, { flexDirection: 'column', alignItems: 'center', paddingVertical: 20, backgroundColor: isDark ? theme.colors.card : theme.brand.yellowSoft }]}>
+                                    <Ionicons name="notifications-outline" size={32} color={theme.brand.yellowDeep} />
+                                    <Text style={[styles.matchedNameText, { color: isDark ? theme.brand.yellow : theme.colors.text, marginTop: 8, textAlign: 'center', fontSize: 15 }]}>
                                         {partnerInfo.firstName} proposed a reveal date
                                     </Text>
                                     <Text style={[styles.emptySubtext, { marginTop: 4 }]}>
@@ -570,10 +583,10 @@ export const PartnerScreen = () => {
                                     <View style={{ flexDirection: 'row', marginTop: 16, gap: 12 }}>
                                         <TouchableOpacity
                                             style={{
-                                                backgroundColor: '#10B981',
+                                                backgroundColor: theme.brand.tealDeep,
                                                 paddingHorizontal: 20,
                                                 paddingVertical: 10,
-                                                borderRadius: 8,
+                                                borderRadius: theme.borderRadius.m,
                                             }}
                                             onPress={async () => {
                                                 if (token) {
@@ -586,16 +599,18 @@ export const PartnerScreen = () => {
                                                 }
                                             }}
                                         >
-                                            <Text style={{ color: '#FFFFFF', fontFamily: theme.typography.fontFamilyBold, fontSize: 14 }}>
+                                            <Text style={{ color: theme.colors.textLight, fontFamily: theme.typography.fontFamilySemiBold, fontSize: 14 }}>
                                                 Confirm
                                             </Text>
                                         </TouchableOpacity>
                                         <TouchableOpacity
                                             style={{
-                                                backgroundColor: isDark ? '#374151' : '#F3F4F6',
+                                                backgroundColor: theme.colors.card,
+                                                borderWidth: 1.5,
+                                                borderColor: theme.colors.border,
                                                 paddingHorizontal: 20,
                                                 paddingVertical: 10,
-                                                borderRadius: 8,
+                                                borderRadius: theme.borderRadius.m,
                                             }}
                                             onPress={async () => {
                                                 if (token) {
@@ -608,7 +623,7 @@ export const PartnerScreen = () => {
                                                 }
                                             }}
                                         >
-                                            <Text style={{ color: theme.colors.text, fontFamily: theme.typography.fontFamilyBold, fontSize: 14 }}>
+                                            <Text style={{ color: theme.colors.text, fontFamily: theme.typography.fontFamilySemiBold, fontSize: 14 }}>
                                                 Suggest Different Date
                                             </Text>
                                         </TouchableOpacity>
@@ -616,9 +631,9 @@ export const PartnerScreen = () => {
                                 </View>
                             ) : isConfirmed && !deadlinePassed ? (
                                 /* Date confirmed but not yet reached: locked state */
-                                <View style={[styles.matchedNameCard, { flexDirection: 'column', alignItems: 'center', paddingVertical: 20 }]}>
-                                    <Ionicons name="lock-closed" size={32} color="#F59E0B" />
-                                    <Text style={[styles.matchedNameText, { color: isDark ? '#FDE68A' : '#92400E', marginTop: 8, textAlign: 'center' }]}>
+                                <View style={[styles.matchedNameCard, { flexDirection: 'column', alignItems: 'center', paddingVertical: 20, backgroundColor: isDark ? theme.colors.card : theme.brand.yellowSoft }]}>
+                                    <Ionicons name="lock-closed" size={32} color={theme.brand.yellowDeep} />
+                                    <Text style={[styles.matchedNameText, { color: isDark ? theme.brand.yellow : theme.colors.text, marginTop: 8, textAlign: 'center' }]}>
                                         {matchedNames?.length || 0} {(matchedNames?.length || 0) === 1 ? 'match' : 'matches'} waiting!
                                     </Text>
                                     <Text style={[styles.emptySubtext, { marginTop: 4 }]}>
@@ -681,26 +696,28 @@ export const PartnerScreen = () => {
                                     <View style={{ flexDirection: 'row', gap: 12, marginTop: 16 }}>
                                         <TouchableOpacity
                                             style={{
-                                                backgroundColor: isDark ? '#374151' : '#F3F4F6',
+                                                backgroundColor: theme.colors.card,
+                                                borderWidth: 1.5,
+                                                borderColor: theme.colors.border,
                                                 paddingHorizontal: 20,
                                                 paddingVertical: 10,
-                                                borderRadius: 8,
+                                                borderRadius: theme.borderRadius.m,
                                             }}
                                             onPress={() => {
                                                 setShowDeadlinePicker(false);
                                                 setSelectedDate(null);
                                             }}
                                         >
-                                            <Text style={{ color: theme.colors.text, fontFamily: theme.typography.fontFamilyBold, fontSize: 14 }}>
+                                            <Text style={{ color: theme.colors.text, fontFamily: theme.typography.fontFamilySemiBold, fontSize: 14 }}>
                                                 Cancel
                                             </Text>
                                         </TouchableOpacity>
                                         <TouchableOpacity
                                             style={{
-                                                backgroundColor: '#10B981',
+                                                backgroundColor: theme.brand.tealDeep,
                                                 paddingHorizontal: 20,
                                                 paddingVertical: 10,
-                                                borderRadius: 8,
+                                                borderRadius: theme.borderRadius.m,
                                             }}
                                             onPress={async () => {
                                                 const dateToPropose = selectedDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
@@ -716,7 +733,7 @@ export const PartnerScreen = () => {
                                                 }
                                             }}
                                         >
-                                            <Text style={{ color: '#FFFFFF', fontFamily: theme.typography.fontFamilyBold, fontSize: 14 }}>
+                                            <Text style={{ color: theme.colors.textLight, fontFamily: theme.typography.fontFamilySemiBold, fontSize: 14 }}>
                                                 Propose Date
                                             </Text>
                                         </TouchableOpacity>
@@ -735,7 +752,7 @@ export const PartnerScreen = () => {
                                 matchedNames.map((name: any, index: number) => (
                                     <View key={index} style={styles.matchedNameCard}>
                                         <Text style={styles.matchedNameText}>{name.name}</Text>
-                                        <Ionicons name="checkmark-circle" size={24} color="#10B981" />
+                                        <Ionicons name="checkmark-circle" size={24} color={theme.brand.tealDeep} />
                                     </View>
                                 ))
                             ) : (
@@ -767,7 +784,7 @@ export const PartnerScreen = () => {
                         <View style={styles.qrCard}>
                             <Text style={styles.cardTitle}>Your Invite Code</Text>
                             <View style={styles.qrContainer}>
-                                <QRCode value={inviteLink} size={150} />
+                                <QRCode value={inviteLink} size={150} color={theme.brand.ink} backgroundColor="#FFFFFF" />
                             </View>
                             <View style={styles.codeBox}>
                                 <Text style={styles.codeLabel}>Code:</Text>
