@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useMutation, useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import { Id } from '../../convex/_generated/dataModel';
+import { cleanErrorMessage } from '../utils/errors';
 
 const AUTH_TOKEN_KEY = 'bumpmatch_auth_token';
 
@@ -122,7 +123,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return { success: true };
     } catch (e: any) {
       console.error('Sign up error:', e);
-      return { success: false, error: e.message || 'Failed to sign up' };
+      return { success: false, error: cleanErrorMessage(e, 'Could not create your account. Please try again.') };
     }
   };
 
@@ -137,7 +138,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return { success: true };
     } catch (e: any) {
       console.error('Login error:', e);
-      return { success: false, error: e.message || 'Failed to log in' };
+      return { success: false, error: cleanErrorMessage(e, 'Incorrect email or password.') };
     }
   };
 

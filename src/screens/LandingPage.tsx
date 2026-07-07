@@ -37,6 +37,8 @@ import { api } from '../../convex/_generated/api';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
+import { formatDate } from '../utils/date';
+import { cleanErrorMessage } from '../utils/errors';
 
 // Tablet breakpoint
 const TABLET_MIN_WIDTH = 600;
@@ -96,8 +98,6 @@ const glassStyles = StyleSheet.create({
   },
 });
 
-const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-const formatDate = (d: Date) => `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
 
 // Date picker presented in its own bottom sheet on iOS so the inline spinner
 // never clips or steals scroll gestures inside the constrained sign-up modal.
@@ -250,7 +250,7 @@ export const LandingPage = () => {
       setResetCodeMode(true);
       Alert.alert('Code Sent', 'Check your email for the reset code.');
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to send reset email');
+      Alert.alert('Error', cleanErrorMessage(error, 'Could not send the reset email. Please try again.'));
     } finally {
       setIsSubmitting(false);
     }
@@ -281,7 +281,7 @@ export const LandingPage = () => {
       setNewPassword('');
       setResetMessage('');
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to reset password');
+      Alert.alert('Error', cleanErrorMessage(error, 'Could not reset your password. Please check your code and try again.'));
     } finally {
       setIsSubmitting(false);
     }

@@ -11,14 +11,8 @@ import { Input } from '../components/Input';
 import { Button } from '../components/Button';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
+import { formatDate, calculateAge } from '../utils/date';
 
-const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-const formatDate = (dateStr: string) => {
-  try {
-    const d = new Date(dateStr);
-    return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
-  } catch { return dateStr; }
-};
 
 const AVATAR_OPTIONS = [
   { id: 'default', icon: 'person', color: '#3B82F6' },
@@ -699,15 +693,10 @@ export const ProfileScreen = () => {
                 <Text style={styles.valueText}>
                   {(profile as any).age
                     ? (() => {
-                        try {
-                          const d = new Date((profile as any).age);
-                          if (isNaN(d.getTime())) return (profile as any).age;
-                          const today = new Date();
-                          let years = today.getFullYear() - d.getFullYear();
-                          const monthDiff = today.getMonth() - d.getMonth();
-                          if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < d.getDate())) years--;
-                          return `${formatDate((profile as any).age)} (${years} yrs)`;
-                        } catch { return (profile as any).age; }
+                        const formatted = formatDate((profile as any).age);
+                        if (!formatted) return 'Not set';
+                        const years = calculateAge((profile as any).age);
+                        return years !== null ? `${formatted} (${years} yrs)` : formatted;
                       })()
                     : 'Not set'}
                 </Text>
