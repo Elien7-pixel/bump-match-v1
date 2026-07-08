@@ -12,6 +12,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { BabyName } from '../models/BabyName';
 import { NameCard } from './NameCard';
+import { useTheme } from '../context/ThemeContext';
 
 interface CardStackProps {
   names: BabyName[];
@@ -19,11 +20,18 @@ interface CardStackProps {
   onSwipeLeft: (name: BabyName) => void;
   onEmpty?: () => void;
   onFavorite?: (name: BabyName) => void;
+  onSwipeUp?: (name: BabyName) => void;
 }
 
-export const CardStack: React.FC<CardStackProps> = ({ names, onSwipeRight, onSwipeLeft, onEmpty, onFavorite }) => {
-  const { width } = useWindowDimensions();
+export const CardStack: React.FC<CardStackProps> = ({ names, onSwipeRight, onSwipeLeft, onEmpty, onFavorite, onSwipeUp }) => {
+  const { width, height } = useWindowDimensions();
+  const { theme } = useTheme();
   const SWIPE_THRESHOLD = width * 0.3;
+  const SWIPE_UP_THRESHOLD = 120;
+  // Directional swipe highlight colours: dislike = grey, like = red, favourite = yellow.
+  const DISLIKE_COLOR = theme.colors.dislike;
+  const LIKE_COLOR = theme.colors.destructive;
+  const FAV_COLOR = theme.brand.yellowDeep;
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
   const startX = useSharedValue(0);
@@ -43,9 +51,16 @@ export const CardStack: React.FC<CardStackProps> = ({ names, onSwipeRight, onSwi
     } else {
       onSwipeLeft(currentProfile);
     }
-    
+
     if (names.length <= 1 && onEmpty) {
        onEmpty();
+    }
+  };
+
+  const handleSwipeUp = () => {
+    onSwipeUp?.(currentProfile);
+    if (names.length <= 1 && onEmpty) {
+      onEmpty();
     }
   };
 
@@ -59,10 +74,19 @@ export const CardStack: React.FC<CardStackProps> = ({ names, onSwipeRight, onSwi
       translateY.value = startY.value + event.translationY;
     })
     .onEnd((event) => {
-      if (Math.abs(event.translationX) > SWIPE_THRESHOLD) {
-        // Swipe detected
+      const swipedUp =
+        onSwipeUp &&
+        event.translationY < -SWIPE_UP_THRESHOLD &&
+        Math.abs(event.translationY) > Math.abs(event.translationX);
+
+      if (swipedUp) {
+        // Swipe up = favourite. Fling the card off the top.
+        translateY.value = withSpring(-height * 1.5, {}, () => {
+          runOnJS(handleSwipeUp)();
+        });
+      } else if (Math.abs(event.translationX) > SWIPE_THRESHOLD) {
+        // Horizontal swipe (like / dislike)
         const direction = event.translationX > 0 ? 'right' : 'left';
-        // Animate off screen
         translateX.value = withSpring(direction === 'right' ? width * 1.5 : -width * 1.5, {}, () => {
              runOnJS(handleSwipeComplete)(direction);
         });
@@ -88,6 +112,22 @@ export const CardStack: React.FC<CardStackProps> = ({ names, onSwipeRight, onSwi
         { rotate: `${rotate}deg` },
       ],
     };
+  });
+
+  const overlayStyle = useAnimatedStyle(() => {
+    const tx = translateX.value;
+    const ty = translateY.value;
+    const upDominant = ty < 0 && Math.abs(ty) > Math.abs(tx) + 10;
+    if (upDominant) {
+      return { backgroundColor: FAV_COLOR, opacity: Math.min(Math.abs(ty) / 160, 0.55) };
+    }
+    if (tx > 0) {
+      return { backgroundColor: LIKE_COLOR, opacity: Math.min(tx / 160, 0.55) };
+    }
+    if (tx < 0) {
+      return { backgroundColor: DISLIKE_COLOR, opacity: Math.min(-tx / 160, 0.55) };
+    }
+    return { backgroundColor: FAV_COLOR, opacity: 0 };
   });
 
   const nextCardStyle = useAnimatedStyle(() => {
@@ -119,6 +159,7 @@ export const CardStack: React.FC<CardStackProps> = ({ names, onSwipeRight, onSwi
       <GestureDetector gesture={panGesture}>
         <Animated.View style={[styles.cardContainer, cardStyle]}>
            <NameCard data={currentProfile} onFavorite={onFavorite} />
+           <Animated.View pointerEvents="none" style={[styles.swipeOverlay, overlayStyle]} />
         </Animated.View>
       </GestureDetector>
     </View>
@@ -136,6 +177,10 @@ const styles = StyleSheet.create({
     position: 'absolute',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  swipeOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 24,
   },
   nextCard: {
      zIndex: -1,

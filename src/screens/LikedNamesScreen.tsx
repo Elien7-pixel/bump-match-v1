@@ -10,6 +10,14 @@ import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withRepeat,
+  withTiming,
+  cancelAnimation,
+  Easing,
+} from 'react-native-reanimated';
 
 import { BabyName } from '../models/BabyName';
 import { useNavigation } from '@react-navigation/native';
@@ -20,6 +28,44 @@ import { useAuth } from '../context/AuthContext';
 interface LikedNameWithFavorite extends BabyName {
   isFavorite?: boolean;
 }
+
+// Wraps a favourited card in an animated golden pulse (glow + gentle scale).
+// Unfavourited cards render their children with no border/glow and no animation.
+const STAR_ICON = require('../../assets/brand/icons/star-2.png');
+
+// The favourite star gently sparkles (scale + twinkle) when a name is favourited.
+const SparkleStar = ({ isFavorite }: { isFavorite: boolean }) => {
+  const sparkle = useSharedValue(0);
+
+  useEffect(() => {
+    if (isFavorite) {
+      sparkle.value = withRepeat(
+        withTiming(1, { duration: 750, easing: Easing.inOut(Easing.ease) }),
+        -1,
+        true
+      );
+    } else {
+      cancelAnimation(sparkle);
+      sparkle.value = 0;
+    }
+    return () => cancelAnimation(sparkle);
+  }, [isFavorite]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [
+      { scale: 1 + sparkle.value * 0.28 },
+      { rotate: `${sparkle.value * 18}deg` },
+    ],
+  }));
+
+  return (
+    <Animated.Image
+      source={STAR_ICON}
+      style={[{ width: 22, height: 22, opacity: isFavorite ? 1 : 0.45 }, animatedStyle]}
+      resizeMode="contain"
+    />
+  );
+};
 
 export const LikedNamesScreen = () => {
   const navigation = useNavigation();
@@ -244,7 +290,7 @@ export const LikedNamesScreen = () => {
       paddingHorizontal: 14,
     },
     dropdownItemActive: {
-      backgroundColor: isDark ? theme.colors.primary : theme.brand.purpleSoft,
+      backgroundColor: isDark ? theme.colors.primary : theme.brand.pinkSoft,
     },
     dropdownItemText: {
       fontSize: 13,
@@ -253,7 +299,7 @@ export const LikedNamesScreen = () => {
     },
     dropdownItemTextActive: {
       fontFamily: theme.typography.fontFamilyBold,
-      color: isDark ? theme.colors.textLight : theme.brand.purpleDeep,
+      color: isDark ? theme.colors.textLight : theme.brand.pinkDeep,
     },
     shareButton: {
       position: 'absolute',
@@ -335,24 +381,17 @@ export const LikedNamesScreen = () => {
       marginTop: 4,
       letterSpacing: 1,
     },
-    cardInfo: {
-      backgroundColor: theme.brand.pinkSoft,
-      borderRadius: theme.borderRadius.m,
-      padding: theme.spacing.s,
-      marginBottom: theme.spacing.s,
-    },
-    cardMeaning: {
-      fontFamily: theme.typography.fontFamily,
-      fontSize: 11,
-      color: theme.brand.ink,
-      textAlign: 'center',
-      marginBottom: 4,
-    },
-    cardOrigin: {
-      fontFamily: theme.typography.fontFamilyBold,
-      fontSize: 10,
-      color: theme.brand.pinkDeep,
-      textAlign: 'center',
+    infoButton: {
+      position: 'absolute',
+      bottom: 8,
+      right: 48,
+      width: 32,
+      height: 32,
+      borderRadius: theme.borderRadius.round,
+      backgroundColor: theme.brand.purpleSoft,
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 10,
     },
     matchBadge: {
       position: 'absolute',
@@ -423,11 +462,8 @@ export const LikedNamesScreen = () => {
       marginLeft: theme.spacing.s,
     },
     favoritesSection: {
-      backgroundColor: isDark ? theme.colors.card : theme.brand.yellowSoft,
       marginHorizontal: theme.spacing.m,
-      marginBottom: theme.spacing.m,
-      padding: theme.spacing.m,
-      borderRadius: theme.borderRadius.m,
+      marginBottom: theme.spacing.s,
       flexDirection: 'row',
       alignItems: 'center',
     },
@@ -477,7 +513,7 @@ export const LikedNamesScreen = () => {
     if (isDark) return [theme.colors.card, theme.colors.card] as const;
     if (gender === 'boy') return [theme.colors.card, theme.brand.tealSoft] as const;
     if (gender === 'girl') return [theme.colors.card, theme.brand.pinkSoft] as const;
-    return [theme.colors.card, theme.brand.yellowSoft] as const;
+    return [theme.colors.card, theme.brand.purpleSoft] as const;
   };
 
   // Get unique languages from liked names
@@ -510,11 +546,7 @@ export const LikedNamesScreen = () => {
             style={styles.favoriteButton}
             onPress={() => handleToggleFavorite(item.id)}
           >
-            <Ionicons
-              name={item.isFavorite ? "star" : "star-outline"}
-              size={18}
-              color={item.isFavorite ? theme.brand.yellowDeep : theme.colors.grey}
-            />
+            <SparkleStar isFavorite={!!item.isFavorite} />
           </TouchableOpacity>
 
           {isMatch && (
@@ -531,6 +563,14 @@ export const LikedNamesScreen = () => {
             <Ionicons name="share-outline" size={16} color={theme.brand.purpleDeep} />
           </TouchableOpacity>
 
+          {/* Info / meaning button */}
+          <TouchableOpacity
+            style={styles.infoButton}
+            onPress={() => Alert.alert(item.name, `Meaning: ${item.meaning}\nOrigin: ${item.origin}`)}
+          >
+            <Ionicons name="information-circle-outline" size={16} color={theme.brand.purpleDeep} />
+          </TouchableOpacity>
+
           {/* Delete button */}
           <TouchableOpacity
             style={styles.deleteCardButton}
@@ -540,10 +580,6 @@ export const LikedNamesScreen = () => {
           </TouchableOpacity>
 
           <View style={styles.cardContent}>
-            <View style={styles.cardInfo}>
-              <Text style={styles.cardMeaning} numberOfLines={2}>{item.meaning}</Text>
-              <Text style={styles.cardOrigin}>{item.origin}</Text>
-            </View>
             <View style={styles.nameBlock}>
               <Text style={styles.cardName} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.5}>
                 {surname ? `${item.name} ${surname}` : item.name}
@@ -604,7 +640,7 @@ export const LikedNamesScreen = () => {
       {/* Favorites summary */}
       {favoriteCount > 0 && (
         <View style={styles.favoritesSection}>
-          <Ionicons name="star" size={24} color={theme.brand.yellowDeep} />
+          <Image source={require('../../assets/brand/icons/star-2.png')} style={{ width: 24, height: 24 }} resizeMode="contain" />
           <Text style={styles.favoritesSectionText}>
             {favoriteCount} {favoriteCount === 1 ? 'favourite' : 'favourites'}
           </Text>

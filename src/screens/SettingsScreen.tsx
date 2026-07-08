@@ -115,7 +115,7 @@ export const SettingsScreen = () => {
       marginLeft: theme.spacing.s,
     },
     userInfo: {
-      backgroundColor: isDark ? theme.colors.card : theme.brand.purpleSoft,
+      backgroundColor: isDark ? theme.colors.card : theme.brand.pinkSoft,
       borderRadius: theme.borderRadius.l,
       padding: theme.spacing.l,
       marginBottom: theme.spacing.l,
@@ -408,7 +408,7 @@ export const SettingsScreen = () => {
           <ScrollView style={{ flex: 1, padding: 16 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
               <Text style={{ fontFamily: theme.typography.fontFamilyBold, fontSize: 16, color: theme.colors.text }}>How does </Text>
-              <LogoText size="small" style={{ height: 18, width: 54 }} />
+              <LogoText size="small" showTagline={false} style={{ height: 18, width: 65 }} />
               <Text style={{ fontFamily: theme.typography.fontFamilyBold, fontSize: 16, color: theme.colors.text }}> work?</Text>
             </View>
             <Text style={{ fontFamily: theme.typography.fontFamily, fontSize: 14, color: theme.colors.grey, marginBottom: 20, lineHeight: 20 }}>

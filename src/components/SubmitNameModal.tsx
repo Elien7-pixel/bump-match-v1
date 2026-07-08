@@ -226,7 +226,7 @@ export const SubmitNameModal: React.FC<SubmitNameModalProps> = ({ visible, onClo
       borderBottomColor: theme.colors.border,
     },
     languageItemSelected: {
-      backgroundColor: isDark ? 'rgba(170, 160, 221, 0.22)' : theme.brand.purpleSoft,
+      backgroundColor: isDark ? 'rgba(170, 160, 221, 0.22)' : theme.brand.pinkSoft,
     },
     languageItemText: {
       fontFamily: theme.typography.fontFamily,
@@ -235,7 +235,7 @@ export const SubmitNameModal: React.FC<SubmitNameModalProps> = ({ visible, onClo
     },
     languageItemTextSelected: {
       fontFamily: theme.typography.fontFamilySemiBold,
-      color: isDark ? theme.colors.primary : theme.brand.purpleDeep,
+      color: isDark ? theme.colors.primary : theme.brand.pinkDeep,
     },
     submitButton: {
       borderRadius: theme.borderRadius.m,
@@ -323,7 +323,7 @@ export const SubmitNameModal: React.FC<SubmitNameModalProps> = ({ visible, onClo
     submitAnotherText: {
       fontFamily: theme.typography.fontFamilySemiBold,
       fontSize: 15,
-      color: isDark ? theme.colors.primary : theme.brand.purpleDeep,
+      color: isDark ? theme.colors.primary : theme.brand.pinkDeep,
     },
   }), [theme, isDark]);
 

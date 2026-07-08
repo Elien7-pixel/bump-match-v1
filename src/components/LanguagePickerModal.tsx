@@ -128,7 +128,7 @@ export const LanguagePickerModal: React.FC<LanguagePickerModalProps> = ({
       paddingHorizontal: theme.spacing.l,
       marginHorizontal: theme.spacing.m,
       marginVertical: 4,
-      backgroundColor: isDark ? theme.colors.background : theme.brand.purpleSoft,
+      backgroundColor: isDark ? theme.colors.background : theme.brand.pinkSoft,
       borderRadius: theme.borderRadius.round,
     },
     languageItemActive: {

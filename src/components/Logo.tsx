@@ -3,14 +3,22 @@ import { View, Image, StyleSheet } from 'react-native';
 import { Brand } from '../theme/designTokens';
 
 // Brand primary colour (pastel purple from the Bump Match CI)
-export const LOGO_COLOR = Brand.purple;
+export const LOGO_COLOR = Brand.pink;
 
-// Horizontal wordmark with tagline (1755x484 → aspect ratio ~3.63:1)
+// Horizontal wordmark WITH tagline (1755x484 → aspect ratio ~3.63:1)
 const logoImage = require('../../assets/brand/logo-horizontal-tagline.png');
 const logoImageWhite = require('../../assets/brand/logo-horizontal-tagline-white.png');
+// Horizontal wordmark WITHOUT tagline — tagline blanked on the full 1755x484
+// canvas so the wordmark keeps the exact size/position of the tagline version
+// (same aspect), just without the text line — never zoomed or cropped.
+const logoNoTag = require('../../assets/brand/logo-horizontal.png');
+const logoNoTagWhite = require('../../assets/brand/logo-horizontal-white.png');
 // "B" mother-and-baby mark (1735x2443 → taller than wide)
 const iconImage = require('../../assets/brand/logo-mark-purple.png');
 const iconImageWhite = require('../../assets/brand/logo-mark-white.png');
+
+const TAGLINE_ASPECT = 3.63;
+const NO_TAGLINE_ASPECT = 3.63; // same canvas as the tagline version
 
 interface LogoProps {
   size?: 'small' | 'medium' | 'large';
@@ -53,27 +61,31 @@ export const Logo = ({
   );
 };
 
-// Just the text/logo portion
+// Just the wordmark. Pass showTagline={false} for the in-app header where the
+// "Swipe your way to your baby's name" line should not appear under the logo.
 export const LogoText = ({
   size = 'medium',
   lightText = false,
+  showTagline = true,
   style,
 }: {
   size?: 'small' | 'medium' | 'large';
   lightText?: boolean;
+  showTagline?: boolean;
   style?: any;
 }) => {
-  const dimensions = {
-    small: { height: 28, width: 100 },
-    medium: { height: 40, width: 144 },
-    large: { height: 80, width: 288 },
-  };
+  const heights = { small: 28, medium: 40, large: 80 };
+  const height = heights[size];
+  const aspect = showTagline ? TAGLINE_ASPECT : NO_TAGLINE_ASPECT;
+  const width = Math.round(height * aspect);
 
-  const { height, width } = dimensions[size];
+  const source = showTagline
+    ? (lightText ? logoImageWhite : logoImage)
+    : (lightText ? logoNoTagWhite : logoNoTag);
 
   return (
     <Image
-      source={lightText ? logoImageWhite : logoImage}
+      source={source}
       style={[{ width, height }, style]}
       resizeMode="contain"
     />

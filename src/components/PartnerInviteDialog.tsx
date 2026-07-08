@@ -123,7 +123,7 @@ export const PartnerInviteDialog: React.FC<PartnerInviteDialogProps> = ({ visibl
       marginBottom: theme.spacing.l,
     },
     codeBox: {
-      backgroundColor: isDark ? theme.colors.background : theme.brand.purpleSoft,
+      backgroundColor: isDark ? theme.colors.background : theme.brand.pinkSoft,
       padding: theme.spacing.m,
       borderRadius: theme.borderRadius.m,
       width: '100%',
@@ -139,7 +139,7 @@ export const PartnerInviteDialog: React.FC<PartnerInviteDialogProps> = ({ visibl
     code: {
       fontFamily: theme.typography.fontFamilyBold,
       fontSize: theme.typography.sizes.h3,
-      color: isDark ? theme.colors.text : theme.brand.purpleDeep,
+      color: isDark ? theme.colors.text : theme.brand.pinkDeep,
       letterSpacing: 2,
     },
     shareButton: {
@@ -174,7 +174,7 @@ export const PartnerInviteDialog: React.FC<PartnerInviteDialogProps> = ({ visibl
     viewMoreText: {
       fontFamily: theme.typography.fontFamilyMedium,
       fontSize: theme.typography.sizes.small,
-      color: isDark ? theme.colors.primary : theme.brand.purpleDeep,
+      color: isDark ? theme.colors.primary : theme.brand.pinkDeep,
     },
   }), [theme, isDark]);
 

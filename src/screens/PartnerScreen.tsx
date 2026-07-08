@@ -144,7 +144,7 @@ export const PartnerScreen = () => {
             paddingHorizontal: theme.spacing.l,
         },
         connectedCard: {
-            backgroundColor: isDark ? theme.colors.card : theme.brand.purpleSoft,
+            backgroundColor: isDark ? theme.colors.card : theme.brand.pinkSoft,
             borderRadius: theme.borderRadius.l,
             borderWidth: 1.5,
             borderColor: isDark ? theme.colors.border : theme.colors.primary,
@@ -255,7 +255,7 @@ export const PartnerScreen = () => {
             width: 100,
             height: 100,
             borderRadius: 50,
-            backgroundColor: isDark ? theme.colors.card : theme.brand.purpleSoft,
+            backgroundColor: isDark ? theme.colors.card : theme.brand.pinkSoft,
             alignItems: 'center',
             justifyContent: 'center',
             marginBottom: theme.spacing.l,
@@ -304,7 +304,7 @@ export const PartnerScreen = () => {
         codeBox: {
             flexDirection: 'row',
             alignItems: 'center',
-            backgroundColor: isDark ? theme.colors.background : theme.brand.purpleSoft,
+            backgroundColor: isDark ? theme.colors.background : theme.brand.pinkSoft,
             padding: theme.spacing.m,
             borderRadius: theme.borderRadius.m,
             width: '100%',

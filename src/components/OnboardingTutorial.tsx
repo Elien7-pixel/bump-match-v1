@@ -41,16 +41,16 @@ const SLIDES: Slide[] = [
   },
   {
     icon: 'people-outline',
-    iconColor: Brand.purpleDeep,
+    iconColor: Brand.pinkDeep,
     title: 'Better Together',
     description: 'Are you doing this solo or with a partner? Link up to discover names you both love!',
     type: 'partner-prompt',
   },
   {
-    icon: 'star-outline',
+    icon: 'arrow-up-circle-outline',
     iconColor: Brand.yellowDeep,
     title: 'Favourite Your Top Picks',
-    description: 'Tap the star on any card to mark a favourite — they\'ll be pinned to the top of your Liked Names.',
+    description: 'Swipe a card up — or tap its star — to favourite a name. You\'ll get a little celebration, and favourites pin to the top of your Liked Names.',
   },
   {
     icon: 'options-outline',
@@ -163,7 +163,7 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
                 style={[
                   styles.dot,
                   {
-                    backgroundColor: index === currentIndex ? theme.colors.primary : theme.brand.purpleSoft,
+                    backgroundColor: index === currentIndex ? theme.colors.primary : theme.brand.pinkSoft,
                   },
                 ]}
               />

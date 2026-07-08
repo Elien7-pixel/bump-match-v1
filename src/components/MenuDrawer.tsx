@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { View, Text, StyleSheet, Modal, TouchableOpacity, Pressable, Alert, Image } from 'react-native';
+import { View, Text, StyleSheet, Modal, TouchableOpacity, Pressable, Alert, Image, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
@@ -57,7 +57,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({ visible, onClose, onNavi
       backgroundColor: theme.colors.background,
       borderTopLeftRadius: theme.borderRadius.xl,
       borderTopRightRadius: theme.borderRadius.xl,
-      maxHeight: '60%',
+      maxHeight: '85%',
       width: '100%',
       zIndex: 1,
       shadowColor: theme.colors.shadow,
@@ -89,6 +89,12 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({ visible, onClose, onNavi
       fontSize: theme.typography.sizes.h2,
       color: theme.colors.text,
     },
+    safeArea: {
+      flexShrink: 1,
+    },
+    menuScroll: {
+      flexShrink: 1,
+    },
     menuItems: {
       padding: theme.spacing.m,
     },
@@ -111,7 +117,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({ visible, onClose, onNavi
       width: 40,
       height: 40,
       borderRadius: theme.borderRadius.round,
-      backgroundColor: isDark ? 'rgba(170, 160, 221, 0.22)' : theme.brand.purpleSoft,
+      backgroundColor: isDark ? 'rgba(170, 160, 221, 0.22)' : theme.brand.pinkSoft,
       alignItems: 'center',
       justifyContent: 'center',
     },
@@ -152,12 +158,12 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({ visible, onClose, onNavi
       <View style={styles.overlay}>
         <Pressable style={styles.backdrop} onPress={onClose} />
         <View style={styles.drawer}>
-          <SafeAreaView edges={['bottom']}>
+          <SafeAreaView edges={['bottom']} style={styles.safeArea}>
             <View style={styles.header}>
               <View style={styles.headerLeft}>
                 <Image
-                  source={require('../../assets/brand/logo-mark-purple.png')}
-                  style={styles.logoMark}
+                  source={require('../../assets/brand/logo-mark-white.png')}
+                  style={[styles.logoMark, { tintColor: theme.colors.primary }]}
                   resizeMode="contain"
                 />
                 <Text style={styles.title}>Menu</Text>
@@ -167,7 +173,11 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({ visible, onClose, onNavi
               </TouchableOpacity>
             </View>
 
-            <View style={styles.menuItems}>
+            <ScrollView
+              style={styles.menuScroll}
+              contentContainerStyle={styles.menuItems}
+              showsVerticalScrollIndicator={false}
+            >
               <TouchableOpacity
                 style={styles.menuItem}
                 onPress={() => handleNavigation('Profile')}
@@ -248,7 +258,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({ visible, onClose, onNavi
                 </View>
                 <Text style={[styles.menuText, styles.logoutText]}>Log Out</Text>
               </TouchableOpacity>
-            </View>
+            </ScrollView>
           </SafeAreaView>
         </View>
       </View>

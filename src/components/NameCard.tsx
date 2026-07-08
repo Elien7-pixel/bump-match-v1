@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, useWindowDimensions, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, useWindowDimensions, TouchableOpacity, Alert, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { BabyName } from '../models/BabyName';
@@ -19,14 +19,14 @@ export const NameCard: React.FC<NameCardProps> = ({ data, onFavorite, isFavorite
   const { user } = useAuth();
   const surname = capitalize(user?.surname || '');
   const { width } = useWindowDimensions();
-  const CARD_WIDTH = Math.min(width * 0.82, 400);
-  const CARD_HEIGHT = CARD_WIDTH * 1.3;
+  const CARD_WIDTH = Math.min(width * 0.80, 380);
+  const CARD_HEIGHT = CARD_WIDTH * 1.2;
 
   const getGradientColors = () => {
     if (data.gender === 'boy') return [theme.colors.boyBlue, theme.brand.tealDeep] as const;
     if (data.gender === 'girl') return [theme.colors.girlPink, theme.brand.pinkDeep] as const;
-    // Pastel yellow gradient for unisex
-    return [theme.colors.neutralBeige, theme.brand.yellowDeep] as const;
+    // Purple gradient for neutral / unisex
+    return [theme.brand.purple, theme.brand.purpleDeep] as const;
   };
 
   const styles = React.useMemo(() => StyleSheet.create({
@@ -168,10 +168,10 @@ export const NameCard: React.FC<NameCardProps> = ({ data, onFavorite, isFavorite
             style={styles.favoriteButton}
             onPress={() => onFavorite(data)}
           >
-            <Ionicons
-              name={isFavorited ? 'star' : 'star-outline'}
-              size={22}
-              color={isFavorited ? theme.brand.yellowDeep : theme.colors.textLight}
+            <Image
+              source={require('../../assets/brand/icons/star-2.png')}
+              style={{ width: 28, height: 28, opacity: isFavorited ? 1 : 0.5 }}
+              resizeMode="contain"
             />
           </TouchableOpacity>
         ) : null}

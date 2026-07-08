@@ -192,7 +192,7 @@ export const DictionaryScreen = () => {
     sectionLabel: {
       fontFamily: theme.typography.fontFamilyBold,
       fontSize: 11,
-      color: theme.brand.purpleDeep,
+      color: theme.brand.pinkDeep,
       textTransform: 'uppercase',
       letterSpacing: 1,
       marginBottom: 4,
@@ -209,12 +209,12 @@ export const DictionaryScreen = () => {
       paddingHorizontal: 12,
       paddingVertical: 4,
       borderRadius: theme.borderRadius.round,
-      backgroundColor: theme.brand.purpleSoft,
+      backgroundColor: theme.brand.pinkSoft,
     },
     variantText: {
       fontFamily: theme.typography.fontFamilyMedium,
       fontSize: 13,
-      color: theme.brand.purpleDeep,
+      color: theme.brand.pinkDeep,
     },
     originChip: {
       alignSelf: 'flex-start',

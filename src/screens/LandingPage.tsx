@@ -279,10 +279,22 @@ export const LandingPage = () => {
     },
     overlay: {
       flex: 1,
-      justifyContent: 'flex-end',
+      justifyContent: 'space-between',
       alignItems: 'center',
       paddingHorizontal: 24,
+      paddingTop: isTablet ? 200 : 178,
       paddingBottom: isTablet ? 80 : 60,
+    },
+    heroSection: {
+      alignItems: 'center',
+      width: '100%',
+    },
+    heroLogo: {
+      width: isTablet ? 210 : 180,
+      height: isTablet ? 210 : 180,
+    },
+    heroWordmark: {
+      marginBottom: 24,
     },
     content: {
       alignItems: 'center',
@@ -311,32 +323,40 @@ export const LandingPage = () => {
       textAlign: 'center',
       lineHeight: 24,
     },
-    stickerOverlay: {
+    decorOverlay: {
       ...StyleSheet.absoluteFillObject,
     },
-    stickerHeart: {
+    decorRainbow: {
       position: 'absolute',
-      top: -16,
-      left: -6,
-      width: 38,
-      height: 38,
-      transform: [{ rotate: '-14deg' }],
+      top: '14%',
+      right: '14%',
+      width: 58,
+      height: 37,
+      transform: [{ rotate: '8deg' }],
     },
-    stickerStar: {
+    decorHeart: {
       position: 'absolute',
-      top: -12,
-      right: 2,
-      width: 32,
-      height: 32,
-      transform: [{ rotate: '16deg' }],
+      top: '13%',
+      left: '15%',
+      width: 44,
+      height: 44,
+      transform: [{ rotate: '-12deg' }],
     },
-    stickerFlower: {
+    decorStar: {
       position: 'absolute',
-      top: 118,
-      right: -10,
-      width: 40,
-      height: 40,
-      transform: [{ rotate: '10deg' }],
+      top: '41%',
+      right: '18%',
+      width: 46,
+      height: 46,
+      transform: [{ rotate: '14deg' }],
+    },
+    decorFlower: {
+      position: 'absolute',
+      top: '43%',
+      left: '17%',
+      width: 46,
+      height: 46,
+      transform: [{ rotate: '-8deg' }],
     },
     buttonContainer: {
       width: '100%',
@@ -412,7 +432,7 @@ export const LandingPage = () => {
     },
     closeButton: {
       padding: 4,
-      backgroundColor: theme.brand.purpleSoft,
+      backgroundColor: theme.brand.pinkSoft,
       borderRadius: 20,
     },
     modalTitle: {
@@ -447,7 +467,7 @@ export const LandingPage = () => {
       color: theme.colors.textDim,
     },
     switchAuthHighlight: {
-      color: theme.brand.purpleDeep,
+      color: theme.brand.pinkDeep,
       fontFamily: theme.typography.fontFamilyBold,
     },
     label: {
@@ -486,7 +506,7 @@ export const LandingPage = () => {
       marginBottom: 8,
     },
     optionSelected: {
-      backgroundColor: theme.brand.purpleSoft,
+      backgroundColor: theme.brand.pinkSoft,
       borderColor: theme.colors.primary,
     },
     optionSelectedBoy: {
@@ -506,7 +526,7 @@ export const LandingPage = () => {
       color: theme.colors.text,
     },
     optionTextSelected: {
-      color: theme.brand.purpleDeep,
+      color: theme.brand.pinkDeep,
       fontFamily: theme.typography.fontFamilySemiBold,
     },
     modalActions: {
@@ -591,40 +611,43 @@ export const LandingPage = () => {
       end={{ x: 0.5, y: 1 }}
       style={pageStyles.background}
     >
-      {/* Animated Scattered Name Cards */}
-      <AnimatedNameCards />
+      {/* Decorative brand-icon accents */}
+      <View style={pageStyles.decorOverlay} pointerEvents="none">
+        <Image
+          source={require('../../assets/brand/icons/rainbow.png')}
+          style={pageStyles.decorRainbow}
+          resizeMode="contain"
+        />
+        <Image
+          source={require('../../assets/brand/icons/heart-1.png')}
+          style={pageStyles.decorHeart}
+          resizeMode="contain"
+        />
+        <Image
+          source={require('../../assets/brand/icons/star-2.png')}
+          style={pageStyles.decorStar}
+          resizeMode="contain"
+        />
+        <Image
+          source={require('../../assets/brand/icons/flower-2.png')}
+          style={pageStyles.decorFlower}
+          resizeMode="contain"
+        />
+      </View>
 
       <View style={pageStyles.overlay}>
+        {/* Pink B logo hero, sitting among the decorative icons */}
+        <View style={pageStyles.heroSection}>
+          <Image
+            source={require('../../assets/brand/b-logo.png')}
+            style={pageStyles.heroLogo}
+            resizeMode="contain"
+          />
+        </View>
+
         <View style={pageStyles.content}>
-          {/* Main White Card */}
-          <GlassCard style={pageStyles.glassContainer} intensity={40}>
-            <View style={pageStyles.glassInner}>
-              <LogoText size="large" lightText={false} />
-              <Text style={pageStyles.subtitle}>
-                Find the perfect name for your little one, together.
-              </Text>
-            </View>
-          </GlassCard>
-
-          {/* Decorative sticker accents around the hero logo */}
-          <View style={pageStyles.stickerOverlay} pointerEvents="none">
-            <Image
-              source={require('../../assets/brand/icons/heart-2.png')}
-              style={pageStyles.stickerHeart}
-              resizeMode="contain"
-            />
-            <Image
-              source={require('../../assets/brand/icons/star-1.png')}
-              style={pageStyles.stickerStar}
-              resizeMode="contain"
-            />
-            <Image
-              source={require('../../assets/brand/icons/flower-1.png')}
-              style={pageStyles.stickerFlower}
-              resizeMode="contain"
-            />
-          </View>
-
+          {/* Bump Match wordmark (with tagline) just above the sign up block */}
+          <LogoText size="large" lightText={false} style={pageStyles.heroWordmark} />
           {/* Auth Buttons */}
           <View style={pageStyles.buttonContainer}>
             <TouchableOpacity
@@ -636,8 +659,8 @@ export const LandingPage = () => {
             >
               <LinearGradient
                 colors={[
-                  isSignUpPressed ? theme.brand.purpleDeep : theme.colors.primary,
-                  isSignUpPressed ? theme.brand.purpleDeep : theme.colors.primary
+                  isSignUpPressed ? theme.brand.pinkDeep : theme.colors.primary,
+                  isSignUpPressed ? theme.brand.pinkDeep : theme.colors.primary
                 ]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
@@ -660,7 +683,7 @@ export const LandingPage = () => {
               <View
                 style={[
                   pageStyles.secondaryButtonInner,
-                  isLogInPressed && { backgroundColor: theme.brand.purpleSoft, borderColor: theme.colors.primary }
+                  isLogInPressed && { backgroundColor: theme.brand.pinkSoft, borderColor: theme.colors.primary }
                 ]}
               >
                 <Text style={pageStyles.secondaryButtonText}>Log In</Text>
@@ -743,7 +766,7 @@ export const LandingPage = () => {
                   title="Date of Birth"
                   maximumDate={new Date()}
                   minimumDate={new Date(1940, 0, 1)}
-                  primaryColor={theme.brand.purpleDeep}
+                  primaryColor={theme.brand.pinkDeep}
                   fontFamily={theme.typography.fontFamily}
                   fontFamilyBold={theme.typography.fontFamilyBold}
                   onChange={setDateOfBirth}
@@ -854,7 +877,7 @@ export const LandingPage = () => {
                       title="When are you expecting?"
                       minimumDate={new Date()}
                       maximumDate={new Date(Date.now() + 10 * 30 * 24 * 60 * 60 * 1000)}
-                      primaryColor={theme.brand.purpleDeep}
+                      primaryColor={theme.brand.pinkDeep}
                       fontFamily={theme.typography.fontFamily}
                       fontFamilyBold={theme.typography.fontFamilyBold}
                       onChange={setDueDate}

@@ -16,11 +16,11 @@ import { Brand } from '../theme/designTokens';
 
 
 const AVATAR_OPTIONS = [
-  { id: 'default', icon: 'person', color: Brand.purpleDeep },
+  { id: 'default', icon: 'person', color: Brand.pinkDeep },
   { id: 'heart', icon: 'heart', color: Brand.pinkDeep },
   { id: 'star', icon: 'star', color: Brand.yellowDeep },
   { id: 'flower', icon: 'flower', color: Brand.tealDeep },
-  { id: 'happy', icon: 'happy', color: Brand.purple },
+  { id: 'happy', icon: 'happy', color: Brand.pink },
   { id: 'sunny', icon: 'sunny', color: Brand.pink },
 ];
 
@@ -231,7 +231,7 @@ export const ProfileScreen = () => {
       color: theme.colors.grey,
     },
     inviteCodeBanner: {
-      backgroundColor: isDark ? theme.colors.card : theme.brand.purpleSoft,
+      backgroundColor: isDark ? theme.colors.card : theme.brand.pinkSoft,
       padding: theme.spacing.m,
       borderRadius: theme.borderRadius.m,
       marginTop: theme.spacing.l,
@@ -246,7 +246,7 @@ export const ProfileScreen = () => {
     inviteCodeValue: {
       fontFamily: theme.typography.fontFamilyBold,
       fontSize: theme.typography.sizes.body,
-      color: isDark ? theme.colors.primary : theme.brand.purpleDeep,
+      color: isDark ? theme.colors.primary : theme.brand.pinkDeep,
       marginLeft: theme.spacing.s,
     },
     deleteButton: {
@@ -276,8 +276,8 @@ export const ProfileScreen = () => {
       paddingHorizontal: 12,
       borderRadius: theme.borderRadius.round,
       borderWidth: 1,
-      borderColor: theme.brand.purpleSoft,
-      backgroundColor: theme.brand.purpleSoft,
+      borderColor: theme.brand.pinkSoft,
+      backgroundColor: theme.brand.pinkSoft,
     },
     heritageChipSelected: {
       backgroundColor: theme.colors.primary,

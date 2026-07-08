@@ -1,12 +1,13 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, StatusBar, Alert, TextInput } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, StatusBar, Alert, TextInput, Image, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useMutation, useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 
 import { CardStack } from '../components/CardStack';
+import { FavoriteBurst } from '../components/FavoriteBurst';
 import { BabyName } from '../models/BabyName';
 import { getRandomNames } from '../data/babyNames';
 import { PartnerInviteDialog } from '../components/PartnerInviteDialog';
@@ -40,12 +41,15 @@ export const AppPage = () => {
   const [meaningSearch, setMeaningSearch] = useState('');
   const [popularOnly, setPopularOnly] = useState(false);
   const [celebrityOnly, setCelebrityOnly] = useState(false);
+  const [firstLetter, setFirstLetter] = useState<string | null>(null);
 
   const [surname, setSurname] = useState('');
   const [dueDate, setDueDate] = useState<string | null>(null);
   const [inviteVisible, setInviteVisible] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
   const [languagePickerVisible, setLanguagePickerVisible] = useState(false);
+  const [letterPickerVisible, setLetterPickerVisible] = useState(false);
+  const [favBurstKey, setFavBurstKey] = useState(0);
   const [showTutorial, setShowTutorial] = useState(false);
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   // Convex mutations
@@ -97,7 +101,7 @@ export const AppPage = () => {
 
   useEffect(() => {
     loadNames();
-  }, [genderFilter, languageFilter, meaningSearch, popularOnly, celebrityOnly]);
+  }, [genderFilter, languageFilter, meaningSearch, popularOnly, celebrityOnly, firstLetter]);
 
   const loadProfile = async () => {
     try {
@@ -168,11 +172,12 @@ export const AppPage = () => {
       meaningSearch: meaningSearch || undefined,
       popularOnly,
       celebrityOnly,
+      firstLetter: firstLetter || undefined,
     });
 
     setNames(newNames);
     setCardHistory([]);
-  }, [genderFilter, languageFilter, meaningSearch, popularOnly, celebrityOnly, swipedNameStrings]);
+  }, [genderFilter, languageFilter, meaningSearch, popularOnly, celebrityOnly, firstLetter, swipedNameStrings]);
 
   const handleSwipeRight = async (name: BabyName) => {
     const updated = [...likedNames, name];
@@ -206,7 +211,8 @@ export const AppPage = () => {
   };
 
   const handleFavoriteFromCard = async (name: BabyName) => {
-    // Star button on the swipe card: like + favourite in one atomic mutation.
+    // Star button on the swipe card OR swipe-up: like + favourite in one atomic mutation.
+    setFavBurstKey(k => k + 1); // trigger the celebratory burst
     const updated = [...likedNames, name];
     setLikedNames(updated);
     saveLikedNames(updated);
@@ -291,6 +297,7 @@ export const AppPage = () => {
       meaningSearch: meaningSearch || undefined,
       popularOnly,
       celebrityOnly,
+      firstLetter: firstLetter || undefined,
     });
     setNames(prev => [...prev, ...moreNames]);
   };
@@ -337,17 +344,23 @@ export const AppPage = () => {
       flexDirection: 'row',
       alignItems: 'center',
       padding: theme.spacing.s,
-      backgroundColor: theme.brand.purpleSoft,
+      backgroundColor: theme.brand.pinkSoft,
       borderRadius: theme.borderRadius.round,
     },
     filterText: {
       fontFamily: theme.typography.fontFamilyMedium,
       marginRight: 4,
-      color: theme.brand.purpleDeep,
+      color: theme.brand.pinkDeep,
+    },
+    genderBar: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      paddingHorizontal: theme.spacing.m,
+      paddingBottom: theme.spacing.s,
     },
     genderSwitch: {
       flexDirection: 'row',
-      backgroundColor: theme.brand.purpleSoft,
+      backgroundColor: theme.brand.pinkSoft,
       borderRadius: theme.borderRadius.round,
       padding: 2,
     },
@@ -370,7 +383,7 @@ export const AppPage = () => {
       fontFamily: theme.typography.fontFamily,
     },
     genderTextActive: {
-      color: theme.brand.purpleDeep,
+      color: theme.brand.pinkDeep,
       fontFamily: theme.typography.fontFamilySemiBold,
     },
     searchBar: {
@@ -412,6 +425,63 @@ export const AppPage = () => {
       fontFamily: theme.typography.fontFamily,
       color: theme.colors.text,
       marginLeft: 4,
+    },
+    letterPickerScroll: {
+      flexGrow: 0,
+      paddingBottom: theme.spacing.s,
+    },
+    letterPickerContent: {
+      paddingHorizontal: theme.spacing.m,
+      alignItems: 'center',
+    },
+    letterModalOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(74, 68, 89, 0.45)',
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 24,
+    },
+    letterModalCard: {
+      backgroundColor: theme.colors.card,
+      borderRadius: theme.borderRadius.l,
+      padding: theme.spacing.l,
+      width: '100%',
+      maxWidth: 360,
+    },
+    letterModalTitle: {
+      fontFamily: theme.typography.fontFamilyDisplay,
+      fontSize: theme.typography.sizes.h3,
+      color: theme.colors.text,
+      textAlign: 'center',
+      marginBottom: theme.spacing.m,
+    },
+    letterGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'center',
+    },
+    letterPill: {
+      minWidth: 38,
+      paddingVertical: 8,
+      paddingHorizontal: 10,
+      marginRight: 8,
+      marginBottom: 8,
+      borderRadius: theme.borderRadius.round,
+      backgroundColor: theme.brand.pinkSoft,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    letterPillActive: {
+      backgroundColor: theme.colors.primary,
+    },
+    letterPillText: {
+      fontSize: 12,
+      fontFamily: theme.typography.fontFamily,
+      color: theme.colors.text,
+    },
+    letterPillTextActive: {
+      color: theme.colors.textLight,
+      fontFamily: theme.typography.fontFamilySemiBold,
     },
     stackContainer: {
       flex: 1,
@@ -471,6 +541,7 @@ export const AppPage = () => {
   }), [theme]);
 
   return (
+    <>
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
 
@@ -485,7 +556,7 @@ export const AppPage = () => {
         )}
 
         <View style={styles.logoContainer}>
-          <LogoText size="small" />
+          <LogoText size="small" showTagline={false} />
         </View>
 
         <TouchableOpacity style={styles.iconButton} onPress={() => setMenuVisible(true)}>
@@ -496,16 +567,25 @@ export const AppPage = () => {
       {/* Pregnancy tracker */}
       {dueDate && <PregnancyTracker dueDate={dueDate} />}
 
-      {/* Filter Bar */}
+      {/* Filter Bar: language + first-letter dropdowns */}
       <View style={styles.filterBar}>
         <TouchableOpacity style={styles.languageButton} onPress={() => setLanguagePickerVisible(true)}>
-          <Ionicons name="globe-outline" size={16} color={theme.brand.purpleDeep} style={{ marginRight: 4 }} />
+          <Ionicons name="globe-outline" size={16} color={theme.brand.pinkDeep} style={{ marginRight: 4 }} />
           <Text style={styles.filterText}>
             {languageDisplayText === 'All' ? 'All Languages' : languageDisplayText}
           </Text>
-          <Ionicons name="chevron-down" size={16} color={theme.brand.purpleDeep} />
+          <Ionicons name="chevron-down" size={16} color={theme.brand.pinkDeep} />
         </TouchableOpacity>
 
+        <TouchableOpacity style={styles.languageButton} onPress={() => setLetterPickerVisible(true)}>
+          <Ionicons name="text-outline" size={16} color={theme.brand.pinkDeep} style={{ marginRight: 4 }} />
+          <Text style={styles.filterText}>{firstLetter ? `Letter: ${firstLetter}` : 'A–Z'}</Text>
+          <Ionicons name="chevron-down" size={16} color={theme.brand.pinkDeep} />
+        </TouchableOpacity>
+      </View>
+
+      {/* Gender switch row */}
+      <View style={styles.genderBar}>
         <View style={styles.genderSwitch}>
           <TouchableOpacity onPress={() => setGenderFilter('boy')} style={[styles.genderOption, genderFilter === 'boy' && styles.genderActive]}>
             <Text style={[styles.genderText, genderFilter === 'boy' && styles.genderTextActive]}>Boy</Text>
@@ -535,18 +615,25 @@ export const AppPage = () => {
           style={[styles.popularToggle, popularOnly && styles.popularToggleActive]}
           onPress={() => { setPopularOnly(!popularOnly); if (!popularOnly) setCelebrityOnly(false); }}
         >
-          <Ionicons name="star" size={14} color={popularOnly ? theme.brand.yellowDeep : theme.colors.grey} />
+          <Image
+            source={require('../../assets/brand/characters/crownie.png')}
+            style={{ width: 22, height: 22, marginRight: 5, opacity: popularOnly ? 1 : 0.5 }}
+            resizeMode="contain"
+          />
           <Text style={styles.popularToggleText}>Trending</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.popularToggle, celebrityOnly && { backgroundColor: theme.brand.pinkSoft, borderColor: theme.brand.pinkDeep }]}
           onPress={() => { setCelebrityOnly(!celebrityOnly); if (!celebrityOnly) setPopularOnly(false); }}
         >
-          <Ionicons name="sparkles" size={14} color={celebrityOnly ? theme.brand.pinkDeep : theme.colors.grey} />
+          <Image
+            source={require('../../assets/brand/icons/rainbow.png')}
+            style={{ width: 24, height: 15, marginRight: 5, opacity: celebrityOnly ? 1 : 0.5 }}
+            resizeMode="contain"
+          />
           <Text style={styles.popularToggleText}>Celebrity</Text>
         </TouchableOpacity>
       </View>
-
 
       {/* Card Stack */}
       <View style={styles.stackContainer}>
@@ -557,6 +644,7 @@ export const AppPage = () => {
             onSwipeLeft={handleSwipeLeft}
             onEmpty={handleEmpty}
             onFavorite={handleFavoriteFromCard}
+            onSwipeUp={handleFavoriteFromCard}
           />
         ) : (
           <View style={styles.emptyState}>
@@ -623,6 +711,44 @@ export const AppPage = () => {
         onSelectLanguages={setLanguageFilter}
       />
 
+      {/* First-letter picker */}
+      <Modal
+        visible={letterPickerVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setLetterPickerVisible(false)}
+      >
+        <TouchableOpacity
+          style={styles.letterModalOverlay}
+          activeOpacity={1}
+          onPress={() => setLetterPickerVisible(false)}
+        >
+          <View style={styles.letterModalCard}>
+            <Text style={styles.letterModalTitle}>Filter by first letter</Text>
+            <View style={styles.letterGrid}>
+              <TouchableOpacity
+                style={[styles.letterPill, firstLetter === null && styles.letterPillActive]}
+                onPress={() => { setFirstLetter(null); setLetterPickerVisible(false); }}
+              >
+                <Text style={[styles.letterPillText, firstLetter === null && styles.letterPillTextActive]}>All</Text>
+              </TouchableOpacity>
+              {Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i)).map((letter) => {
+                const isActive = firstLetter === letter;
+                return (
+                  <TouchableOpacity
+                    key={letter}
+                    style={[styles.letterPill, isActive && styles.letterPillActive]}
+                    onPress={() => { setFirstLetter(isActive ? null : letter); setLetterPickerVisible(false); }}
+                  >
+                    <Text style={[styles.letterPillText, isActive && styles.letterPillTextActive]}>{letter}</Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
       <OnboardingTutorial
         visible={showTutorial}
         onDismiss={dismissTutorial}
@@ -637,5 +763,8 @@ export const AppPage = () => {
         onClose={() => setShowSubmitModal(false)}
       />
     </SafeAreaView>
+    {/* Celebratory favourite burst — rendered at root so it sits in front of everything */}
+    <FavoriteBurst playKey={favBurstKey} />
+    </>
   );
 };

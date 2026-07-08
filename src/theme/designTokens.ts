@@ -74,9 +74,9 @@ const BaseTokens = {
 export const LightTheme = {
   ...BaseTokens,
   colors: {
-    primary: Brand.purple,
+    primary: Brand.pink,
     secondary: Brand.teal,
-    accent: Brand.pink,
+    accent: Brand.purple,
     destructive: '#E86A6A',
     background: Brand.cream,
     text: Brand.ink,
@@ -89,7 +89,7 @@ export const LightTheme = {
     dislike: '#B9B3C4',
     superLike: Brand.tealDeep,
     grey: '#A99FB5',
-    shadow: 'rgba(140, 127, 201, 0.18)',   // soft purple shadow
+    shadow: 'rgba(233, 109, 137, 0.18)',   // soft pink shadow
     card: '#FFFFFF',
     border: '#F0E9E1',
   },
@@ -98,9 +98,9 @@ export const LightTheme = {
 export const DarkTheme = {
   ...BaseTokens,
   colors: {
-    primary: Brand.purple,
+    primary: Brand.pink,
     secondary: Brand.teal,
-    accent: Brand.pink,
+    accent: Brand.purple,
     destructive: '#E86A6A',
     background: '#2B2735',                // warm dark aubergine, not pure black
     text: '#F5F1EC',
