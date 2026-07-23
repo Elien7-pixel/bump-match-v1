@@ -16,7 +16,7 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.sherbetagency.bumpmatch",
       "icon": "./assets/icon-ios.png",
-      "buildNumber": "7",
+      "buildNumber": "8",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
