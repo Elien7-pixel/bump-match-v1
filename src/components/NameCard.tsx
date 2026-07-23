@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, useWindowDimensions, TouchableOpacity, Alert, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import Animated from 'react-native-reanimated';
 import { BabyName } from '../models/BabyName';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
@@ -10,11 +11,14 @@ interface NameCardProps {
   data: BabyName;
   onFavorite?: (name: BabyName) => void;
   isFavorited?: boolean;
+  // Animated background colour layer driven by swipe direction (sits between
+  // the gradient and the content so the card itself appears to change colour).
+  tintStyle?: any;
 }
 
 const capitalize = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
 
-export const NameCard: React.FC<NameCardProps> = ({ data, onFavorite, isFavorited }) => {
+export const NameCard: React.FC<NameCardProps> = ({ data, onFavorite, isFavorited, tintStyle }) => {
   const { theme } = useTheme();
   const { user } = useAuth();
   const surname = capitalize(user?.surname || '');
@@ -126,10 +130,14 @@ export const NameCard: React.FC<NameCardProps> = ({ data, onFavorite, isFavorite
       overflow: 'hidden',
     },
     hintDislike: {
-      color: theme.colors.dislike,
+      color: theme.colors.swipeNo,
     },
     hintLike: {
-      color: theme.colors.like,
+      color: theme.colors.swipeYes,
+    },
+    tintFill: {
+      ...StyleSheet.absoluteFillObject,
+      borderRadius: theme.borderRadius.xl,
     },
     infoButton: {
       position: 'absolute',
@@ -163,6 +171,9 @@ export const NameCard: React.FC<NameCardProps> = ({ data, onFavorite, isFavorite
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       >
+        {tintStyle ? (
+          <Animated.View pointerEvents="none" style={[styles.tintFill, tintStyle]} />
+        ) : null}
         {onFavorite ? (
           <TouchableOpacity
             style={styles.favoriteButton}

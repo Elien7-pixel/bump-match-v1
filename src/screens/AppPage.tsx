@@ -401,6 +401,11 @@ export const AppPage = () => {
       borderWidth: 1,
       borderColor: theme.colors.border,
       paddingHorizontal: theme.spacing.m,
+      // Android: kill the TextInput's default vertical padding and Poppins'
+      // extra font padding, which pushed the text down and clipped its top half.
+      paddingVertical: 0,
+      textAlignVertical: 'center',
+      includeFontPadding: false,
       fontFamily: theme.typography.fontFamily,
       fontSize: 13,
       color: theme.colors.text,

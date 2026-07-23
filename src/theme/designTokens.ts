@@ -92,6 +92,10 @@ export const LightTheme = {
     shadow: 'rgba(233, 109, 137, 0.18)',   // soft pink shadow
     card: '#FFFFFF',
     border: '#F0E9E1',
+    // Directional swipe feedback: card turns red (left), green (right), gold (up)
+    swipeNo: '#E85D5D',
+    swipeYes: '#5FBF77',
+    swipeFav: '#F2B94B',
   },
 };
 
@@ -116,6 +120,10 @@ export const DarkTheme = {
     shadow: 'rgba(0, 0, 0, 0.4)',
     card: '#38323F',
     border: '#4A4459',
+    // Directional swipe feedback: card turns red (left), green (right), gold (up)
+    swipeNo: '#E85D5D',
+    swipeYes: '#5FBF77',
+    swipeFav: '#F2B94B',
   },
 };
 

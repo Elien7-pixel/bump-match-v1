@@ -28,10 +28,10 @@ export const CardStack: React.FC<CardStackProps> = ({ names, onSwipeRight, onSwi
   const { theme } = useTheme();
   const SWIPE_THRESHOLD = width * 0.3;
   const SWIPE_UP_THRESHOLD = 120;
-  // Directional swipe highlight colours: dislike = grey, like = red, favourite = yellow.
-  const DISLIKE_COLOR = theme.colors.dislike;
-  const LIKE_COLOR = theme.colors.destructive;
-  const FAV_COLOR = theme.brand.yellowDeep;
+  // Directional swipe card colours: left/dislike = red, right/like = green, up/favourite = gold.
+  const DISLIKE_COLOR = theme.colors.swipeNo;
+  const LIKE_COLOR = theme.colors.swipeYes;
+  const FAV_COLOR = theme.colors.swipeFav;
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
   const startX = useSharedValue(0);
@@ -114,18 +114,20 @@ export const CardStack: React.FC<CardStackProps> = ({ names, onSwipeRight, onSwi
     };
   });
 
-  const overlayStyle = useAnimatedStyle(() => {
+  // Tint layer rendered inside the card (between gradient and content) so the
+  // card itself changes colour as you drag, reaching solid at the threshold.
+  const tintStyle = useAnimatedStyle(() => {
     const tx = translateX.value;
     const ty = translateY.value;
     const upDominant = ty < 0 && Math.abs(ty) > Math.abs(tx) + 10;
     if (upDominant) {
-      return { backgroundColor: FAV_COLOR, opacity: Math.min(Math.abs(ty) / 160, 0.55) };
+      return { backgroundColor: FAV_COLOR, opacity: Math.min(Math.abs(ty) / SWIPE_UP_THRESHOLD, 1) };
     }
     if (tx > 0) {
-      return { backgroundColor: LIKE_COLOR, opacity: Math.min(tx / 160, 0.55) };
+      return { backgroundColor: LIKE_COLOR, opacity: Math.min(tx / SWIPE_THRESHOLD, 1) };
     }
     if (tx < 0) {
-      return { backgroundColor: DISLIKE_COLOR, opacity: Math.min(-tx / 160, 0.55) };
+      return { backgroundColor: DISLIKE_COLOR, opacity: Math.min(-tx / SWIPE_THRESHOLD, 1) };
     }
     return { backgroundColor: FAV_COLOR, opacity: 0 };
   });
@@ -158,8 +160,7 @@ export const CardStack: React.FC<CardStackProps> = ({ names, onSwipeRight, onSwi
 
       <GestureDetector gesture={panGesture}>
         <Animated.View style={[styles.cardContainer, cardStyle]}>
-           <NameCard data={currentProfile} onFavorite={onFavorite} />
-           <Animated.View pointerEvents="none" style={[styles.swipeOverlay, overlayStyle]} />
+           <NameCard data={currentProfile} onFavorite={onFavorite} tintStyle={tintStyle} />
         </Animated.View>
       </GestureDetector>
     </View>
@@ -177,10 +178,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  swipeOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    borderRadius: 24,
   },
   nextCard: {
      zIndex: -1,

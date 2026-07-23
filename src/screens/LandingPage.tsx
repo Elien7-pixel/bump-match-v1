@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
+import Svg, { Path } from 'react-native-svg';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -270,96 +271,95 @@ export const LandingPage = () => {
     }
   };
 
+  // Layout metrics for the splash composition (purple sky, cream wave base)
+  const squircleSize = Math.min(width * (isTablet ? 0.3 : 0.44), 230);
+  const rainbowWidth = Math.min(width * 0.58, 300);
+  const rainbowHeight = rainbowWidth / 1.7;   // rainbow.png aspect ratio
+  const WAVE_HEIGHT = 70;
+
   const pageStyles = React.useMemo(() => StyleSheet.create({
     background: {
       flex: 1,
       width: '100%',
       height: '100%',
-      backgroundColor: theme.colors.background,
+      backgroundColor: theme.brand.purple,
     },
-    overlay: {
-      flex: 1,
-      justifyContent: 'space-between',
+    heroWrap: {
+      position: 'absolute',
+      top: height * (isTablet ? 0.15 : 0.175),
+      left: 0,
+      right: 0,
+      alignItems: 'center',
+    },
+    logoSquircle: {
+      width: squircleSize,
+      height: squircleSize,
+      borderRadius: squircleSize * 0.24,
+      backgroundColor: theme.brand.cream,
+      alignItems: 'center',
+      justifyContent: 'center',
+      shadowColor: 'rgba(74, 68, 89, 0.3)',
+      shadowOffset: { width: 0, height: 8 },
+      shadowOpacity: 1,
+      shadowRadius: 18,
+      elevation: 6,
+    },
+    logoMark: {
+      width: squircleSize * 0.52,
+      height: squircleSize * 0.7,
+    },
+    starSmallRight: {
+      position: 'absolute',
+      right: width * 0.09,
+      top: height * 0.3,
+      width: 40,
+      height: 40,
+      transform: [{ rotate: '12deg' }],
+      pointerEvents: 'none',
+    },
+    starSmallLeft: {
+      position: 'absolute',
+      left: width * 0.07,
+      top: height * 0.54,
+      width: 34,
+      height: 34,
+      transform: [{ rotate: '-14deg' }],
+      pointerEvents: 'none',
+    },
+    bottomSection: {
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      bottom: 0,
+    },
+    rainbow: {
+      position: 'absolute',
+      alignSelf: 'center',
+      top: -rainbowHeight * 0.42,
+      width: rainbowWidth,
+      height: rainbowHeight,
+    },
+    waveStar: {
+      position: 'absolute',
+      right: 10,
+      top: -26,
+      width: 58,
+      height: 58,
+      transform: [{ rotate: '-12deg' }],
+    },
+    bottomContent: {
+      backgroundColor: theme.brand.cream,
       alignItems: 'center',
       paddingHorizontal: 24,
-      paddingTop: isTablet ? 200 : 178,
-      paddingBottom: isTablet ? 80 : 60,
-    },
-    heroSection: {
-      alignItems: 'center',
-      width: '100%',
-    },
-    heroLogo: {
-      width: isTablet ? 210 : 180,
-      height: isTablet ? 210 : 180,
+      paddingBottom: isTablet ? 64 : 44,
+      marginTop: -1,
     },
     heroWordmark: {
       marginBottom: 24,
     },
-    content: {
-      alignItems: 'center',
-      width: '100%',
-      maxWidth: isTablet ? 480 : undefined,
-    },
-    glassContainer: {
-      width: '100%',
-      marginBottom: 32,
-    },
-    glassInner: {
-      padding: isTablet ? 40 : 32,
-      alignItems: 'center',
-    },
-    title: {
-      fontFamily: theme.typography.fontFamilyDisplay,
-      fontSize: isTablet ? 48 : 42,
-      color: theme.colors.text,
-      marginBottom: 12,
-      letterSpacing: 1,
-    },
-    subtitle: {
-      fontFamily: theme.typography.fontFamily,
-      fontSize: isTablet ? 19 : 17,
-      color: theme.colors.text,
-      textAlign: 'center',
-      lineHeight: 24,
-    },
-    decorOverlay: {
-      ...StyleSheet.absoluteFillObject,
-    },
-    decorRainbow: {
-      position: 'absolute',
-      top: '14%',
-      right: '14%',
-      width: 58,
-      height: 37,
-      transform: [{ rotate: '8deg' }],
-    },
-    decorHeart: {
-      position: 'absolute',
-      top: '13%',
-      left: '15%',
-      width: 44,
-      height: 44,
-      transform: [{ rotate: '-12deg' }],
-    },
-    decorStar: {
-      position: 'absolute',
-      top: '41%',
-      right: '18%',
-      width: 46,
-      height: 46,
-      transform: [{ rotate: '14deg' }],
-    },
-    decorFlower: {
-      position: 'absolute',
-      top: '43%',
-      left: '17%',
-      width: 46,
-      height: 46,
-      transform: [{ rotate: '-8deg' }],
-    },
     buttonContainer: {
       width: '100%',
+      maxWidth: isTablet ? 480 : undefined,
       gap: 12,
     },
     primaryButton: {
@@ -396,15 +396,13 @@ export const LandingPage = () => {
     secondaryButtonInner: {
       paddingVertical: 16,
       alignItems: 'center',
-      backgroundColor: theme.colors.card,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
+      backgroundColor: theme.brand.pinkSoft,
       borderRadius: theme.borderRadius.m,
     },
     secondaryButtonText: {
       fontFamily: theme.typography.fontFamilySemiBold,
       fontSize: 17,
-      color: theme.colors.text,
+      color: Brand.ink,
     },
     modalOverlay: {
       flex: 1,
@@ -533,7 +531,7 @@ export const LandingPage = () => {
       flexDirection: 'row',
       marginTop: 24,
     },
-  }), [theme]);
+  }), [theme, width, height, isTablet, squircleSize, rainbowWidth, rainbowHeight]);
 
   const handleCompleteOnboarding = async () => {
     if (!firstName.trim() || !surname.trim() || !email.trim() || !password.trim() || !dateOfBirth) {
@@ -605,47 +603,53 @@ export const LandingPage = () => {
   };
 
   return (
-    <LinearGradient
-      colors={theme.gradients.g3}
-      start={{ x: 0.5, y: 0 }}
-      end={{ x: 0.5, y: 1 }}
-      style={pageStyles.background}
-    >
-      {/* Decorative brand-icon accents */}
-      <View style={pageStyles.decorOverlay} pointerEvents="none">
-        <Image
-          source={require('../../assets/brand/icons/rainbow.png')}
-          style={pageStyles.decorRainbow}
-          resizeMode="contain"
-        />
-        <Image
-          source={require('../../assets/brand/icons/heart-1.png')}
-          style={pageStyles.decorHeart}
-          resizeMode="contain"
-        />
-        <Image
-          source={require('../../assets/brand/icons/star-2.png')}
-          style={pageStyles.decorStar}
-          resizeMode="contain"
-        />
-        <Image
-          source={require('../../assets/brand/icons/flower-2.png')}
-          style={pageStyles.decorFlower}
-          resizeMode="contain"
-        />
-      </View>
+    <View style={pageStyles.background}>
+      {/* Animated name pills floating in the purple sky */}
+      <AnimatedNameCards />
 
-      <View style={pageStyles.overlay}>
-        {/* Pink B logo hero, sitting among the decorative icons */}
-        <View style={pageStyles.heroSection}>
+      {/* Scattered yellow stars on the purple */}
+      <Image
+        source={require('../../assets/brand/icons/star-2.png')}
+        style={pageStyles.starSmallRight}
+        resizeMode="contain"
+      />
+      <Image
+        source={require('../../assets/brand/icons/star-2.png')}
+        style={pageStyles.starSmallLeft}
+        resizeMode="contain"
+      />
+
+      {/* Cream squircle holding the mother-and-baby mark */}
+      <View style={pageStyles.heroWrap} pointerEvents="none">
+        <View style={pageStyles.logoSquircle}>
           <Image
-            source={require('../../assets/brand/b-logo.png')}
-            style={pageStyles.heroLogo}
+            source={require('../../assets/brand/logo-mark-purple.png')}
+            style={pageStyles.logoMark}
             resizeMode="contain"
           />
         </View>
+      </View>
 
-        <View style={pageStyles.content}>
+      {/* Cream wave base — rainbow peeks out from behind the wave crest */}
+      <View style={pageStyles.bottomSection}>
+        <Image
+          source={require('../../assets/brand/icons/rainbow.png')}
+          style={pageStyles.rainbow}
+          resizeMode="contain"
+        />
+        <Svg width="100%" height={WAVE_HEIGHT} viewBox="0 0 100 28" preserveAspectRatio="none">
+          <Path
+            d="M0 14 C 16 4 30 3 48 11 C 62 17 76 19 100 9 L 100 28 L 0 28 Z"
+            fill={theme.brand.cream}
+          />
+        </Svg>
+        <Image
+          source={require('../../assets/brand/icons/star-2.png')}
+          style={pageStyles.waveStar}
+          resizeMode="contain"
+        />
+
+        <View style={pageStyles.bottomContent}>
           {/* Bump Match wordmark (with tagline) just above the sign up block */}
           <LogoText size="large" lightText={false} style={pageStyles.heroWordmark} />
           {/* Auth Buttons */}
@@ -683,7 +687,7 @@ export const LandingPage = () => {
               <View
                 style={[
                   pageStyles.secondaryButtonInner,
-                  isLogInPressed && { backgroundColor: theme.brand.pinkSoft, borderColor: theme.colors.primary }
+                  isLogInPressed && { backgroundColor: theme.brand.pink }
                 ]}
               >
                 <Text style={pageStyles.secondaryButtonText}>Log In</Text>
@@ -1119,7 +1123,7 @@ export const LandingPage = () => {
           </GlassCard>
         </View>
       </Modal>
-    </LinearGradient>
+    </View>
   );
 };
 
@@ -1226,23 +1230,25 @@ const AnimatedNameCards = () => {
   const { width: w, height: h } = useWindowDimensions();
   const isWide = w >= TABLET_MIN_WIDTH;
 
+  // Positioned to frame the centre logo squircle: a pair above it, the rest in
+  // the open band between the logo and the cream wave — never overlapping either.
   const cards = isWide
     ? [
-        { name: 'Oliver', x: w * 0.1, y: h * 0.06, delay: 0 },       // English
-        { name: 'Annelie', x: w * 0.55, y: h * 0.08, delay: 200 },   // Afrikaans
-        { name: 'Sipho', x: w * 0.3, y: h * 0.18, delay: 400 },      // isiZulu
-        { name: 'Lerato', x: w * 0.05, y: h * 0.28, delay: 600 },    // Sepedi
-        { name: 'Lufuno', x: w * 0.6, y: h * 0.25, delay: 800 },     // Tshivenda
-        { name: 'Riaan', x: w * 0.75, y: h * 0.12, delay: 300 },     // Afrikaans
-        { name: 'Lindiwe', x: w * 0.45, y: h * 0.35, delay: 500 },   // isiZulu
-        { name: 'Kabelo', x: w * 0.8, y: h * 0.32, delay: 700 },     // Sepedi
+        { name: 'Oliver', x: w * 0.08, y: h * 0.05, delay: 0 },      // English
+        { name: 'Annelie', x: w * 0.55, y: h * 0.05, delay: 200 },   // Afrikaans
+        { name: 'Riaan', x: w * 0.78, y: h * 0.11, delay: 300 },     // Afrikaans
+        { name: 'Lindiwe', x: w * 0.14, y: h * 0.12, delay: 500 },   // isiZulu
+        { name: 'Sipho', x: w * 0.07, y: h * 0.44, delay: 400 },     // isiZulu
+        { name: 'Kabelo', x: w * 0.72, y: h * 0.44, delay: 700 },    // Sepedi
+        { name: 'Lerato', x: w * 0.28, y: h * 0.5, delay: 600 },     // Sepedi
+        { name: 'Lufuno', x: w * 0.56, y: h * 0.52, delay: 800 },    // Tshivenda
       ]
     : [
-        { name: 'Oliver', x: w * 0.15, y: h * 0.08, delay: 0 },      // English
-        { name: 'Annelie', x: w * 0.6, y: h * 0.10, delay: 200 },    // Afrikaans
-        { name: 'Sipho', x: w * 0.35, y: h * 0.20, delay: 400 },     // isiZulu
-        { name: 'Lerato', x: w * 0.08, y: h * 0.28, delay: 600 },    // Sepedi
-        { name: 'Lufuno', x: w * 0.65, y: h * 0.30, delay: 800 },    // Tshivenda
+        { name: 'Annelie', x: w * 0.1, y: h * 0.11, delay: 200 },    // Afrikaans
+        { name: 'Lerato', x: w * 0.55, y: h * 0.07, delay: 0 },      // Sepedi
+        { name: 'Sipho', x: w * 0.1, y: h * 0.42, delay: 400 },      // isiZulu
+        { name: 'Oliver', x: w * 0.58, y: h * 0.435, delay: 600 },   // English
+        { name: 'Lufuno', x: w * 0.28, y: h * 0.475, delay: 800 },   // Tshivenda
       ];
 
   return (
@@ -1278,14 +1284,14 @@ const scatteredGlassStyles = StyleSheet.create({
     elevation: 2,
   },
   cardContent: {
-    paddingVertical: 12,
-    paddingHorizontal: 20,
+    paddingVertical: 13,
+    paddingHorizontal: 22,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
   },
   cardText: {
-    fontFamily: 'Poppins-Medium',
+    fontFamily: 'Poppins-SemiBold',
     fontSize: 18,
     color: Brand.ink,
   },
