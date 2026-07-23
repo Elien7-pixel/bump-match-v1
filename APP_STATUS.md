@@ -28,11 +28,11 @@ Bump Match helps couples find baby names they both love using a Tinder-like swip
 
 | Store | Status | Link |
 |-------|--------|------|
-| Apple App Store | Approved — Live | [App Store Connect](https://appstoreconnect.apple.com/apps/6760332446) |
-| Google Play Store | Submitted — awaiting review | — |
+| Apple App Store | v1.0.6 live; v1.0.7 (build 8) submitted for review 23 Jul 2026 | [App Store Connect](https://appstoreconnect.apple.com/apps/6776671806) |
+| Google Play Store | v1.0.7 (versionCode 9) AAB built; manual upload to production track | [Play Console](https://play.google.com/console) |
 
-- **Bundle ID:** `com.orbitai.bumpmatch`
-- **Version:** 1.0.1
+- **Bundle ID:** iOS `com.sherbetagency.bumpmatch` / Android `com.orbitai.bumpmatch`
+- **Version:** 1.0.7
 - **Privacy Policy:** https://elated-newt-380.convex.cloud/privacy-policy
 - **Support:** https://elated-newt-380.convex.cloud/support
 - **Contact:** ai@sherbetagency.com
