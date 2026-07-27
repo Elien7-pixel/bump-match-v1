@@ -1,17 +1,16 @@
 # Bump Match — Privacy Policy
 
-**Last updated:** [DATE]
-**Effective date:** [DATE]
+**Last updated:** 27 July 2026
+**Effective date:** 27 July 2026
 
-This Privacy Policy explains how **[LEGAL ENTITY NAME]** ("Sherbet Agency", "we", "us")
+This Privacy Policy explains how **Sherbet Agency (Pty) Ltd** ("Sherbet Agency", "we", "us")
 collects, uses, shares, and protects your personal information when you use the
 **Bump Match** mobile application (the "App").
 
 We are the **data controller** for the personal information described here.
 
-- **Contact / privacy requests:** [privacy@sherbetagency.com]
-- **Registered address:** [REGISTERED COMPANY ADDRESS]
-- **EU/UK representative (if applicable):** [NAME / ADDRESS]
+- **Contact / privacy requests:** ai@sherbetagency.com
+- **Registered address:** 15E Riley Rd, Bedfordview, Johannesburg, 2007, South Africa
 
 If you do not agree with this policy, please do not use the App.
 
@@ -106,7 +105,7 @@ want you to understand this before you opt in.
   shared, contact us and we will pass on your request.
 
 We provide the list of current partner categories (and, on request, named partners)
-at [LINK / on request via privacy@sherbetagency.com].
+on request via **ai@sherbetagency.com**.
 
 ---
 
@@ -122,9 +121,9 @@ in Section 5.
 
 ## 7. Who we share personal information with
 
-- **Service providers** who help us run the App (e.g. hosting/backend
-  [Convex], analytics, crash reporting, push notifications) under contracts that
-  restrict their use of your data.
+- **Service providers** who help us run the App (e.g. hosting/backend Convex,
+  transactional email Resend, push notifications Expo, analytics and crash
+  reporting) under contracts that restrict their use of your data.
 - **Opt-in partners** — only as described in Section 5, and only if you opted in.
 - **Legal / safety** — where required by law or to protect rights and safety.
 - **Business transfers** — in a merger, acquisition, or sale of assets.
@@ -137,7 +136,7 @@ Section 6 (aggregated/anonymised).
 ## 8. International transfers
 
 Your information may be processed in countries outside your own, including the
-[United States/UK/EU]. Where we transfer personal data internationally, we use
+United States. Where we transfer personal data internationally, we use
 appropriate safeguards such as Standard Contractual Clauses.
 
 ---
@@ -156,11 +155,11 @@ Depending on where you live, you have some or all of these rights:
 **Opt out of sale/sharing (CCPA/CPRA and US state laws).** You have the right to opt
 out of the sale or sharing of your personal information. Because our data sale is
 opt-in, simply leaving **Partner Offers** off means we do not sell your personal
-information. You may also submit a request at [privacy@sherbetagency.com] or use the
+information. You may also submit a request at ai@sherbetagency.com or use the
 **"Do Not Sell or Share My Personal Information"** link in **Settings → Privacy.** We
 honor **Global Privacy Control (GPC)** browser/device signals where required.
 
-To exercise any right, contact **[privacy@sherbetagency.com]**. We will respond within
+To exercise any right, contact **ai@sherbetagency.com**. We will respond within
 the timeframe required by law (generally 30–45 days). You also have the right to
 complain to your data protection authority (in the UK, the ICO; in the EU, your local
 authority).
@@ -171,7 +170,7 @@ authority).
 
 We keep personal information only as long as needed to provide the App and for
 legitimate legal, security, and business purposes. When you delete your account, we
-delete or anonymise your personal data within [30–90 days], except where we must
+delete or anonymise your personal data within 30 days, except where we must
 retain it by law.
 
 ---
@@ -201,6 +200,6 @@ by law. Continued use after non-material changes means you accept the updated po
 
 ## 14. Contact us
 
-**[LEGAL ENTITY NAME]**
-[REGISTERED ADDRESS]
-Email: **[privacy@sherbetagency.com]**
+**Sherbet Agency (Pty) Ltd**
+15E Riley Rd, Bedfordview, Johannesburg, 2007, South Africa
+Email: **ai@sherbetagency.com**
