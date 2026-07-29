@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, StatusBar, Alert, TextInput, Image, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -44,6 +44,7 @@ export const AppPage = () => {
   const [firstLetter, setFirstLetter] = useState<string | null>(null);
 
   const [surname, setSurname] = useState('');
+  const [firstName, setFirstName] = useState('');
   const [dueDate, setDueDate] = useState<string | null>(null);
   const [inviteVisible, setInviteVisible] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
@@ -62,6 +63,33 @@ export const AppPage = () => {
     api.names.getLikedNames,
     token ? { token } : "skip"
   );
+
+  // Weekly trending list from the server; cached in AsyncStorage so a
+  // previously-online user keeps last week's list when offline. When neither
+  // is available the bundled popularity flags take over (see getRandomNames).
+  const serverTrending = useQuery(api.trending.getTrending, {});
+  const [cachedTrending, setCachedTrending] = useState<string[]>([]);
+
+  useEffect(() => {
+    AsyncStorage.getItem('bumpmatch_trending_cache')
+      .then((json) => { if (json) setCachedTrending(JSON.parse(json)); })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (serverTrending && serverTrending.length > 0) {
+      const names = serverTrending.map((t: any) => t.name);
+      setCachedTrending(names);
+      AsyncStorage.setItem('bumpmatch_trending_cache', JSON.stringify(names)).catch(() => {});
+    }
+  }, [serverTrending]);
+
+  const trendingNameSet = useMemo(() => {
+    const source = serverTrending && serverTrending.length > 0
+      ? serverTrending.map((t: any) => t.name)
+      : cachedTrending;
+    return new Set<string>(source.map((n: string) => n.toLowerCase()));
+  }, [serverTrending, cachedTrending]);
   // Note: matchedNames and partnerLikedNames removed — matches only visible in Partner section
 
   useEffect(() => {
@@ -108,6 +136,7 @@ export const AppPage = () => {
       // Try to get from auth context first
       if (user) {
         setSurname(user.surname);
+        setFirstName(user.firstName || '');
         return;
       }
 
@@ -116,12 +145,34 @@ export const AppPage = () => {
       if (json) {
         const profile = JSON.parse(json);
         setSurname(profile.surname);
+        setFirstName(profile.firstName || '');
         if (profile.dueDate) setDueDate(profile.dueDate);
       }
     } catch (e) {
       console.log('Error loading profile', e);
     }
   };
+
+  // Keep name state in sync once the server user resolves (it is null on the
+  // first frames, and can refresh mid-session) — without this the greeting
+  // stays on whatever the AsyncStorage snapshot held.
+  useEffect(() => {
+    if (user) {
+      setSurname(user.surname);
+      setFirstName(user.firstName || '');
+    }
+  }, [user]);
+
+  // A partner invite opened before signup is parked in AsyncStorage — surface
+  // it as soon as the user is authenticated (PartnerScreen consumes the code).
+  useEffect(() => {
+    if (!token) return;
+    AsyncStorage.getItem('bumpmatch_pending_invite')
+      .then((code) => {
+        if (code) navigation.navigate('Partner');
+      })
+      .catch(() => {});
+  }, [token]);
 
   const loadLikedNames = async () => {
     try {
@@ -173,11 +224,22 @@ export const AppPage = () => {
       popularOnly,
       celebrityOnly,
       firstLetter: firstLetter || undefined,
+      trendingNameSet,
     });
 
     setNames(newNames);
     setCardHistory([]);
-  }, [genderFilter, languageFilter, meaningSearch, popularOnly, celebrityOnly, firstLetter, swipedNameStrings]);
+  }, [genderFilter, languageFilter, meaningSearch, popularOnly, celebrityOnly, firstLetter, swipedNameStrings, trendingNameSet]);
+
+  // Rebuild the deck when fresh trending data lands — but only while the
+  // Trending filter is active, so a background refresh never resets a deck
+  // the user is mid-swipe on.
+  useEffect(() => {
+    if (popularOnly) {
+      loadNames();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [trendingNameSet]);
 
   const handleSwipeRight = async (name: BabyName) => {
     const updated = [...likedNames, name];
@@ -298,6 +360,7 @@ export const AppPage = () => {
       popularOnly,
       celebrityOnly,
       firstLetter: firstLetter || undefined,
+      trendingNameSet,
     });
     setNames(prev => [...prev, ...moreNames]);
   };
@@ -348,6 +411,7 @@ export const AppPage = () => {
       borderRadius: theme.borderRadius.round,
     },
     filterText: {
+      includeFontPadding: false,
       fontFamily: theme.typography.fontFamilyMedium,
       marginRight: 4,
       color: theme.brand.pinkDeep,
@@ -378,6 +442,7 @@ export const AppPage = () => {
       elevation: 2,
     },
     genderText: {
+      includeFontPadding: false,
       fontSize: 11,
       color: theme.colors.textDim,
       fontFamily: theme.typography.fontFamily,
@@ -426,6 +491,7 @@ export const AppPage = () => {
       borderColor: theme.brand.yellowDeep,
     },
     popularToggleText: {
+      includeFontPadding: false,
       fontSize: 11,
       fontFamily: theme.typography.fontFamily,
       color: theme.colors.text,
@@ -536,6 +602,7 @@ export const AppPage = () => {
     dislikeBtn: {},
     likeBtn: {},
     footerText: {
+      includeFontPadding: false,
       textAlign: 'center',
       fontSize: 12,
       color: theme.colors.grey,
@@ -576,7 +643,7 @@ export const AppPage = () => {
       <View style={styles.filterBar}>
         <TouchableOpacity style={styles.languageButton} onPress={() => setLanguagePickerVisible(true)}>
           <Ionicons name="globe-outline" size={16} color={theme.brand.pinkDeep} style={{ marginRight: 4 }} />
-          <Text style={styles.filterText}>
+          <Text style={styles.filterText} maxFontSizeMultiplier={1.3}>
             {languageDisplayText === 'All' ? 'All Languages' : languageDisplayText}
           </Text>
           <Ionicons name="chevron-down" size={16} color={theme.brand.pinkDeep} />
@@ -584,7 +651,7 @@ export const AppPage = () => {
 
         <TouchableOpacity style={styles.languageButton} onPress={() => setLetterPickerVisible(true)}>
           <Ionicons name="text-outline" size={16} color={theme.brand.pinkDeep} style={{ marginRight: 4 }} />
-          <Text style={styles.filterText}>{firstLetter ? `Letter: ${firstLetter}` : 'A–Z'}</Text>
+          <Text style={styles.filterText} maxFontSizeMultiplier={1.3}>{firstLetter ? `Letter: ${firstLetter}` : 'A–Z'}</Text>
           <Ionicons name="chevron-down" size={16} color={theme.brand.pinkDeep} />
         </TouchableOpacity>
       </View>
@@ -593,16 +660,16 @@ export const AppPage = () => {
       <View style={styles.genderBar}>
         <View style={styles.genderSwitch}>
           <TouchableOpacity onPress={() => setGenderFilter('boy')} style={[styles.genderOption, genderFilter === 'boy' && styles.genderActive]}>
-            <Text style={[styles.genderText, genderFilter === 'boy' && styles.genderTextActive]}>Boy</Text>
+            <Text maxFontSizeMultiplier={1.3} style={[styles.genderText, genderFilter === 'boy' && styles.genderTextActive]}>Boy</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={() => setGenderFilter('girl')} style={[styles.genderOption, genderFilter === 'girl' && styles.genderActive]}>
-            <Text style={[styles.genderText, genderFilter === 'girl' && styles.genderTextActive]}>Girl</Text>
+            <Text maxFontSizeMultiplier={1.3} style={[styles.genderText, genderFilter === 'girl' && styles.genderTextActive]}>Girl</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={() => setGenderFilter('unisex')} style={[styles.genderOption, genderFilter === 'unisex' && styles.genderActive]}>
-            <Text style={[styles.genderText, genderFilter === 'unisex' && styles.genderTextActive]}>Neutral</Text>
+            <Text maxFontSizeMultiplier={1.3} style={[styles.genderText, genderFilter === 'unisex' && styles.genderTextActive]}>Neutral</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={() => setGenderFilter('all')} style={[styles.genderOption, genderFilter === 'all' && styles.genderActive]}>
-            <Text style={[styles.genderText, genderFilter === 'all' && styles.genderTextActive]}>All</Text>
+            <Text maxFontSizeMultiplier={1.3} style={[styles.genderText, genderFilter === 'all' && styles.genderTextActive]}>All</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -611,6 +678,7 @@ export const AppPage = () => {
       <View style={styles.searchBar}>
         <TextInput
           style={styles.searchInput}
+          maxFontSizeMultiplier={1.3}
           placeholder="Search by meaning..."
           placeholderTextColor={theme.colors.grey}
           value={meaningSearch}
@@ -625,7 +693,7 @@ export const AppPage = () => {
             style={{ width: 22, height: 22, marginRight: 5, opacity: popularOnly ? 1 : 0.5 }}
             resizeMode="contain"
           />
-          <Text style={styles.popularToggleText}>Trending</Text>
+          <Text style={styles.popularToggleText} maxFontSizeMultiplier={1.3}>Trending</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.popularToggle, celebrityOnly && { backgroundColor: theme.brand.pinkSoft, borderColor: theme.brand.pinkDeep }]}
@@ -636,7 +704,7 @@ export const AppPage = () => {
             style={{ width: 24, height: 15, marginRight: 5, opacity: celebrityOnly ? 1 : 0.5 }}
             resizeMode="contain"
           />
-          <Text style={styles.popularToggleText}>Celebrity</Text>
+          <Text style={styles.popularToggleText} maxFontSizeMultiplier={1.3}>Celebrity</Text>
         </TouchableOpacity>
       </View>
 
@@ -680,11 +748,11 @@ export const AppPage = () => {
         </TouchableOpacity>
       </View>
 
-      <Text style={styles.footerText}>
+      <Text style={styles.footerText} maxFontSizeMultiplier={1.3}>
         {likedNames.length + dislikedNames.length} names explored - {likedNames.length} liked
       </Text>
-      <Text style={styles.footerText}>
-        Welcome back, {user?.firstName || surname || 'Guest'}!
+      <Text style={styles.footerText} maxFontSizeMultiplier={1.3}>
+        Welcome back, {user?.firstName?.trim() || firstName.trim() || 'there'}!
       </Text>
 
       <PartnerInviteDialog

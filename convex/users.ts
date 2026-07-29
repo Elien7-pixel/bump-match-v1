@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { mutation, query, internalMutation } from "./_generated/server";
 import { Id, Doc } from "./_generated/dataModel";
 import { internal } from "./_generated/api";
 
@@ -39,21 +39,22 @@ export const getProfile = query({
       }
     }
 
-    // Calculate age from date of birth (stored in `age` field as ISO string)
+    // Calculate age from date of birth (stored in `age` as "YYYY-MM-DD", with
+    // legacy rows holding a full ISO datetime). Read the literal calendar parts
+    // so the result never depends on the server runtime's timezone.
     let calculatedAge: number | null = null;
     if (user.age) {
-      try {
-        const dob = new Date(user.age);
-        if (!isNaN(dob.getTime())) {
-          const today = new Date();
-          let years = today.getFullYear() - dob.getFullYear();
-          const monthDiff = today.getMonth() - dob.getMonth();
-          if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
-            years--;
-          }
-          calculatedAge = years;
+      const parts = user.age.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (parts) {
+        const [, y, m, d] = parts.map(Number);
+        const today = new Date();
+        let years = today.getUTCFullYear() - y;
+        const monthDiff = today.getUTCMonth() + 1 - m;
+        if (monthDiff < 0 || (monthDiff === 0 && today.getUTCDate() < d)) {
+          years--;
         }
-      } catch {}
+        if (years >= 0 && years < 130) calculatedAge = years;
+      }
     }
 
     return {
@@ -88,8 +89,10 @@ export const updateProfile = mutation({
     }
 
     const updates: Partial<Doc<"users">> = {};
-    if (args.firstName !== undefined) updates.firstName = args.firstName;
-    if (args.surname !== undefined) updates.surname = args.surname;
+    // Empty names are ignored rather than persisted — a blank firstName is what
+    // made the home greeting fall back to the surname on some accounts.
+    if (args.firstName !== undefined && args.firstName.trim() !== "") updates.firstName = args.firstName.trim();
+    if (args.surname !== undefined && args.surname.trim() !== "") updates.surname = args.surname.trim();
     if (args.age !== undefined) updates.age = args.age;
     if (args.gender !== undefined) updates.gender = args.gender;
     if (args.status !== undefined) updates.status = args.status;
@@ -383,5 +386,80 @@ export const getMatchRevealDate = query({
       proposedByName,
       confirmed: user.revealDateConfirmed || false,
     };
+  },
+});
+
+// ---------------------------------------------------------------------------
+// Maintenance (internal only — run via `npx convex run`)
+// ---------------------------------------------------------------------------
+
+/**
+ * One-time repair: normalize legacy `age` values stored as full ISO datetimes
+ * (e.g. "1990-01-04T22:00:00.000Z", written by the old toISOString() path) to
+ * the canonical date-only "YYYY-MM-DD". Those legacy strings hold UTC, which is
+ * one calendar day EARLIER than the day picked from any timezone east of UTC —
+ * so when the UTC hour is 12 or later we roll forward to the next day. That
+ * recovers the picked day for local-midnight picks made anywhere from UTC-11
+ * to UTC+12 (SAST users produce T22:00Z, which correctly rolls forward).
+ */
+export const repairDobFormats = internalMutation({
+  args: { dryRun: v.optional(v.boolean()) },
+  handler: async (ctx, args) => {
+    const users = await ctx.db.query("users").collect();
+    let repaired = 0;
+    const changes: Array<{ email: string; from: string; to: string }> = [];
+    for (const user of users) {
+      if (!user.age || !/T\d{2}:/.test(user.age)) continue;
+      const m = user.age.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2})/);
+      if (!m) continue;
+      let day = Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+      if (Number(m[4]) >= 12) day += 24 * 60 * 60 * 1000;
+      const fixed = new Date(day).toISOString().slice(0, 10);
+      changes.push({ email: user.email, from: user.age, to: fixed });
+      if (!args.dryRun) {
+        await ctx.db.patch(user._id, { age: fixed });
+      }
+      repaired++;
+    }
+    return { repaired, dryRun: args.dryRun ?? false, changes };
+  },
+});
+
+/**
+ * One-time repair for accounts whose firstName is empty (the cause of the
+ * "Welcome back, <surname>" greeting). When the surname holds several words,
+ * assume it was a full name typed into one box and split it; single-word
+ * surnames are left alone (the client now falls back to a neutral greeting).
+ */
+export const repairEmptyFirstNames = internalMutation({
+  args: { dryRun: v.optional(v.boolean()) },
+  handler: async (ctx, args) => {
+    const users = await ctx.db.query("users").collect();
+    let repaired = 0;
+    const changes: Array<{ email: string; firstName: string; surname: string }> = [];
+    for (const user of users) {
+      if (user.firstName && user.firstName.trim() !== "") continue;
+      const words = (user.surname || "").trim().split(/\s+/).filter(Boolean);
+      if (words.length < 2) continue;
+      const firstName = words[0];
+      const surname = words.slice(1).join(" ");
+      changes.push({ email: user.email, firstName, surname });
+      if (!args.dryRun) {
+        await ctx.db.patch(user._id, { firstName, surname });
+      }
+      repaired++;
+    }
+    return { repaired, dryRun: args.dryRun ?? false, changes };
+  },
+});
+
+/** Clear a dead push token (called when Expo reports DeviceNotRegistered). */
+export const clearPushToken = internalMutation({
+  args: { userId: v.id("users") },
+  handler: async (ctx, args) => {
+    const user = await ctx.db.get(args.userId);
+    if (user) {
+      await ctx.db.patch(args.userId, { pushToken: undefined });
+    }
   },
 });

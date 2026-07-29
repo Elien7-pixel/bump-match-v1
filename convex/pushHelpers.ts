@@ -2,7 +2,8 @@ import { v } from "convex/values";
 import { internalQuery } from "./_generated/server";
 import { Doc } from "./_generated/dataModel";
 
-// Get a user's partner's push token
+// Get a user's partner's push token (plus the partner id, so delivery
+// failures can clear the right user's dead token).
 export const getPartnerPushToken = internalQuery({
   args: {
     userId: v.id("users"),
@@ -18,7 +19,7 @@ export const getPartnerPushToken = internalQuery({
       return null;
     }
 
-    return partner.pushToken;
+    return { pushToken: partner.pushToken, partnerId: partner._id };
   },
 });
 

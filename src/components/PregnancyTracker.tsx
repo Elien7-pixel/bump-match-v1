@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../context/ThemeContext';
+import { toPickerDate } from '../utils/date';
 
 interface PregnancyTrackerProps {
   dueDate: string; // ISO date string
@@ -50,7 +51,7 @@ const MILESTONES: { [week: number]: { fruit: string; emoji: string; size: string
 };
 
 function getGestationalWeek(dueDateStr: string): number {
-  const dueDate = new Date(dueDateStr);
+  const dueDate = toPickerDate(dueDateStr) ?? new Date(dueDateStr);
   const now = new Date();
   const totalPregnancyMs = 40 * 7 * 24 * 60 * 60 * 1000; // 40 weeks
   const msUntilDue = dueDate.getTime() - now.getTime();
@@ -70,7 +71,7 @@ function getClosestMilestone(week: number): { fruit: string; emoji: string; size
 }
 
 function getWeeksRemaining(dueDateStr: string): number {
-  const dueDate = new Date(dueDateStr);
+  const dueDate = toPickerDate(dueDateStr) ?? new Date(dueDateStr);
   const now = new Date();
   const msRemaining = dueDate.getTime() - now.getTime();
   return Math.max(0, Math.ceil(msRemaining / (7 * 24 * 60 * 60 * 1000)));

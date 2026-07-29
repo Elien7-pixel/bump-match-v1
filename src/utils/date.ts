@@ -40,6 +40,27 @@ export const getDateParts = (value: string | number | Date | null | undefined): 
   return null;
 };
 
+/**
+ * Serialize a picker Date to the canonical date-only wire format "YYYY-MM-DD"
+ * using LOCAL calendar getters. Never use toISOString() for calendar dates —
+ * it converts to UTC and shifts the day for any timezone east of UTC.
+ */
+export const toISODateString = (d: Date): string => {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+};
+
+/**
+ * Build a Date at LOCAL midnight of the stored calendar day, for seeding
+ * DateTimePicker. Avoids `new Date(string)` (Hermes mis-parse hazard) and
+ * guarantees the picker opens on exactly the day the UI displays.
+ */
+export const toPickerDate = (value: string | number | Date | null | undefined): Date | null => {
+  const parts = getDateParts(value);
+  if (!parts) return null;
+  return new Date(parts.year, parts.month, parts.day);
+};
+
 /** Format a date value as e.g. "5 January 1990". Returns '' if unparseable. */
 export const formatDate = (value: string | number | Date | null | undefined): string => {
   const parts = getDateParts(value);

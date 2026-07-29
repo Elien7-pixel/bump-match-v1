@@ -1067,6 +1067,7 @@ const rawData: BabyName[] = [
   { id: '1022', name: 'Aluwani', gender: 'unisex', origin: 'Tshivenda', meaning: 'Grow; develop', language: 'Tshivenda' },
   { id: '1023', name: 'Pfarelo', gender: 'unisex', origin: 'Tshivenda', meaning: 'Forgiveness', language: 'Tshivenda' },
   { id: '1024', name: 'Lutendo', gender: 'unisex', origin: 'Tshivenda', meaning: 'Faith; belief', language: 'Tshivenda' },
+  // <<END_RAW_DATA>> — merge scripts insert new entries above this line; do not remove.
 ];
 
 // Synonym groups for smarter search
@@ -1139,10 +1140,13 @@ interface FilterOptions {
   celebrityOnly?: boolean;
   trendingTop?: number; // e.g. 10, 50, 100 — filters by yearRank
   firstLetter?: string; // single A-Z letter — filters names by first letter
+  // Lowercased names from the server's weekly trending list; when present and
+  // non-empty, the Trending filter uses this instead of the bundled flags.
+  trendingNameSet?: Set<string>;
 }
 
 export const getRandomNames = (count: number, options: FilterOptions = {}): BabyName[] => {
-  const { excludeIds = [], excludeNames = [], gender = 'all', language = 'All', meaningSearch, popularOnly, celebrityOnly, trendingTop, firstLetter } = options;
+  const { excludeIds = [], excludeNames = [], gender = 'all', language = 'All', meaningSearch, popularOnly, celebrityOnly, trendingTop, firstLetter, trendingNameSet } = options;
 
   let filtered = rawData.filter((item) => !excludeIds.includes(item.id));
 
@@ -1198,9 +1202,14 @@ export const getRandomNames = (count: number, options: FilterOptions = {}): Baby
     }
   }
 
-  // Popular only
+  // Popular only — prefer the server's weekly trending list when we have one;
+  // fall back to the bundled popularity flags (offline / before first fetch).
   if (popularOnly) {
-    filtered = filtered.filter((item) => item.popularity === 'popular');
+    if (trendingNameSet && trendingNameSet.size > 0) {
+      filtered = filtered.filter((item) => trendingNameSet.has(item.name.toLowerCase()));
+    } else {
+      filtered = filtered.filter((item) => item.popularity === 'popular');
+    }
   }
 
   // Celebrity only
@@ -1219,7 +1228,11 @@ export const getRandomNames = (count: number, options: FilterOptions = {}): Baby
     filtered = filtered.filter((item) => item.name.charAt(0).toUpperCase() === letter);
   }
 
-  // Shuffle
-  const shuffled = filtered.sort(() => 0.5 - Math.random());
+  // Fisher–Yates shuffle (the sort(() => 0.5 - Math.random()) idiom is biased)
+  const shuffled = [...filtered];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
   return shuffled.slice(0, count);
 };

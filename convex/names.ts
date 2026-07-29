@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { Doc } from "./_generated/dataModel";
+import { internal } from "./_generated/api";
 
 // Helper to get user from token
 async function getUserFromToken(ctx: any, token: string): Promise<Doc<"users"> | null> {
@@ -55,7 +56,48 @@ export const likeName = mutation({
       likedAt: Date.now(),
     });
 
-    return { success: true, alreadyLiked: false };
+    // It's a match when the partner already liked this name — notify both.
+    // Defensive: nothing in this block may break the swipe itself.
+    let matched = false;
+    try {
+      if (user.partnerId) {
+        const partnerLike = await ctx.db
+          .query("likedNames")
+          .withIndex("by_user_and_name", (q) =>
+            q.eq("userId", user.partnerId!).eq("nameId", args.nameId)
+          )
+          .first();
+        const partner = partnerLike ? await ctx.db.get(user.partnerId) : null;
+        if (partnerLike && partner) {
+          matched = true;
+          // Don't spoil a planned reveal: keep the name out of the banner when
+          // the couple has a confirmed reveal date in the future.
+          const revealPending =
+            user.matchRevealDate !== undefined &&
+            user.revealDateConfirmed === true &&
+            user.matchRevealDate > Date.now();
+          const body = revealPending
+            ? "You have a new name match waiting for your reveal! 🎁"
+            : `You and your partner both love "${args.name}"! 💕`;
+          await ctx.scheduler.runAfter(0, internal.pushNotifications.notifyUser, {
+            userId: user.partnerId,
+            title: "It's a match!",
+            body,
+            data: { screen: "Partner" },
+          });
+          await ctx.scheduler.runAfter(0, internal.pushNotifications.notifyUser, {
+            userId: user._id,
+            title: "It's a match!",
+            body,
+            data: { screen: "Partner" },
+          });
+        }
+      }
+    } catch (e) {
+      console.error("Match notification failed (like still saved):", e);
+    }
+
+    return { success: true, alreadyLiked: false, matched };
   },
 });
 

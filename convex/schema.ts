@@ -95,4 +95,15 @@ export default defineSchema({
   })
     .index("by_status", ["status"])
     .index("by_user", ["submittedBy"]),
+
+  // Weekly-updatable trending list. The client overlays these names onto the
+  // bundled catalogue's "Trending" filter when online; the bundled popularity
+  // flags remain the offline fallback.
+  trendingNames: defineTable({
+    name: v.string(),
+    rank: v.number(),
+    nameId: v.optional(v.string()),
+    weekOf: v.string(),
+    updatedAt: v.number(),
+  }).index("by_rank", ["rank"]),
 });

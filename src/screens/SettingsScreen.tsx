@@ -9,6 +9,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { LogoIcon, LogoText } from '../components/Logo';
+import { APP_STORE_URL, PLAY_STORE_URL } from '../constants/storeLinks';
 
 export const SettingsScreen = () => {
   const navigation = useNavigation<any>();
@@ -213,8 +214,8 @@ export const SettingsScreen = () => {
 
   const handleRateApp = () => {
     const storeUrl = Platform.select({
-      ios: 'https://apps.apple.com/app/idYOUR_APP_ID',
-      android: 'https://play.google.com/store/apps/details?id=com.bumpmatch.app',
+      ios: APP_STORE_URL,
+      android: PLAY_STORE_URL,
     });
     if (storeUrl) {
       Linking.openURL(storeUrl).catch(() => {

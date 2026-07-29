@@ -95,8 +95,12 @@ for (const entry of newCeleb) {
   nextId++;
 }
 
-// Insert new entries before the closing ];
-const insertPoint = src.lastIndexOf('];');
+// Insert new entries before the END_RAW_DATA sentinel (the file's last `];`
+// is inside getRandomNames — lastIndexOf would corrupt the function body).
+const insertPoint = src.indexOf('// <<END_RAW_DATA>>');
+if (insertPoint === -1) {
+  throw new Error('END_RAW_DATA sentinel not found in babyNames.ts — aborting merge');
+}
 const newBlock = '\n  // SSA Popular Names 2023 & Celebrity Baby Names\n' + newEntries.join(',\n') + ',\n';
 src = src.slice(0, insertPoint) + newBlock + src.slice(insertPoint);
 

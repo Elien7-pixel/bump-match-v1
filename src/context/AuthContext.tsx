@@ -36,6 +36,8 @@ interface SignUpData {
   gender: 'mom' | 'dad' | 'partner';
   expecting?: 'boy' | 'girl' | 'unknown';
   status: string;
+  /** Date-only "YYYY-MM-DD"; kept device-local (AsyncStorage), never sent to Convex. */
+  dueDate?: string;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -102,7 +104,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signUp = async (data: SignUpData): Promise<{ success: boolean; error?: string }> => {
     try {
-      const result = await signUpMutation(data);
+      const { dueDate, ...convexData } = data;
+      const result = await signUpMutation(convexData);
 
       await AsyncStorage.setItem(AUTH_TOKEN_KEY, result.token);
       setToken(result.token);
@@ -115,6 +118,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         email: data.email,
         gender: data.gender,
         status: data.status,
+        dueDate,
         inviteCode: result.inviteCode,
         createdAt: new Date().toISOString(),
       }));

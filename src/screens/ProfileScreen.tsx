@@ -11,7 +11,7 @@ import { Input } from '../components/Input';
 import { Button } from '../components/Button';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
-import { formatDate, calculateAge } from '../utils/date';
+import { formatDate, calculateAge, toISODateString, toPickerDate } from '../utils/date';
 import { Brand } from '../theme/designTokens';
 
 
@@ -355,8 +355,8 @@ export const ProfileScreen = () => {
   };
 
   const handleSave = async () => {
-    if (!editSurname.trim()) {
-      Alert.alert('Required', 'Please enter your last name.');
+    if (!editFirstName.trim() || !editSurname.trim()) {
+      Alert.alert('Required', 'Please enter your first and last name.');
       return;
     }
 
@@ -383,8 +383,8 @@ export const ProfileScreen = () => {
       if (token) {
         await updateProfileMutation({
           token,
-          firstName: editFirstName,
-          surname: editSurname,
+          firstName: editFirstName.trim(),
+          surname: editSurname.trim(),
           age: editAge,
           gender: editGender,
           status: editStatus,
@@ -557,14 +557,14 @@ export const ProfileScreen = () => {
             </TouchableOpacity>
             {showDobPicker && (
               <DateTimePicker
-                value={editAge ? new Date(editAge) : new Date(1995, 0, 1)}
+                value={toPickerDate(editAge) ?? new Date(1995, 0, 1)}
                 mode="date"
                 display={Platform.OS === 'ios' ? 'spinner' : 'default'}
                 maximumDate={new Date()}
                 minimumDate={new Date(1940, 0, 1)}
                 onChange={(event, selected) => {
                   if (Platform.OS === 'android') setShowDobPicker(false);
-                  if (selected) setEditAge(selected.toISOString());
+                  if (selected) setEditAge(toISODateString(selected));
                 }}
               />
             )}
@@ -619,14 +619,14 @@ export const ProfileScreen = () => {
                 </TouchableOpacity>
                 {showDueDatePicker && (
                   <DateTimePicker
-                    value={editDueDate ? new Date(editDueDate) : new Date()}
+                    value={toPickerDate(editDueDate) ?? new Date()}
                     mode="date"
                     display={Platform.OS === 'ios' ? 'spinner' : 'default'}
                     minimumDate={new Date()}
                     maximumDate={new Date(Date.now() + 10 * 30 * 24 * 60 * 60 * 1000)}
                     onChange={(event, selected) => {
                       if (Platform.OS === 'android') setShowDueDatePicker(false);
-                      if (selected) setEditDueDate(selected.toISOString());
+                      if (selected) setEditDueDate(toISODateString(selected));
                     }}
                   />
                 )}

@@ -1,9 +1,9 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, StatusBar, FlatList, useWindowDimensions, Share, Platform, Alert, Image } from 'react-native';
-import ViewShot, { captureRef } from 'react-native-view-shot';
-import * as FileSystem from 'expo-file-system';
+import { captureRef } from 'react-native-view-shot';
 import * as Sharing from 'expo-sharing';
+import * as Clipboard from 'expo-clipboard';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQuery, useMutation } from 'convex/react';
@@ -24,6 +24,8 @@ import { useNavigation } from '@react-navigation/native';
 
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
+import { ShareNameCard } from '../components/ShareNameCard';
+import { buildShareCaption } from '../constants/storeLinks';
 
 interface LikedNameWithFavorite extends BabyName {
   isFavorite?: boolean;
@@ -83,35 +85,62 @@ export const LikedNamesScreen = () => {
   const [showGenderDropdown, setShowGenderDropdown] = useState(false);
   const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
   const surname = (user?.surname || '').replace(/^./, (c) => c.toUpperCase());
-  const cardRefs = useRef<{ [key: string]: any }>({});
+
+  // Sharing renders a hidden, non-interactive ShareNameCard (with meaning,
+  // origin and branding) off-screen and captures it at a fixed 1080×1350 px,
+  // so the export is high-res and identical on every device. Store links ride
+  // in the share text (iOS) or clipboard caption (Android) — never on the image.
+  const shareCardRef = useRef<View>(null);
+  const shareLayoutResolver = useRef<(() => void) | null>(null);
+  const isSharingRef = useRef(false);
+  const [shareItem, setShareItem] = useState<LikedNameWithFavorite | null>(null);
 
   const handleShareName = async (item: LikedNameWithFavorite) => {
+    if (isSharingRef.current) return;
+    isSharingRef.current = true;
     const fullName = surname ? `${item.name} ${surname}` : item.name;
-    const ref = cardRefs.current[item.id];
+    const caption = buildShareCaption(fullName, item.meaning, item.origin);
 
     try {
-      if (ref) {
-        // Capture the card as an image
-        const uri = await captureRef(ref, {
-          format: 'png',
-          quality: 1,
-        });
+      // Mount the hidden card and wait for it to lay out and paint.
+      const laidOut = new Promise<void>((resolve) => {
+        shareLayoutResolver.current = resolve;
+      });
+      setShareItem(item);
+      await laidOut;
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 
-        // Share image + text
-        if (await Sharing.isAvailableAsync()) {
-          await Sharing.shareAsync(uri, {
-            mimeType: 'image/png',
-            dialogTitle: `Share ${fullName}`,
-          });
-        } else {
-          // Fallback to text-only share
-          await Share.share({
-            message: `We're considering the name "${fullName}" for our baby!\n\nMeaning: ${item.meaning}\nOrigin: ${item.origin}\n\nFound on BumpMatch`,
-          });
-        }
+      const uri = await captureRef(shareCardRef, {
+        format: 'png',
+        quality: 1,
+        result: 'tmpfile',
+        width: 1080,
+        height: 1350,
+      });
+
+      if (Platform.OS === 'ios') {
+        // iOS attaches both the file and the caption as activity items.
+        await Share.share({ url: uri, message: caption });
+      } else if (await Sharing.isAvailableAsync()) {
+        // Android intents cannot carry text alongside an image file, so put
+        // the caption (with the download links) on the clipboard first.
+        await Clipboard.setStringAsync(caption);
+        await Sharing.shareAsync(uri, {
+          mimeType: 'image/png',
+          dialogTitle: `Share ${fullName} — caption with app links copied, paste it with your card!`,
+        });
+      } else {
+        await Share.share({ message: caption });
       }
     } catch (e) {
       console.log('Error sharing', e);
+      try {
+        await Share.share({ message: caption });
+      } catch {}
+    } finally {
+      shareLayoutResolver.current = null;
+      setShareItem(null);
+      isSharingRef.current = false;
     }
   };
 
@@ -365,6 +394,12 @@ export const LikedNamesScreen = () => {
       alignItems: 'center',
       justifyContent: 'center',
     },
+    cardNameWrap: {
+      height: 52, // 2 × lineHeight — surname wraps below the name, layout stays put
+      alignSelf: 'stretch',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
     cardName: {
       fontFamily: theme.typography.fontFamilyDisplay,
       fontSize: 22,
@@ -372,6 +407,7 @@ export const LikedNamesScreen = () => {
       textAlign: 'center',
       lineHeight: 26,
       paddingHorizontal: 4,
+      includeFontPadding: false,
     },
     cardGender: {
       fontFamily: theme.typography.fontFamilyMedium,
@@ -534,7 +570,6 @@ export const LikedNamesScreen = () => {
 
     return (
       <View style={styles.cardContainer}>
-        <View ref={(r) => { if (r) cardRefs.current[item.id] = r; }} collapsable={false} style={{ flex: 1 }}>
         <LinearGradient
           colors={getGradientColors(item.gender)}
           style={styles.card}
@@ -581,14 +616,21 @@ export const LikedNamesScreen = () => {
 
           <View style={styles.cardContent}>
             <View style={styles.nameBlock}>
-              <Text style={styles.cardName} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.5}>
-                {surname ? `${item.name} ${surname}` : item.name}
-              </Text>
-              <Text style={styles.cardGender}>{item.gender.toUpperCase()}</Text>
+              <View style={styles.cardNameWrap}>
+                <Text
+                  style={styles.cardName}
+                  numberOfLines={2}
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.6}
+                  maxFontSizeMultiplier={1.2}
+                >
+                  {surname ? `${item.name} ${surname}` : item.name}
+                </Text>
+              </View>
+              <Text style={styles.cardGender} maxFontSizeMultiplier={1.2}>{item.gender.toUpperCase()}</Text>
             </View>
           </View>
         </LinearGradient>
-        </View>
       </View>
     );
   };
@@ -757,6 +799,18 @@ export const LikedNamesScreen = () => {
           <Text style={styles.emptySubtext}>
             {likedNames.length > 0 ? 'Try changing the filter' : 'Start swiping to add your favourites!'}
           </Text>
+        </View>
+      )}
+
+      {/* Hidden off-screen card rendered only while a share is in flight. */}
+      {shareItem && (
+        <View style={{ position: 'absolute', left: -10000, top: 0 }} pointerEvents="none">
+          <ShareNameCard
+            ref={shareCardRef}
+            data={shareItem}
+            surname={surname}
+            onLayout={() => shareLayoutResolver.current?.()}
+          />
         </View>
       )}
     </SafeAreaView>

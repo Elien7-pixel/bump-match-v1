@@ -10,6 +10,8 @@ export const sendPushNotification = internalAction({
     title: v.string(),
     body: v.string(),
     data: v.optional(v.any()),
+    // When provided, a DeviceNotRegistered ticket clears this user's dead token.
+    recipientUserId: v.optional(v.id("users")),
   },
   handler: async (ctx, args) => {
     // Validate that it looks like an Expo push token
@@ -37,8 +39,22 @@ export const sendPushNotification = internalAction({
       const result = await response.json();
       if (result.errors) {
         console.error("Expo push notification errors:", result.errors);
-      } else {
-        console.log("Push notification sent successfully to:", args.pushToken);
+        return;
+      }
+      // Expo also reports per-ticket failures inside data[]
+      const tickets = Array.isArray(result.data) ? result.data : [result.data];
+      for (const ticket of tickets) {
+        if (ticket?.status === "error") {
+          console.error("Expo push ticket error:", ticket.message, ticket.details);
+          if (
+            ticket.details?.error === "DeviceNotRegistered" &&
+            args.recipientUserId
+          ) {
+            await ctx.runMutation(internal.users.clearPushToken, {
+              userId: args.recipientUserId,
+            });
+          }
+        }
       }
     } catch (error) {
       console.error("Failed to send push notification:", error);
@@ -55,21 +71,22 @@ export const notifyPartner = internalAction({
     data: v.optional(v.any()),
   },
   handler: async (ctx, args) => {
-    const partnerToken = await ctx.runQuery(
+    const partnerInfo = await ctx.runQuery(
       internal.pushHelpers.getPartnerPushToken,
       { userId: args.userId }
     );
 
-    if (!partnerToken) {
+    if (!partnerInfo) {
       console.log("Partner has no push token, skipping notification");
       return;
     }
 
     await ctx.runAction(internal.pushNotifications.sendPushNotification, {
-      pushToken: partnerToken,
+      pushToken: partnerInfo.pushToken,
       title: args.title,
       body: args.body,
       data: args.data,
+      recipientUserId: partnerInfo.partnerId,
     });
   },
 });
@@ -98,6 +115,7 @@ export const notifyUser = internalAction({
       title: args.title,
       body: args.body,
       data: args.data,
+      recipientUserId: args.userId,
     });
   },
 });

@@ -5,6 +5,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFonts } from 'expo-font';
 import { View, ActivityIndicator } from 'react-native';
+import { SafeAreaProvider, initialWindowMetrics } from 'react-native-safe-area-context';
 import { ConvexProvider, ConvexReactClient } from 'convex/react';
 import * as Linking from 'expo-linking';
 
@@ -20,14 +21,17 @@ import { ThemeProvider } from './src/context/ThemeContext';
 import { AuthProvider } from './src/context/AuthContext';
 let usePushNotifications: any;
 let getNotificationData: any;
+let getInitialNotificationScreen: any;
 try {
   const mod = require('./src/hooks/usePushNotifications');
   usePushNotifications = mod.usePushNotifications;
   getNotificationData = mod.getNotificationData;
+  getInitialNotificationScreen = mod.getInitialNotificationScreen;
 } catch (e) {
   console.log('Push notifications not available:', e);
   usePushNotifications = () => ({ expoPushToken: null, notification: null });
   getNotificationData = () => null;
+  getInitialNotificationScreen = async () => null;
 }
 
 // Initialize Convex client
@@ -60,19 +64,37 @@ function AppContent() {
 
   const [initialRoute, setInitialRoute] = useState<string | null>(null);
   const navigationRef = useRef<NavigationContainerRef<any>>(null);
+  const navReadyRef = useRef(false);
+  const pendingScreenRef = useRef<string | null>(null);
 
   // Initialize push notifications
   const { notification } = usePushNotifications();
+
+  const navigateWhenReady = (screen: string) => {
+    if (navReadyRef.current && navigationRef.current) {
+      navigationRef.current.navigate(screen);
+    } else {
+      pendingScreenRef.current = screen;
+    }
+  };
 
   // Handle navigation when a notification is tapped
   useEffect(() => {
     if (notification) {
       const data = getNotificationData(notification);
-      if (data?.screen && navigationRef.current) {
-        navigationRef.current.navigate(data.screen);
+      if (data?.screen) {
+        navigateWhenReady(data.screen);
       }
     }
   }, [notification]);
+
+  // Cold start: a tap on a push while the app was killed launches the app
+  // without firing the response listener — pick it up here instead.
+  useEffect(() => {
+    getInitialNotificationScreen().then((screen: string | null) => {
+      if (screen) navigateWhenReady(screen);
+    });
+  }, []);
 
   useEffect(() => {
     checkOnboarding();
@@ -102,7 +124,17 @@ function AppContent() {
   }
 
   return (
-    <NavigationContainer ref={navigationRef} linking={linking}>
+    <NavigationContainer
+      ref={navigationRef}
+      linking={linking}
+      onReady={() => {
+        navReadyRef.current = true;
+        if (pendingScreenRef.current) {
+          navigationRef.current?.navigate(pendingScreenRef.current);
+          pendingScreenRef.current = null;
+        }
+      }}
+    >
       <Stack.Navigator
         initialRouteName={initialRoute}
         screenOptions={{ headerShown: false }}
@@ -121,12 +153,14 @@ function AppContent() {
 
 export default function App() {
   return (
-    <ConvexProvider client={convex}>
-      <ThemeProvider>
-        <AuthProvider>
-          <AppContent />
-        </AuthProvider>
-      </ThemeProvider>
-    </ConvexProvider>
+    <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+      <ConvexProvider client={convex}>
+        <ThemeProvider>
+          <AuthProvider>
+            <AppContent />
+          </AuthProvider>
+        </ThemeProvider>
+      </ConvexProvider>
+    </SafeAreaProvider>
   );
 }

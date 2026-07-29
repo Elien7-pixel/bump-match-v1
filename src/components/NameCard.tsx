@@ -22,9 +22,11 @@ export const NameCard: React.FC<NameCardProps> = ({ data, onFavorite, isFavorite
   const { theme } = useTheme();
   const { user } = useAuth();
   const surname = capitalize(user?.surname || '');
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   const CARD_WIDTH = Math.min(width * 0.80, 380);
-  const CARD_HEIGHT = CARD_WIDTH * 1.2;
+  // Clamp to the vertical budget so short/wide Android devices never overflow
+  // the stack area into the search bar or action buttons.
+  const CARD_HEIGHT = Math.min(CARD_WIDTH * 1.2, height * 0.52);
 
   const getGradientColors = () => {
     if (data.gender === 'boy') return [theme.colors.boyBlue, theme.brand.tealDeep] as const;
@@ -59,6 +61,16 @@ export const NameCard: React.FC<NameCardProps> = ({ data, onFavorite, isFavorite
       justifyContent: 'center',
       paddingVertical: theme.spacing.m,
     },
+    // Fixed two-line box: a long "FirstName Surname" wraps (surname on its own
+    // line) instead of tail-ellipsizing, and the card layout stays identical
+    // whether the title uses one line or two.
+    nameWrap: {
+      height: 104, // 2 × lineHeight
+      alignSelf: 'stretch',
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: theme.spacing.s,
+    },
     name: {
       fontFamily: theme.typography.fontFamilyDisplay,
       fontSize: 44,
@@ -68,8 +80,8 @@ export const NameCard: React.FC<NameCardProps> = ({ data, onFavorite, isFavorite
       textShadowRadius: 4,
       lineHeight: 52,
       textAlign: 'center',
-      marginBottom: theme.spacing.s,
       paddingHorizontal: theme.spacing.s,
+      includeFontPadding: false,
     },
     details: {
       fontFamily: theme.typography.fontFamilySemiBold,
@@ -128,6 +140,7 @@ export const NameCard: React.FC<NameCardProps> = ({ data, onFavorite, isFavorite
       paddingVertical: 6,
       borderRadius: theme.borderRadius.round,
       overflow: 'hidden',
+      includeFontPadding: false,
     },
     hintDislike: {
       color: theme.colors.swipeNo,
@@ -195,23 +208,31 @@ export const NameCard: React.FC<NameCardProps> = ({ data, onFavorite, isFavorite
           </TouchableOpacity>
         ) : null}
         <View style={styles.content}>
-          <Text style={styles.name} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.4}>
-            {surname ? `${data.name} ${surname}` : data.name}
-          </Text>
-          <Text style={styles.details}>{data.gender.toUpperCase()}</Text>
+          <View style={styles.nameWrap}>
+            <Text
+              style={styles.name}
+              numberOfLines={2}
+              adjustsFontSizeToFit
+              minimumFontScale={0.65}
+              maxFontSizeMultiplier={1.2}
+            >
+              {surname ? `${data.name} ${surname}` : data.name}
+            </Text>
+          </View>
+          <Text style={styles.details} maxFontSizeMultiplier={1.2}>{data.gender.toUpperCase()}</Text>
 
           <View style={styles.infoBox}>
-            <Text style={styles.meaningTitle}>Meaning</Text>
-            <Text style={styles.meaning}>{data.meaning}</Text>
+            <Text style={styles.meaningTitle} maxFontSizeMultiplier={1.3}>Meaning</Text>
+            <Text style={styles.meaning} maxFontSizeMultiplier={1.3}>{data.meaning}</Text>
             <View style={styles.spacer} />
-            <Text style={styles.originTitle}>Origin</Text>
-            <Text style={styles.origin}>{data.origin}</Text>
+            <Text style={styles.originTitle} maxFontSizeMultiplier={1.3}>Origin</Text>
+            <Text style={styles.origin} maxFontSizeMultiplier={1.3}>{data.origin}</Text>
           </View>
         </View>
 
         <View style={styles.footer}>
-          <Text style={[styles.hint, styles.hintDislike]}>← Dislike</Text>
-          <Text style={[styles.hint, styles.hintLike]}>Like →</Text>
+          <Text style={[styles.hint, styles.hintDislike]} maxFontSizeMultiplier={1.2}>← Dislike</Text>
+          <Text style={[styles.hint, styles.hintLike]} maxFontSizeMultiplier={1.2}>Like →</Text>
         </View>
       </LinearGradient>
     </View>

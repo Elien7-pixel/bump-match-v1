@@ -14,6 +14,7 @@ import {
   Image,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
 import Svg, { Path } from 'react-native-svg';
 import Animated, {
@@ -39,7 +40,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { useTheme } from '../context/ThemeContext';
 import { Brand } from '../theme/designTokens';
 import { useAuth } from '../context/AuthContext';
-import { formatDate } from '../utils/date';
+import { formatDate, toISODateString } from '../utils/date';
 import { cleanErrorMessage } from '../utils/errors';
 
 // Tablet breakpoint
@@ -186,6 +187,7 @@ export const LandingPage = () => {
   const { theme } = useTheme();
   const { signUp, login } = useAuth();
   const { width, height } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const isTablet = width >= TABLET_MIN_WIDTH;
 
   const [signUpModalVisible, setSignUpModalVisible] = useState(false);
@@ -351,7 +353,9 @@ export const LandingPage = () => {
       backgroundColor: theme.brand.cream,
       alignItems: 'center',
       paddingHorizontal: 24,
-      paddingBottom: isTablet ? 64 : 44,
+      // With edge-to-edge on Android the window extends under the system nav
+      // bar — the inset keeps the auth buttons clear of 3-button navigation.
+      paddingBottom: (isTablet ? 40 : 20) + Math.max(insets.bottom, 24),
       marginTop: -1,
     },
     heroWordmark: {
@@ -531,7 +535,7 @@ export const LandingPage = () => {
       flexDirection: 'row',
       marginTop: 24,
     },
-  }), [theme, width, height, isTablet, squircleSize, rainbowWidth, rainbowHeight]);
+  }), [theme, width, height, isTablet, squircleSize, rainbowWidth, rainbowHeight, insets.bottom]);
 
   const handleCompleteOnboarding = async () => {
     if (!firstName.trim() || !surname.trim() || !email.trim() || !password.trim() || !dateOfBirth) {
@@ -552,7 +556,12 @@ export const LandingPage = () => {
       );
 
       const result = await Promise.race([
-        signUp({ email, password, firstName, surname, age: dateOfBirth ? dateOfBirth.toISOString() : '', gender, expecting, status }),
+        signUp({
+          email, password, firstName, surname,
+          age: dateOfBirth ? toISODateString(dateOfBirth) : '',
+          gender, expecting, status,
+          dueDate: dueDate ? toISODateString(dueDate) : undefined,
+        }),
         timeoutPromise,
       ]);
 

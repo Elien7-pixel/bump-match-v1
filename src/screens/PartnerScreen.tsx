@@ -44,8 +44,33 @@ export const PartnerScreen = () => {
         if (route.params?.code) {
             setJoinCode(route.params.code);
             setShowJoinInput(true);
+            if (!token) {
+                // Most invite recipients don't have an account yet — keep the
+                // code so it survives the signup/login flow, then send them to
+                // the landing page to create one.
+                AsyncStorage.setItem('bumpmatch_pending_invite', String(route.params.code)).catch(() => {});
+                Alert.alert(
+                    'Almost there!',
+                    "Create your account (or log in) and we'll connect you with your partner automatically.",
+                    [{ text: 'OK', onPress: () => (navigation as any).navigate('Landing') }]
+                );
+            }
         }
     }, [route.params?.code]);
+
+    // After auth, restore an invite code saved from a pre-login deep link.
+    useEffect(() => {
+        if (!token) return;
+        AsyncStorage.getItem('bumpmatch_pending_invite')
+            .then((code) => {
+                if (code) {
+                    setJoinCode(code);
+                    setShowJoinInput(true);
+                    AsyncStorage.removeItem('bumpmatch_pending_invite').catch(() => {});
+                }
+            })
+            .catch(() => {});
+    }, [token]);
 
     // Convex queries
     const partnerInfo = useQuery(

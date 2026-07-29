@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Platform } from 'react-native';
+import Constants from 'expo-constants';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import { useMutation } from 'convex/react';
@@ -109,10 +110,10 @@ async function registerForPushNotificationsAsync(): Promise<string | null> {
       return null;
     }
 
-    // Get the Expo push token
-    const tokenData = await Notifications.getExpoPushTokenAsync({
-      projectId: '9f0dd1ac-0f6e-436d-999c-e002e06ba3bf',
-    });
+    // Get the Expo push token (projectId from app config, literal as fallback)
+    const projectId =
+      Constants.expoConfig?.extra?.eas?.projectId ?? '9f0dd1ac-0f6e-436d-999c-e002e06ba3bf';
+    const tokenData = await Notifications.getExpoPushTokenAsync({ projectId });
 
     return tokenData.data;
   } catch (error) {
@@ -125,4 +126,18 @@ async function registerForPushNotificationsAsync(): Promise<string | null> {
 export function getNotificationData(notification: Notifications.Notification | null) {
   if (!notification) return null;
   return notification.request.content.data as { screen?: string } | null;
+}
+
+/**
+ * Screen requested by the notification that launched the app from a killed
+ * state (cold start). Response listeners never fire for those taps.
+ */
+export async function getInitialNotificationScreen(): Promise<string | null> {
+  try {
+    const response = await Notifications.getLastNotificationResponseAsync();
+    const data = response?.notification.request.content.data as { screen?: string } | undefined;
+    return data?.screen ?? null;
+  } catch {
+    return null;
+  }
 }

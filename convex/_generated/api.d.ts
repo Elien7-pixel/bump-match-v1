@@ -10,6 +10,7 @@
 
 import type * as auth from "../auth.js";
 import type * as authActions from "../authActions.js";
+import type * as crons from "../crons.js";
 import type * as deleteAccount from "../deleteAccount.js";
 import type * as dictionary from "../dictionary.js";
 import type * as http from "../http.js";
@@ -20,6 +21,7 @@ import type * as pushNotifications from "../pushNotifications.js";
 import type * as search from "../search.js";
 import type * as searchHelpers from "../searchHelpers.js";
 import type * as submissions from "../submissions.js";
+import type * as trending from "../trending.js";
 import type * as users from "../users.js";
 
 import type {
@@ -31,6 +33,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   authActions: typeof authActions;
+  crons: typeof crons;
   deleteAccount: typeof deleteAccount;
   dictionary: typeof dictionary;
   http: typeof http;
@@ -41,6 +44,7 @@ declare const fullApi: ApiFromModules<{
   search: typeof search;
   searchHelpers: typeof searchHelpers;
   submissions: typeof submissions;
+  trending: typeof trending;
   users: typeof users;
 }>;
 
