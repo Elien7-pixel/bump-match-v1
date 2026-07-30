@@ -28,11 +28,12 @@ Bump Match helps couples find baby names they both love using a Tinder-like swip
 
 | Store | Status | Link |
 |-------|--------|------|
-| Apple App Store | v1.0.6 live; v1.0.7 (build 8) submitted for review 23 Jul 2026 | [App Store Connect](https://appstoreconnect.apple.com/apps/6776671806) |
-| Google Play Store | v1.0.7 (versionCode 9) AAB built; manual upload to production track | [Play Console](https://play.google.com/console) |
+| Apple App Store | v1.0.8 (build 9) uploaded to App Store Connect 30 Jul 2026 — needs version created + submitted for review | [App Store Connect](https://appstoreconnect.apple.com/apps/6776671806) |
+| Google Play Store | v1.0.7 (versionCode 9) built; Android v1.0.8 build pending Firebase (push delivery) | [Play Console](https://play.google.com/console) |
 
 - **Bundle ID:** iOS `com.sherbetagency.bumpmatch` / Android `com.orbitai.bumpmatch`
-- **Version:** 1.0.7
+- **Version:** 1.0.8 (iOS build 9)
+- **Backend:** Convex `silent-ermine-169` — v1.0.8 functions deployed 30 Jul 2026 (trending table + weekly cron, match-push, DOB/name repairs); DOB migration run (16 accounts fixed)
 - **Privacy Policy:** https://elated-newt-380.convex.cloud/privacy-policy
 - **Support:** https://elated-newt-380.convex.cloud/support
 - **Contact:** ai@sherbetagency.com
