@@ -21,9 +21,11 @@ interface CardStackProps {
   onEmpty?: () => void;
   onFavorite?: (name: BabyName) => void;
   onSwipeUp?: (name: BabyName) => void;
+  /** Measured height of the deck area; forwarded so cards fit the real space. */
+  availableHeight?: number;
 }
 
-export const CardStack: React.FC<CardStackProps> = ({ names, onSwipeRight, onSwipeLeft, onEmpty, onFavorite, onSwipeUp }) => {
+export const CardStack: React.FC<CardStackProps> = ({ names, onSwipeRight, onSwipeLeft, onEmpty, onFavorite, onSwipeUp, availableHeight }) => {
   const { width, height } = useWindowDimensions();
   const { theme } = useTheme();
   const SWIPE_THRESHOLD = width * 0.3;
@@ -154,13 +156,13 @@ export const CardStack: React.FC<CardStackProps> = ({ names, onSwipeRight, onSwi
     <View style={styles.container}>
       {nextProfile && (
         <Animated.View style={[styles.cardContainer, nextCardStyle, styles.nextCard]}>
-          <NameCard data={nextProfile} />
+          <NameCard data={nextProfile} availableHeight={availableHeight} />
         </Animated.View>
       )}
 
       <GestureDetector gesture={panGesture}>
         <Animated.View style={[styles.cardContainer, cardStyle]}>
-           <NameCard data={currentProfile} onFavorite={onFavorite} tintStyle={tintStyle} />
+           <NameCard data={currentProfile} onFavorite={onFavorite} tintStyle={tintStyle} availableHeight={availableHeight} />
         </Animated.View>
       </GestureDetector>
     </View>

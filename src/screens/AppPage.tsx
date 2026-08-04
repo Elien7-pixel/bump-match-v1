@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, StatusBar, Alert, TextInput, Image, Modal } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, StatusBar, Alert, TextInput, Image, Modal, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useMutation, useQuery } from 'convex/react';
@@ -42,6 +42,12 @@ export const AppPage = () => {
   const [popularOnly, setPopularOnly] = useState(false);
   const [celebrityOnly, setCelebrityOnly] = useState(false);
   const [firstLetter, setFirstLetter] = useState<string | null>(null);
+  const [deckHeight, setDeckHeight] = useState<number | undefined>(undefined);
+  // Short screens (720x1280-class, ~640dp tall) cannot fit the full chrome plus
+  // a usable card. Give the deck its space back by tightening the action row and
+  // dropping the two footer counters, which are the most expendable rows here.
+  const { height: viewportHeight } = useWindowDimensions();
+  const isShort = viewportHeight < 700;
 
   const [surname, setSurname] = useState('');
   const [firstName, setFirstName] = useState('');
@@ -578,12 +584,12 @@ export const AppPage = () => {
       flexDirection: 'row',
       justifyContent: 'center',
       alignItems: 'center',
-      paddingVertical: theme.spacing.l,
+      paddingVertical: isShort ? theme.spacing.s : theme.spacing.l,
     },
     actionBtn: {
-      width: 60,
-      height: 60,
-      borderRadius: 30,
+      width: isShort ? 50 : 60,
+      height: isShort ? 50 : 60,
+      borderRadius: isShort ? 25 : 30,
       backgroundColor: theme.colors.card,
       alignItems: 'center',
       justifyContent: 'center',
@@ -610,7 +616,7 @@ export const AppPage = () => {
       paddingBottom: theme.spacing.m,
       fontFamily: theme.typography.fontFamily
     },
-  }), [theme]);
+  }), [theme, isShort]);
 
   return (
     <>
@@ -709,7 +715,17 @@ export const AppPage = () => {
       </View>
 
       {/* Card Stack */}
-      <View style={styles.stackContainer}>
+      <View
+        style={styles.stackContainer}
+        onLayout={(e) => {
+          // The deck is flex:1, so its real height depends on how much the
+          // header, filters and action buttons leave behind — which varies with
+          // screen height and font scale. Measure it and let the card size
+          // itself to fit, instead of assuming a fixed share of the viewport.
+          const h = Math.round(e.nativeEvent.layout.height);
+          setDeckHeight((prev) => (Math.abs((prev ?? 0) - h) > 1 ? h : prev));
+        }}
+      >
         {names.length > 0 ? (
           <CardStack
             names={names}
@@ -718,6 +734,7 @@ export const AppPage = () => {
             onEmpty={handleEmpty}
             onFavorite={handleFavoriteFromCard}
             onSwipeUp={handleFavoriteFromCard}
+            availableHeight={deckHeight}
           />
         ) : (
           <View style={styles.emptyState}>
@@ -748,12 +765,16 @@ export const AppPage = () => {
         </TouchableOpacity>
       </View>
 
-      <Text style={styles.footerText} maxFontSizeMultiplier={1.3}>
-        {likedNames.length + dislikedNames.length} names explored - {likedNames.length} liked
-      </Text>
-      <Text style={styles.footerText} maxFontSizeMultiplier={1.3}>
-        Welcome back, {user?.firstName?.trim() || firstName.trim() || 'there'}!
-      </Text>
+      {!isShort && (
+        <Text style={styles.footerText} maxFontSizeMultiplier={1.3}>
+          {likedNames.length + dislikedNames.length} names explored - {likedNames.length} liked
+        </Text>
+      )}
+      {!isShort && (
+        <Text style={styles.footerText} maxFontSizeMultiplier={1.3}>
+          Welcome back, {user?.firstName?.trim() || firstName.trim() || 'there'}!
+        </Text>
+      )}
 
       <PartnerInviteDialog
         visible={inviteVisible}

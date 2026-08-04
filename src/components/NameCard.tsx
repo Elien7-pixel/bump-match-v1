@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import Animated from 'react-native-reanimated';
 import { BabyName } from '../models/BabyName';
 import { useTheme } from '../context/ThemeContext';
-import { useAuth } from '../context/AuthContext';
+import { useAccountSurname } from '../hooks/useAccountSurname';
 
 interface NameCardProps {
   data: BabyName;
@@ -14,19 +14,41 @@ interface NameCardProps {
   // Animated background colour layer driven by swipe direction (sits between
   // the gradient and the content so the card itself appears to change colour).
   tintStyle?: any;
+  // Height actually free for the deck, measured by the screen. Without it the
+  // card falls back to a share of the viewport, which overflows the stack on
+  // short screens where the chrome above and below leaves less than that.
+  availableHeight?: number;
 }
 
 const capitalize = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
 
-export const NameCard: React.FC<NameCardProps> = ({ data, onFavorite, isFavorited, tintStyle }) => {
+export const NameCard: React.FC<NameCardProps> = ({ data, onFavorite, isFavorited, tintStyle, availableHeight }) => {
   const { theme } = useTheme();
-  const { user } = useAuth();
-  const surname = capitalize(user?.surname || '');
+  const surname = useAccountSurname();
   const { width, height } = useWindowDimensions();
   const CARD_WIDTH = Math.min(width * 0.80, 380);
-  // Clamp to the vertical budget so short/wide Android devices never overflow
-  // the stack area into the search bar or action buttons.
-  const CARD_HEIGHT = Math.min(CARD_WIDTH * 1.2, height * 0.52);
+  // Clamp to the space the deck actually has, so the card can never overflow
+  // into the search bar above or the action buttons below. availableHeight is
+  // the measured stack area; the viewport share is only a first-frame fallback.
+  const VERTICAL_BUDGET = availableHeight && availableHeight > 0
+    ? availableHeight - 8
+    : height * 0.52;
+  const CARD_HEIGHT = Math.max(180, Math.min(CARD_WIDTH * 1.2, VERTICAL_BUDGET));
+  // The card is a fixed-size box wedged between the filter chips and the action
+  // buttons, so it cannot grow with the OS font scale — at scale 1.3 the content
+  // column outgrew it and the title painted over the filters. Pin the card's own
+  // typography to the design size instead; the rest of the app still scales.
+  const CARD_TEXT_SCALE = 1;
+  // On a 360x800dp phone (720x1600 HD+, very common on budget Android) the card
+  // hits the height*0.52 clamp and comes out ~25% shorter than on a large phone,
+  // but the interior type and spacing were fixed — so the content column no
+  // longer fit and a wrapped "FirstName Surname" spilled out of the card. Scale
+  // the whole interior by how much the card actually shrank.
+  const DESIGN_HEIGHT = 380 * 1.2; // card height on a large phone
+  const s = Math.max(0.6, Math.min(1, CARD_HEIGHT / DESIGN_HEIGHT));
+  const sp = (n: number) => Math.round(n * s);
+  const NAME_FONT = Math.max(24, Math.round(44 * s));
+  const NAME_LINE = Math.round(NAME_FONT * 1.18);
 
   const getGradientColors = () => {
     if (data.gender === 'boy') return [theme.colors.boyBlue, theme.brand.tealDeep] as const;
@@ -52,48 +74,61 @@ export const NameCard: React.FC<NameCardProps> = ({ data, onFavorite, isFavorite
     card: {
       flex: 1,
       borderRadius: theme.borderRadius.xl,
-      padding: theme.spacing.l,
+      padding: sp(theme.spacing.l),
       justifyContent: 'space-around',
+      // Safety net: whatever the font scale, content is clipped to the card
+      // rather than painting over the filter chips sitting above it.
+      overflow: 'hidden',
     },
     content: {
       flex: 1,
       alignItems: 'center',
       justifyContent: 'center',
-      paddingVertical: theme.spacing.m,
+      paddingVertical: sp(theme.spacing.m),
     },
-    // Fixed two-line box: a long "FirstName Surname" wraps (surname on its own
-    // line) instead of tail-ellipsizing, and the card layout stays identical
-    // whether the title uses one line or two.
+    // Two-line box: a long "FirstName Surname" wraps (surname on its own line)
+    // instead of tail-ellipsizing. minHeight (not height) reserves the space so
+    // the card layout stays identical for one- and two-line titles, while still
+    // letting the box grow rather than spilling its text outside the card.
     nameWrap: {
-      height: 104, // 2 × lineHeight
+      minHeight: NAME_LINE * 2,
       alignSelf: 'stretch',
+      // Row + wrap: name and surname are separate Text nodes (a single
+      // concatenated string got its tail clipped by Android with this display
+      // font), but they still share a line when they fit and only wrap when
+      // they don't — so short names don't waste a second line.
+      flexDirection: 'row',
+      flexWrap: 'wrap',
       alignItems: 'center',
       justifyContent: 'center',
-      marginBottom: theme.spacing.s,
+      // Keep clear of the favourite star (top-left) and info button (top-right),
+      // which are absolutely positioned over this row.
+      paddingHorizontal: sp(46),
+      marginBottom: sp(theme.spacing.s),
     },
     name: {
       fontFamily: theme.typography.fontFamilyDisplay,
-      fontSize: 44,
+      fontSize: NAME_FONT,
       color: theme.colors.textLight,
       textShadowColor: 'rgba(74, 68, 89, 0.25)',
       textShadowOffset: { width: 1, height: 2 },
       textShadowRadius: 4,
-      lineHeight: 52,
+      lineHeight: NAME_LINE,
       textAlign: 'center',
       paddingHorizontal: theme.spacing.s,
       includeFontPadding: false,
     },
     details: {
       fontFamily: theme.typography.fontFamilySemiBold,
-      fontSize: theme.typography.sizes.h3,
+      fontSize: Math.round(theme.typography.sizes.h3 * s),
       color: 'rgba(255, 255, 255, 0.9)',
       letterSpacing: 2,
-      marginBottom: theme.spacing.xl,
+      marginBottom: sp(theme.spacing.xl),
     },
     infoBox: {
       backgroundColor: 'rgba(255, 255, 255, 0.2)',
       borderRadius: theme.borderRadius.l,
-      padding: theme.spacing.l,
+      padding: sp(theme.spacing.l),
       width: '100%',
       alignItems: 'center',
     },
@@ -106,13 +141,13 @@ export const NameCard: React.FC<NameCardProps> = ({ data, onFavorite, isFavorite
     },
     meaning: {
       fontFamily: theme.typography.fontFamilyBold,
-      fontSize: theme.typography.sizes.h3,
+      fontSize: Math.round(theme.typography.sizes.h3 * s),
       color: theme.colors.textLight,
       textAlign: 'center',
-      marginBottom: theme.spacing.m,
+      marginBottom: sp(theme.spacing.m),
     },
     spacer: {
-      height: theme.spacing.s,
+      height: sp(theme.spacing.s),
     },
     originTitle: {
       fontFamily: theme.typography.fontFamilySemiBold,
@@ -129,8 +164,8 @@ export const NameCard: React.FC<NameCardProps> = ({ data, onFavorite, isFavorite
     footer: {
       flexDirection: 'row',
       justifyContent: 'space-between',
-      marginTop: theme.spacing.m,
-      marginBottom: theme.spacing.s,
+      marginTop: sp(theme.spacing.m),
+      marginBottom: sp(theme.spacing.s),
     },
     hint: {
       fontFamily: theme.typography.fontFamilySemiBold,
@@ -174,7 +209,7 @@ export const NameCard: React.FC<NameCardProps> = ({ data, onFavorite, isFavorite
       alignItems: 'center',
       justifyContent: 'center',
     },
-  }), [theme]);
+  }), [theme, CARD_WIDTH, CARD_HEIGHT, NAME_FONT, NAME_LINE, s]);
 
   return (
     <View style={styles.container}>
@@ -209,30 +244,32 @@ export const NameCard: React.FC<NameCardProps> = ({ data, onFavorite, isFavorite
         ) : null}
         <View style={styles.content}>
           <View style={styles.nameWrap}>
-            <Text
-              style={styles.name}
-              numberOfLines={2}
-              adjustsFontSizeToFit
-              minimumFontScale={0.65}
-              maxFontSizeMultiplier={1.2}
-            >
-              {surname ? `${data.name} ${surname}` : data.name}
-            </Text>
+            {/* The card is a fixed-size box, so the OS font scale is capped at
+                1 for the title only — at 44pt it is already the largest text on
+                screen, and letting it grow is what pushed two lines out of the
+                card. Every other label on the card still scales. */}
+            <Text style={[styles.name, surname ? { marginRight: Math.round(NAME_FONT * 0.28) } : null]} maxFontSizeMultiplier={CARD_TEXT_SCALE}>{data.name}</Text>
+            {surname ? (
+              // Separate Text nodes rather than one concatenated string:
+              // Android clipped the trailing word of a single-line string with
+              // this display font, dropping the surname. See LikedNamesScreen.
+              <Text style={styles.name} maxFontSizeMultiplier={CARD_TEXT_SCALE}>{surname}</Text>
+            ) : null}
           </View>
-          <Text style={styles.details} maxFontSizeMultiplier={1.2}>{data.gender.toUpperCase()}</Text>
+          <Text style={styles.details} maxFontSizeMultiplier={CARD_TEXT_SCALE}>{data.gender.toUpperCase()}</Text>
 
           <View style={styles.infoBox}>
-            <Text style={styles.meaningTitle} maxFontSizeMultiplier={1.3}>Meaning</Text>
-            <Text style={styles.meaning} maxFontSizeMultiplier={1.3}>{data.meaning}</Text>
+            <Text style={styles.meaningTitle} maxFontSizeMultiplier={CARD_TEXT_SCALE}>Meaning</Text>
+            <Text style={styles.meaning} maxFontSizeMultiplier={CARD_TEXT_SCALE}>{data.meaning}</Text>
             <View style={styles.spacer} />
-            <Text style={styles.originTitle} maxFontSizeMultiplier={1.3}>Origin</Text>
-            <Text style={styles.origin} maxFontSizeMultiplier={1.3}>{data.origin}</Text>
+            <Text style={styles.originTitle} maxFontSizeMultiplier={CARD_TEXT_SCALE}>Origin</Text>
+            <Text style={styles.origin} maxFontSizeMultiplier={CARD_TEXT_SCALE}>{data.origin}</Text>
           </View>
         </View>
 
         <View style={styles.footer}>
-          <Text style={[styles.hint, styles.hintDislike]} maxFontSizeMultiplier={1.2}>← Dislike</Text>
-          <Text style={[styles.hint, styles.hintLike]} maxFontSizeMultiplier={1.2}>Like →</Text>
+          <Text style={[styles.hint, styles.hintDislike]} maxFontSizeMultiplier={CARD_TEXT_SCALE}>← Dislike</Text>
+          <Text style={[styles.hint, styles.hintLike]} maxFontSizeMultiplier={CARD_TEXT_SCALE}>Like →</Text>
         </View>
       </LinearGradient>
     </View>
