@@ -1,7 +1,7 @@
 
 import { BabyName } from '../models/BabyName';
 
-// Raw dataset: 3864 names across 19 languages.
+// Raw dataset: 3866 names across 19 languages.
 // Languages must match the filter options used by the app exactly.
 const rawData: BabyName[] = [
   // English
@@ -3908,6 +3908,8 @@ const rawData: BabyName[] = [
   { id: '3862', name: 'Serafim', gender: 'boy', origin: 'Portuguese', meaning: 'Fiery; burning one', language: 'Portuguese' },
   { id: '3863', name: 'Bruna', gender: 'girl', origin: 'Portuguese', meaning: 'Brown-haired', language: 'Portuguese' },
   { id: '3864', name: 'Ivone', gender: 'girl', origin: 'Portuguese', meaning: 'Yew wood; archer', language: 'Portuguese' },
+  { id: '3865', name: 'Precious', gender: 'girl', origin: 'Latin', meaning: 'Of great value; cherished', language: 'English' },
+  { id: '3866', name: 'Phologo', gender: 'unisex', origin: 'Sepedi', meaning: 'Deliverance; salvation', language: 'Sepedi' },
   // <<END_RAW_DATA>> — merge scripts insert new entries above this line; do not remove.
 ];
 
