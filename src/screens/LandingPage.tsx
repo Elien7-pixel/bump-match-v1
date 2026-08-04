@@ -1142,11 +1142,17 @@ const AnimatedCard = ({
   initialX,
   initialY,
   delay,
+  pillScale = 1,
+  drift = 30,
 }: {
   name: string;
   initialX: number;
   initialY: number;
   delay: number;
+  /** Shrinks the pill on narrow screens; its width is otherwise intrinsic. */
+  pillScale?: number;
+  /** Horizontal wander, reduced on narrow screens so pills cannot drift into each other. */
+  drift?: number;
 }) => {
   const translateX = useSharedValue(initialX);
   const translateY = useSharedValue(initialY);
@@ -1156,8 +1162,8 @@ const AnimatedCard = ({
   useEffect(() => {
     // Random floating animation
     const animateCard = () => {
-      const randomX = initialX + (Math.random() * 60 - 30);
-      const randomY = initialY + (Math.random() * 40 - 20);
+      const randomX = initialX + (Math.random() * drift * 2 - drift);
+      const randomY = initialY + (Math.random() * drift * 1.3 - drift * 0.65);
       const randomRotation = Math.random() * 24 - 12;
 
       translateX.value = withDelay(
@@ -1226,9 +1232,18 @@ const AnimatedCard = ({
 
   return (
     <Animated.View style={[cardStyle, animatedStyle]}>
-      <View style={scatteredGlassStyles.cardContent}>
-        <Text style={scatteredGlassStyles.cardText}>{name}</Text>
-        <Ionicons name="heart" size={14} color={Brand.pink} />
+      <View
+        style={[
+          scatteredGlassStyles.cardContent,
+          {
+            paddingVertical: Math.round(13 * pillScale),
+            paddingHorizontal: Math.round(22 * pillScale),
+            gap: Math.round(8 * pillScale),
+          },
+        ]}
+      >
+        <Text style={[scatteredGlassStyles.cardText, { fontSize: Math.round(18 * pillScale) }]}>{name}</Text>
+        <Ionicons name="heart" size={Math.round(14 * pillScale)} color={Brand.pink} />
       </View>
     </Animated.View>
   );
@@ -1241,6 +1256,11 @@ const AnimatedNameCards = () => {
 
   // Positioned to frame the centre logo squircle: a pair above it, the rest in
   // the open band between the logo and the cream wave — never overlapping either.
+  // Pills have intrinsic width, so shrink them as the viewport narrows and cut
+  // the float distance to match — otherwise they drift into one another.
+  const pillScale = Math.max(0.8, Math.min(1, w / 390));
+  const drift = Math.round(30 * pillScale);
+
   const cards = isWide
     ? [
         { name: 'Oliver', x: w * 0.08, y: h * 0.05, delay: 0 },      // English
@@ -1253,11 +1273,18 @@ const AnimatedNameCards = () => {
         { name: 'Lufuno', x: w * 0.56, y: h * 0.52, delay: 800 },    // Tshivenda
       ]
     : [
-        { name: 'Annelie', x: w * 0.1, y: h * 0.11, delay: 200 },    // Afrikaans
-        { name: 'Lerato', x: w * 0.55, y: h * 0.07, delay: 0 },      // Sepedi
-        { name: 'Sipho', x: w * 0.1, y: h * 0.42, delay: 400 },      // isiZulu
-        { name: 'Oliver', x: w * 0.58, y: h * 0.435, delay: 600 },   // English
-        { name: 'Lufuno', x: w * 0.28, y: h * 0.475, delay: 800 },   // Tshivenda
+        // Two clear rows plus a centred pill below them. The pills keep their
+        // intrinsic width while these x values are proportional, so on a 360dp
+        // screen the old positions overlapped — these leave a full pill width
+        // between the left and right columns, and a full pill height before the
+        // centred one.
+        { name: 'Annelie', x: w * 0.05, y: h * 0.11, delay: 200 },   // Afrikaans
+        { name: 'Lerato', x: w * 0.52, y: h * 0.06, delay: 0 },      // Sepedi
+        { name: 'Sipho', x: w * 0.04, y: h * 0.40, delay: 400 },     // isiZulu
+        { name: 'Oliver', x: w * 0.52, y: h * 0.40, delay: 600 },    // English
+        // Four pills, not five: the band between the logo and the rainbow fits
+        // two rows on a narrow screen, and a third row landed on the rainbow.
+        // The wide layout above still carries all eight.
       ];
 
   return (
@@ -1269,6 +1296,8 @@ const AnimatedNameCards = () => {
           initialX={card.x}
           initialY={card.y}
           delay={card.delay}
+          pillScale={pillScale}
+          drift={drift}
         />
       ))}
     </View>
