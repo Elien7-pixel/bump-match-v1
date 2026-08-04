@@ -44,3 +44,8 @@ bugreport-*.zip
 # generated native folders
 /ios
 /android
+
+# Firebase service-account keys (secret — uploaded to EAS, never committed).
+# NB: google-services.json is deliberately NOT ignored; EAS needs it at build time.
+*firebase-adminsdk*.json
+*-service-account*.json

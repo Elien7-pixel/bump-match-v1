@@ -28,7 +28,7 @@ Bump Match helps couples find baby names they both love using a Tinder-like swip
 
 | Store | Status | Link |
 |-------|--------|------|
-| Apple App Store | v1.0.8 (build 9) uploaded to App Store Connect 30 Jul 2026 — needs version created + submitted for review | [App Store Connect](https://appstoreconnect.apple.com/apps/6776671806) |
+| Apple App Store | v1.0.8 version created 31 Jul 2026, state `PREPARE_FOR_SUBMISSION`. New-brand screenshots uploaded (5× iPhone 6.9″, 5× iPad 13″, en-US). **Still needs build 9 attached + submitted for review.** | [App Store Connect](https://appstoreconnect.apple.com/apps/6776671806) |
 | Google Play Store | v1.0.7 (versionCode 9) built; Android v1.0.8 build pending Firebase (push delivery) | [Play Console](https://play.google.com/console) |
 
 - **Bundle ID:** iOS `com.sherbetagency.bumpmatch` / Android `com.orbitai.bumpmatch`
