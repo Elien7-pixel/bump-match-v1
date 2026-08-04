@@ -19,6 +19,15 @@ interface User {
 interface AuthContextType {
   user: User | null;
   token: string | null;
+  /**
+   * Account surname for name cards, resolved once here rather than per screen.
+   * `user` is null on the first frames and whenever the Convex verifyToken
+   * query re-subscribes; components reading `user?.surname` directly therefore
+   * rendered bare names at random. This falls back to the offline profile
+   * snapshot, which is hydrated before children mount and refreshed whenever
+   * the server user resolves.
+   */
+  surname: string;
   isLoading: boolean;
   isAuthenticated: boolean;
   signUp: (data: SignUpData) => Promise<{ success: boolean; error?: string }>;
@@ -46,6 +55,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [cachedSurname, setCachedSurname] = useState('');
 
   const signUpMutation = useMutation(api.auth.signUp);
   const loginMutation = useMutation(api.auth.login);
@@ -61,6 +71,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const storedToken = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
       if (storedToken) {
         setToken(storedToken);
+      }
+      // Hydrate the display surname before the gate lifts, so the first frame
+      // any screen paints already has it.
+      const profileJson = await AsyncStorage.getItem('bumpmatch_user_profile');
+      if (profileJson) {
+        const cached = JSON.parse(profileJson)?.surname;
+        if (cached) setCachedSurname(cached);
       }
     } catch (e) {
       console.error('Failed to load auth token', e);
@@ -99,6 +116,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         inviteCode: verifyResult.inviteCode,
         partnerId: verifyResult.partnerId,
       });
+
+      setCachedSurname(verifyResult.surname || '');
+
+      // Refresh the offline profile snapshot. Screens that display the account
+      // name fall back to this while `user` is null — which happens on the
+      // first frames and again whenever the Convex query re-subscribes — so a
+      // stale snapshot is what makes the surname flicker or vanish on cards.
+      AsyncStorage.getItem('bumpmatch_user_profile')
+        .then((json) => {
+          const profile = json ? JSON.parse(json) : {};
+          return AsyncStorage.setItem('bumpmatch_user_profile', JSON.stringify({
+            ...profile,
+            firstName: verifyResult.firstName,
+            surname: verifyResult.surname,
+            email: verifyResult.email,
+            inviteCode: verifyResult.inviteCode,
+          }));
+        })
+        .catch(() => {});
     }
   }, [verifyResult, token]);
 
@@ -175,6 +211,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       value={{
         user,
         token,
+        surname: (user?.surname || cachedSurname || '').replace(/^./, (c) => c.toUpperCase()),
         isLoading,
         isAuthenticated: !!user && !!token,
         signUp,

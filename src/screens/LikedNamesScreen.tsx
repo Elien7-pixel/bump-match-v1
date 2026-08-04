@@ -24,6 +24,7 @@ import { useNavigation } from '@react-navigation/native';
 
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
+import { useAccountSurname } from '../hooks/useAccountSurname';
 import { ShareNameCard } from '../components/ShareNameCard';
 import { buildShareCaption } from '../constants/storeLinks';
 
@@ -84,7 +85,7 @@ export const LikedNamesScreen = () => {
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [showGenderDropdown, setShowGenderDropdown] = useState(false);
   const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
-  const surname = (user?.surname || '').replace(/^./, (c) => c.toUpperCase());
+  const surname = useAccountSurname();
 
   // Sharing renders a hidden, non-interactive ShareNameCard (with meaning,
   // origin and branding) off-screen and captures it at a fixed 1080×1350 px,
@@ -270,6 +271,7 @@ export const LikedNamesScreen = () => {
     dropdown: {
       flexDirection: 'row',
       alignItems: 'center',
+      flexShrink: 1,
       paddingVertical: 8,
       paddingHorizontal: 12,
       backgroundColor: theme.colors.card,
@@ -278,6 +280,7 @@ export const LikedNamesScreen = () => {
       borderColor: theme.colors.border,
     },
     dropdownText: {
+      flexShrink: 1,
       fontSize: 13,
       fontFamily: theme.typography.fontFamily,
       color: theme.colors.text,
@@ -286,6 +289,9 @@ export const LikedNamesScreen = () => {
     favoritesChip: {
       flexDirection: 'row',
       alignItems: 'center',
+      // Never give up width: on a 360dp screen the row overflowed and this
+      // chip was the one clipped off the right edge.
+      flexShrink: 0,
       paddingVertical: 8,
       paddingHorizontal: 12,
       borderRadius: theme.borderRadius.m,
@@ -395,10 +401,20 @@ export const LikedNamesScreen = () => {
       justifyContent: 'center',
     },
     cardNameWrap: {
-      height: 52, // 2 × lineHeight — surname wraps below the name, layout stays put
+      // minHeight, not height: reserves two lines so the grid stays aligned,
+      // but lets the box grow instead of painting the name outside the card.
+      minHeight: 52, // 2 × lineHeight
       alignSelf: 'stretch',
+      // See NameCard: separate Text nodes to dodge Android's tail clipping,
+      // laid out as a wrapping row so they share a line when they fit.
+      flexDirection: 'row',
+      flexWrap: 'wrap',
       alignItems: 'center',
       justifyContent: 'center',
+      // No flexShrink here: a shrinkable box gets re-measured narrower on a
+      // second layout pass and Android silently drops the trailing word, so
+      // "Tau Matanda" painted as "Tau" while longer names that wrapped were fine.
+      width: '100%',
     },
     cardName: {
       fontFamily: theme.typography.fontFamilyDisplay,
@@ -556,17 +572,28 @@ export const LikedNamesScreen = () => {
   const availableLanguages = ['all', ...Array.from(new Set(likedNames.map(n => n.language)))].sort();
 
   // Apply filters
-  const filteredNames = likedNames.filter(name => {
-    if (genderFilter !== 'all' && name.gender !== genderFilter) return false;
-    if (languageFilter !== 'all' && name.language !== languageFilter) return false;
-    if (showFavoritesOnly && !name.isFavorite) return false;
-    return true;
-  });
+  // `surname` and `matchedNameIds` resolve a beat after the list first renders.
+  // Reading them inside renderItem left already-mounted cells showing the value
+  // they were built with — cards kept the bare name while their neighbours
+  // picked up the surname. Baking both into the row makes it ordinary data, so
+  // FlatList re-renders the cells itself and there is no race to lose.
+  const filteredNames = likedNames
+    .filter(name => {
+      if (genderFilter !== 'all' && name.gender !== genderFilter) return false;
+      if (languageFilter !== 'all' && name.language !== languageFilter) return false;
+      if (showFavoritesOnly && !name.isFavorite) return false;
+      return true;
+    })
+    .map(name => ({
+      ...name,
+      displayName: surname ? `${name.name} ${surname}` : name.name,
+      isMatch: matchedNameIds.has(name.id),
+    }));
 
   const favoriteCount = likedNames.filter(n => n.isFavorite).length;
 
-  const renderNameCard = ({ item }: { item: LikedNameWithFavorite }) => {
-    const isMatch = matchedNameIds.has(item.id);
+  const renderNameCard = ({ item }: { item: LikedNameWithFavorite & { displayName: string; isMatch: boolean } }) => {
+    const isMatch = item.isMatch;
 
     return (
       <View style={styles.cardContainer}>
@@ -617,15 +644,14 @@ export const LikedNamesScreen = () => {
           <View style={styles.cardContent}>
             <View style={styles.nameBlock}>
               <View style={styles.cardNameWrap}>
-                <Text
-                  style={styles.cardName}
-                  numberOfLines={2}
-                  adjustsFontSizeToFit
-                  minimumFontScale={0.6}
-                  maxFontSizeMultiplier={1.2}
-                >
-                  {surname ? `${item.name} ${surname}` : item.name}
-                </Text>
+                <Text style={[styles.cardName, surname ? { marginRight: 6 } : null]} maxFontSizeMultiplier={1}>{item.name}</Text>
+                {surname ? (
+                  // Separate Text nodes, not one concatenated string: Android
+                  // silently clipped the trailing word of a single-line string
+                  // with this display font ("Tau Matanda" painted as "Tau").
+                  // Two nodes stack deterministically and can't be truncated.
+                  <Text style={styles.cardName} maxFontSizeMultiplier={1}>{surname}</Text>
+                ) : null}
               </View>
               <Text style={styles.cardGender} maxFontSizeMultiplier={1.2}>{item.gender.toUpperCase()}</Text>
             </View>
@@ -692,7 +718,7 @@ export const LikedNamesScreen = () => {
       {/* Filters row */}
       <View style={styles.filterBar}>
         {/* Gender dropdown */}
-        <View style={{ position: 'relative', zIndex: 20 }}>
+        <View style={{ position: 'relative', zIndex: 20, flexShrink: 1, minWidth: 0 }}>
           <TouchableOpacity
             style={styles.dropdown}
             onPress={() => { setShowGenderDropdown(!showGenderDropdown); setShowLanguageDropdown(false); }}
@@ -713,7 +739,7 @@ export const LikedNamesScreen = () => {
               }
               style={{ marginRight: 4 }}
             />
-            <Text style={styles.dropdownText}>
+            <Text style={styles.dropdownText} numberOfLines={1}>
               {genderFilter === 'all' ? 'All Genders' : genderFilter === 'unisex' ? 'Neutral' : genderFilter.charAt(0).toUpperCase() + genderFilter.slice(1)}
             </Text>
             <Ionicons name="chevron-down" size={14} color={theme.colors.grey} />
@@ -737,13 +763,13 @@ export const LikedNamesScreen = () => {
 
         {/* Language dropdown */}
         {availableLanguages.length > 2 && (
-          <View style={{ position: 'relative', zIndex: 20 }}>
+          <View style={{ position: 'relative', zIndex: 20, flexShrink: 1, minWidth: 0 }}>
             <TouchableOpacity
               style={styles.dropdown}
               onPress={() => { setShowLanguageDropdown(!showLanguageDropdown); setShowGenderDropdown(false); }}
             >
               <Ionicons name="globe-outline" size={14} color={theme.colors.primary} style={{ marginRight: 4 }} />
-              <Text style={styles.dropdownText}>
+              <Text style={styles.dropdownText} numberOfLines={1}>
                 {languageFilter === 'all' ? 'All Languages' : languageFilter}
               </Text>
               <Ionicons name="chevron-down" size={14} color={theme.colors.grey} />
@@ -782,6 +808,10 @@ export const LikedNamesScreen = () => {
           data={filteredNames}
           renderItem={renderNameCard}
           keyExtractor={(item) => item.id}
+          // The cards read `surname` and `matchedNameIds` from outside `data`;
+          // both resolve after the first render, so without extraData the
+          // already-mounted cells keep the empty surname they were built with.
+          extraData={`${surname}|${matchedNameIds.size}`}
           numColumns={2}
           contentContainerStyle={styles.list}
           columnWrapperStyle={styles.row}
