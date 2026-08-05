@@ -58,14 +58,17 @@ SETS = {
             ("05", "profile", "n7-profile.png"),
         ],
     ),
+    # 3:4, not 9:16. Play's 10-inch slot rejects images that are too
+    # elongated: 2064x2752 (3:4) was accepted historically while 1600x2560
+    # (5:8) and 1440x2560 (9:16) were both refused.
     "android-tablet-10": (
-        (1440, 2560),
+        (1536, 2048),
         [
-            ("01", "landing", "n10-landing.png"),
-            ("02", "swipe", "n10-swipe.png"),
-            ("03", "liked-names", "n10-liked.png"),
-            ("04", "partner", "n10-partner.png"),
-            ("05", "profile", "n10-profile.png"),
+            ("01", "landing", "f10-landing.png"),
+            ("02", "swipe", "f10-swipe.png"),
+            ("03", "liked-names", "f10-liked.png"),
+            ("04", "partner", "f10-partner.png"),
+            ("05", "profile", "f10-profile.png"),
         ],
     ),
 }

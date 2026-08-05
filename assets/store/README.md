@@ -9,6 +9,8 @@ Liked Names, Partner, Profile.
 | `screenshots/ios-iphone-6.9/` | 1320×2868 | App Store — 6.9" iPhone (the only mandatory iPhone size; Apple scales it down for smaller devices) |
 | `screenshots/ios-ipad-13/` | 2064×2752 | App Store — 13" iPad. Required because `app.json` sets `ios.supportsTablet: true` |
 | `screenshots/android-phone/` | 1080×2400 | Play Console — phone screenshots |
+| `screenshots/android-tablet-7/` | 1080×1920 | Play Console — 7" tablet |
+| `screenshots/android-tablet-10/` | 1536×2048 | Play Console — 10" tablet (**3:4 — see below**) |
 | `feature-graphic-1024x500.png` | 1024×500 | Play Console — feature graphic |
 | `app-icon-512.png` | 512×512 | Play Console — listing icon |
 
@@ -49,6 +51,21 @@ fails loudly instead of reaching the store.
   debuggable, so seeding a logged-in session needs a one-off release build with
   `debuggable true` applied through a `gradlew -I` init script — this keeps
   `android/app/build.gradle` untouched.
+
+## Play's 10-inch tablet ratio
+
+The 10" slot rejects images that are too elongated. Measured against what Play
+actually accepted:
+
+| Size | Ratio | Result |
+|---|---|---|
+| 2064×2752 | 3:4 (0.750) | accepted |
+| 1600×2560 | 5:8 (0.625) | rejected |
+| 1440×2560 | 9:16 (0.563) | rejected |
+
+So the cutoff sits above 0.625, and **3:4 is the safe target** — do not "fix"
+this slot to 16:9/9:16, which makes it worse. The 7" slot and phone slot are
+happy with taller ratios.
 
 ## Still stale
 
