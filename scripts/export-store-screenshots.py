@@ -48,6 +48,26 @@ SETS = {
             ("05", "profile", "android-profile.png"),
         ],
     ),
+    "android-tablet-7": (
+        (1080, 1920),
+        [
+            ("01", "landing", "n7-landing.png"),
+            ("02", "swipe", "n7-swipe.png"),
+            ("03", "liked-names", "n7-liked.png"),
+            ("04", "partner", "n7-partner.png"),
+            ("05", "profile", "n7-profile.png"),
+        ],
+    ),
+    "android-tablet-10": (
+        (1440, 2560),
+        [
+            ("01", "landing", "n10-landing.png"),
+            ("02", "swipe", "n10-swipe.png"),
+            ("03", "liked-names", "n10-liked.png"),
+            ("04", "partner", "n10-partner.png"),
+            ("05", "profile", "n10-profile.png"),
+        ],
+    ),
 }
 
 # iPadOS 26 draws a resize handle in the bottom-right corner of windowed apps.
