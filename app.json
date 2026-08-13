@@ -25,7 +25,7 @@
       "predictiveBackGestureEnabled": false,
       "package": "com.orbitai.bumpmatch",
       "googleServicesFile": "./google-services.json",
-      "versionCode": 11
+      "versionCode": 12
     },
     "web": {
       "favicon": "./assets/favicon.png"
