@@ -12,12 +12,14 @@ interface LanguagePickerModalProps {
   onSelectLanguages: (languages: string[]) => void;
 }
 
-const LANGUAGES = [
+export const LANGUAGES = [
   'All',
   'Afrikaans',
   'English',
   'German',
   'Greek',
+  'Hausa',
+  'Igbo',
   'Irish',
   'isiNdebele',
   'isiXhosa',
@@ -26,6 +28,7 @@ const LANGUAGES = [
   'Korean',
   'Latin',
   'Portuguese',
+  'Russian',
   'Sepedi',
   'Sesotho',
   'Setswana',
@@ -33,6 +36,7 @@ const LANGUAGES = [
   'Spanish',
   'Tshivenda',
   'Xitsonga',
+  'Yoruba',
 ];
 
 export const LanguagePickerModal: React.FC<LanguagePickerModalProps> = ({
@@ -43,7 +47,9 @@ export const LanguagePickerModal: React.FC<LanguagePickerModalProps> = ({
 }) => {
   const { theme, isDark } = useTheme();
 
-  const isAllSelected = selectedLanguages.includes('All') || selectedLanguages.length === 0;
+  const SELECTABLE = LANGUAGES.filter(l => l !== 'All');
+  const isAllSelected = selectedLanguages.includes('All');
+  const noneSelected = !isAllSelected && selectedLanguages.length === 0;
 
   const handleToggle = (language: string) => {
     if (language === 'All') {
@@ -51,26 +57,28 @@ export const LanguagePickerModal: React.FC<LanguagePickerModalProps> = ({
       return;
     }
 
-    let updated: string[];
+    // Under 'All' every language is ticked, so the first tap on one means
+    // "remove just this" — not "narrow to only this". The old behaviour jumped
+    // to a single-language deck, which served up a flood of exactly the names
+    // the user was trying to get rid of.
     if (isAllSelected) {
-      // Switching from All to a specific language
-      updated = [language];
-    } else if (selectedLanguages.includes(language)) {
-      // Deselect this language
-      updated = selectedLanguages.filter(l => l !== language);
-      if (updated.length === 0) {
-        updated = ['All'];
-      }
-    } else {
-      // Add this language
-      updated = [...selectedLanguages.filter(l => l !== 'All'), language];
+      onSelectLanguages(SELECTABLE.filter(l => l !== language));
+      return;
     }
-    onSelectLanguages(updated);
+
+    const updated = selectedLanguages.includes(language)
+      ? selectedLanguages.filter(l => l !== language)
+      : [...selectedLanguages.filter(l => l !== 'All'), language];
+
+    // Collapse back to 'All' only when everything ends up ticked, so the filter
+    // pill reads "All Languages". Deselecting down to nothing now stays nothing:
+    // silently reverting to 'All' is what made a removed language reappear.
+    onSelectLanguages(updated.length === SELECTABLE.length ? ['All'] : updated);
   };
 
   const isSelected = (language: string) => {
     if (language === 'All') return isAllSelected;
-    return !isAllSelected && selectedLanguages.includes(language);
+    return isAllSelected || selectedLanguages.includes(language);
   };
 
   const styles = React.useMemo(() => StyleSheet.create({
@@ -190,7 +198,11 @@ export const LanguagePickerModal: React.FC<LanguagePickerModalProps> = ({
                 <Ionicons name="close" size={28} color={theme.colors.text} />
               </TouchableOpacity>
             </View>
-            <Text style={styles.subtitle}>Select multiple languages to see names from all of them</Text>
+            <Text style={styles.subtitle}>
+              {noneSelected
+                ? 'No languages selected — tap one to start seeing names again.'
+                : 'Untick a language to stop seeing names from it.'}
+            </Text>
 
             <ScrollView style={styles.list}>
               {LANGUAGES.map((language) => {

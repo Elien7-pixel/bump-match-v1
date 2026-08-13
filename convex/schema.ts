@@ -13,6 +13,14 @@ export default defineSchema({
     expecting: v.optional(v.union(v.literal("boy"), v.literal("girl"), v.literal("unknown"))),
     heritage: v.optional(v.array(v.string())),
     status: v.string(),
+    // Month-only "YYYY-MM" for accounts created since the month-picker change;
+    // older rows hold a full "YYYY-MM-DD". Only set when status is "Expecting soon".
+    dueDate: v.optional(v.string()),
+    // Where the user is. Optional because the 50-odd accounts that predate this
+    // were never asked — they fill it in from their profile rather than through
+    // an update, so both fields have to tolerate being absent indefinitely.
+    country: v.optional(v.string()),
+    province: v.optional(v.string()),
     partnerId: v.optional(v.id("users")),
     matchRevealDate: v.optional(v.number()),
     revealDateProposedBy: v.optional(v.id("users")),
@@ -106,4 +114,24 @@ export default defineSchema({
     weekOf: v.string(),
     updatedAt: v.number(),
   }).index("by_rank", ["rank"]),
+
+  // In-app feedback. Until now the only channel was App Store reviews, which
+  // almost nobody writes — this is the one people will actually use, so it is
+  // deliberately low-friction: a rating is optional and the message is the point.
+  feedback: defineTable({
+    // Absent for feedback left before signing in, or if the token has expired.
+    userId: v.optional(v.id("users")),
+    email: v.optional(v.string()),
+    name: v.optional(v.string()),
+    message: v.string(),
+    // 1-5 stars, optional — a rating with no words is still a signal.
+    rating: v.optional(v.number()),
+    platform: v.optional(v.string()),
+    appVersion: v.optional(v.string()),
+    // Set from the admin dashboard once someone has actually read it.
+    handled: v.optional(v.boolean()),
+    createdAt: v.number(),
+  })
+    .index("by_created", ["createdAt"])
+    .index("by_handled", ["handled"]),
 });

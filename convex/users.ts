@@ -66,6 +66,10 @@ export const getProfile = query({
       age: calculatedAge,
       gender: user.gender,
       status: user.status,
+      heritage: user.heritage ?? [],
+      dueDate: user.dueDate ?? null,
+      country: user.country ?? null,
+      province: user.province ?? null,
       inviteCode: user.inviteCode,
       partner,
       createdAt: user.createdAt,
@@ -81,6 +85,13 @@ export const updateProfile = mutation({
     age: v.optional(v.string()),
     gender: v.optional(v.union(v.literal("mom"), v.literal("dad"), v.literal("partner"))),
     status: v.optional(v.string()),
+    heritage: v.optional(v.array(v.string())),
+    dueDate: v.optional(v.string()),
+    country: v.optional(v.string()),
+    province: v.optional(v.string()),
+    // The client sends dueDate: undefined when the user is no longer expecting,
+    // which an optional arg can't distinguish from "not edited" — this clears it.
+    clearDueDate: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const user = await getUserFromToken(ctx, args.token);
@@ -96,6 +107,13 @@ export const updateProfile = mutation({
     if (args.age !== undefined) updates.age = args.age;
     if (args.gender !== undefined) updates.gender = args.gender;
     if (args.status !== undefined) updates.status = args.status;
+    if (args.heritage !== undefined) updates.heritage = args.heritage;
+    if (args.clearDueDate) updates.dueDate = undefined;
+    else if (args.dueDate !== undefined) updates.dueDate = args.dueDate;
+    // Location arrived after most accounts existed, so these are how the users
+    // who predate it fill it in. An empty string clears the field.
+    if (args.country !== undefined) updates.country = args.country.trim() || undefined;
+    if (args.province !== undefined) updates.province = args.province.trim() || undefined;
 
     await ctx.db.patch(user._id, updates);
 

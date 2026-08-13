@@ -11,7 +11,10 @@ import { Input } from '../components/Input';
 import { Button } from '../components/Button';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
-import { formatDate, calculateAge, toISODateString, toPickerDate } from '../utils/date';
+import { formatDate, calculateAge, toISODateString, toPickerDate, formatDueDate, toMonthValue } from '../utils/date';
+import { MonthPickerSheet } from '../components/MonthPickerSheet';
+import { OptionPickerSheet } from '../components/OptionPickerSheet';
+import { COUNTRIES, provincesFor, regionLabel } from '../data/locations';
 import { Brand } from '../theme/designTokens';
 
 
@@ -43,6 +46,8 @@ export const ProfileScreen = () => {
     avatar?: string;
     heritage?: string[];
     dueDate?: string;
+    country?: string;
+    province?: string;
   } | null>(null);
 
   // Editable fields
@@ -54,6 +59,10 @@ export const ProfileScreen = () => {
   const [editAvatar, setEditAvatar] = useState('default');
   const [editHeritage, setEditHeritage] = useState<string[]>([]);
   const [editDueDate, setEditDueDate] = useState('');
+  const [editCountry, setEditCountry] = useState('');
+  const [editProvince, setEditProvince] = useState('');
+  const [showCountryPicker, setShowCountryPicker] = useState(false);
+  const [showProvincePicker, setShowProvincePicker] = useState(false);
   const [showDueDatePicker, setShowDueDatePicker] = useState(false);
   const [showDobPicker, setShowDobPicker] = useState(false);
 
@@ -324,6 +333,10 @@ export const ProfileScreen = () => {
         age: convexProfile.dateOfBirth,
         gender: convexProfile.gender,
         status: convexProfile.status,
+        heritage: convexProfile.heritage || [],
+        dueDate: convexProfile.dueDate || undefined,
+        country: convexProfile.country || undefined,
+        province: convexProfile.province || undefined,
         avatar: 'default', // Avatar stored locally for now
       });
       setEditFirstName(convexProfile.firstName || '');
@@ -331,6 +344,10 @@ export const ProfileScreen = () => {
       setEditAge(convexProfile.dateOfBirth || '');
       setEditGender(convexProfile.gender || 'mom');
       setEditStatus(convexProfile.status || '');
+      setEditHeritage(convexProfile.heritage || []);
+      setEditDueDate(convexProfile.dueDate || '');
+      setEditCountry(convexProfile.country || '');
+      setEditProvince(convexProfile.province || '');
     }
   }, [convexProfile]);
 
@@ -348,6 +365,8 @@ export const ProfileScreen = () => {
         setEditAvatar(data.avatar || 'default');
         setEditHeritage(data.heritage || []);
         setEditDueDate(data.dueDate || '');
+        setEditCountry(data.country || '');
+        setEditProvince(data.province || '');
       }
     } catch (e) {
       console.log('Error loading profile', e);
@@ -372,6 +391,8 @@ export const ProfileScreen = () => {
       avatar: editAvatar,
       heritage: editHeritage,
       dueDate: editStatus === 'Expecting soon' ? editDueDate : undefined,
+      country: editCountry || undefined,
+      province: editProvince || undefined,
       updatedAt: new Date().toISOString(),
     };
 
@@ -388,6 +409,11 @@ export const ProfileScreen = () => {
           age: editAge,
           gender: editGender,
           status: editStatus,
+          heritage: editHeritage,
+          dueDate: editStatus === 'Expecting soon' ? editDueDate : undefined,
+          clearDueDate: editStatus !== 'Expecting soon',
+          country: editCountry,
+          province: editProvince,
         });
         refreshUser();
       }
@@ -413,6 +439,8 @@ export const ProfileScreen = () => {
       setEditAvatar(profile.avatar || 'default');
       setEditHeritage(profile.heritage || []);
       setEditDueDate(profile.dueDate || '');
+      setEditCountry(profile.country || '');
+      setEditProvince(profile.province || '');
     }
     setIsEditing(false);
   };
@@ -613,27 +641,66 @@ export const ProfileScreen = () => {
                 >
                   <Text style={{ color: editDueDate ? theme.colors.text : theme.colors.grey, fontSize: 16, fontFamily: theme.typography.fontFamily }}>
                     {editDueDate
-                      ? formatDate(editDueDate)
-                      : 'Select your due date'}
+                      ? formatDueDate(editDueDate)
+                      : 'Select the month'}
                   </Text>
                 </TouchableOpacity>
-                {showDueDatePicker && (
-                  <DateTimePicker
-                    value={toPickerDate(editDueDate) ?? new Date()}
-                    mode="date"
-                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                    minimumDate={new Date()}
-                    maximumDate={new Date(Date.now() + 10 * 30 * 24 * 60 * 60 * 1000)}
-                    onChange={(event, selected) => {
-                      if (Platform.OS === 'android') setShowDueDatePicker(false);
-                      if (selected) setEditDueDate(toISODateString(selected));
-                    }}
+                <MonthPickerSheet
+                  visible={showDueDatePicker}
+                  value={toMonthValue(editDueDate)}
+                  title="When are you expecting?"
+                  onSelect={setEditDueDate}
+                  onClose={() => setShowDueDatePicker(false)}
+                />
+              </>
+            )}
+
+            <Text style={styles.label}>Country</Text>
+            <TouchableOpacity
+              onPress={() => setShowCountryPicker(true)}
+              style={{ backgroundColor: theme.colors.card, borderRadius: theme.borderRadius.m, padding: 14, marginBottom: 4, borderWidth: 1, borderColor: theme.colors.border }}
+            >
+              <Text style={{ color: editCountry ? theme.colors.text : theme.colors.grey, fontSize: 16, fontFamily: theme.typography.fontFamily }}>
+                {editCountry || 'Select your country'}
+              </Text>
+            </TouchableOpacity>
+            <OptionPickerSheet
+              visible={showCountryPicker}
+              value={editCountry || null}
+              title="Country"
+              options={COUNTRIES}
+              onSelect={(c) => { setEditCountry(c); setEditProvince(''); }}
+              onClose={() => setShowCountryPicker(false)}
+            />
+
+            {!!editCountry && (
+              <>
+                <Text style={styles.label}>{regionLabel(editCountry)}</Text>
+                {provincesFor(editCountry) ? (
+                  <>
+                    <TouchableOpacity
+                      onPress={() => setShowProvincePicker(true)}
+                      style={{ backgroundColor: theme.colors.card, borderRadius: theme.borderRadius.m, padding: 14, marginBottom: 4, borderWidth: 1, borderColor: theme.colors.border }}
+                    >
+                      <Text style={{ color: editProvince ? theme.colors.text : theme.colors.grey, fontSize: 16, fontFamily: theme.typography.fontFamily }}>
+                        {editProvince || `Select your ${regionLabel(editCountry).toLowerCase()}`}
+                      </Text>
+                    </TouchableOpacity>
+                    <OptionPickerSheet
+                      visible={showProvincePicker}
+                      value={editProvince || null}
+                      title={regionLabel(editCountry)}
+                      options={provincesFor(editCountry) as string[]}
+                      onSelect={setEditProvince}
+                      onClose={() => setShowProvincePicker(false)}
+                    />
+                  </>
+                ) : (
+                  <Input
+                    placeholder={`Your ${regionLabel(editCountry).toLowerCase()} (optional)`}
+                    value={editProvince}
+                    onChangeText={setEditProvince}
                   />
-                )}
-                {showDueDatePicker && Platform.OS === 'ios' && (
-                  <TouchableOpacity onPress={() => setShowDueDatePicker(false)} style={{ alignItems: 'center', paddingVertical: 8 }}>
-                    <Text style={{ color: theme.colors.primary, fontFamily: theme.typography.fontFamilySemiBold, fontSize: 15 }}>Done</Text>
-                  </TouchableOpacity>
                 )}
               </>
             )}
@@ -726,9 +793,26 @@ export const ProfileScreen = () => {
                 <Text style={styles.valueText}>{profile.status || 'Not set'}</Text>
                 {profile.status === 'Expecting soon' && profile.dueDate ? (
                   <Text style={[styles.valueText, { fontSize: 13, color: theme.colors.grey, marginTop: 4 }]}>
-                    Due: {formatDate(profile.dueDate)}
+                    Due: {formatDueDate(profile.dueDate)}
                   </Text>
                 ) : null}
+              </View>
+
+              <View style={styles.infoRow}>
+                <View style={styles.infoLabel}>
+                  <Ionicons name="location-outline" size={20} color={theme.colors.grey} />
+                  <Text style={styles.labelText}>Location</Text>
+                </View>
+                <Text style={styles.valueText}>
+                  {[profile.province, profile.country].filter(Boolean).join(', ') || 'Not set'}
+                </Text>
+                {!profile.country && (
+                  // Location arrived after most accounts existed, so this nudge is
+                  // how those users are asked for it at all.
+                  <Text style={[styles.valueText, { fontSize: 13, color: theme.colors.grey, marginTop: 4 }]}>
+                    Tap Edit to add where you are.
+                  </Text>
+                )}
               </View>
 
               {profile.heritage && profile.heritage.length > 0 && (

@@ -9,14 +9,15 @@ import { useTheme } from '../context/ThemeContext';
 interface MenuDrawerProps {
   visible: boolean;
   onClose: () => void;
-  onNavigate: (screen: 'Profile' | 'LikedNames' | 'Settings' | 'Partner' | 'Landing' | 'Dictionary') => void;
+  onNavigate: (screen: 'Profile' | 'LikedNames' | 'Settings' | 'Partner' | 'Landing' | 'Dictionary' | 'Faq') => void;
   onSuggestName?: () => void;
+  onSendFeedback?: () => void;
 }
 
-export const MenuDrawer: React.FC<MenuDrawerProps> = ({ visible, onClose, onNavigate, onSuggestName }) => {
+export const MenuDrawer: React.FC<MenuDrawerProps> = ({ visible, onClose, onNavigate, onSuggestName, onSendFeedback }) => {
   const { theme, isDark } = useTheme();
 
-  const handleNavigation = (screen: 'Profile' | 'LikedNames' | 'Settings' | 'Partner' | 'Dictionary') => {
+  const handleNavigation = (screen: 'Profile' | 'LikedNames' | 'Settings' | 'Partner' | 'Dictionary' | 'Faq') => {
     onNavigate(screen);
     onClose();
   };
@@ -233,6 +234,31 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({ visible, onClose, onNavi
                   <Ionicons name="add-circle-outline" size={22} color={theme.colors.primary} />
                 </View>
                 <Text style={styles.menuText}>Suggest a Name</Text>
+                <Ionicons name="chevron-forward" size={20} color={theme.colors.grey} />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.menuItem}
+                onPress={() => handleNavigation('Faq')}
+              >
+                <View style={styles.iconPill}>
+                  <Ionicons name="help-circle-outline" size={22} color={theme.colors.primary} />
+                </View>
+                <Text style={styles.menuText}>FAQ</Text>
+                <Ionicons name="chevron-forward" size={20} color={theme.colors.grey} />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.menuItem}
+                onPress={() => {
+                  onClose();
+                  onSendFeedback?.();
+                }}
+              >
+                <View style={styles.iconPill}>
+                  <Ionicons name="chatbubble-ellipses-outline" size={22} color={theme.colors.primary} />
+                </View>
+                <Text style={styles.menuText}>Send Feedback</Text>
                 <Ionicons name="chevron-forward" size={20} color={theme.colors.grey} />
               </TouchableOpacity>
 

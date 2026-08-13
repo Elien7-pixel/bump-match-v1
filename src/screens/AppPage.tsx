@@ -21,6 +21,7 @@ import { LogoText } from '../components/Logo';
 import { OnboardingTutorial } from '../components/OnboardingTutorial';
 import { PregnancyTracker } from '../components/PregnancyTracker';
 import { SubmitNameModal } from '../components/SubmitNameModal';
+import { FeedbackModal, FEEDBACK_PROMPT_KEY } from '../components/FeedbackModal';
 
 export const AppPage = () => {
   const navigation = useNavigation<any>();
@@ -59,6 +60,10 @@ export const AppPage = () => {
   const [favBurstKey, setFavBurstKey] = useState(0);
   const [showTutorial, setShowTutorial] = useState(false);
   const [showSubmitModal, setShowSubmitModal] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
+  // True only when we opened the sheet ourselves, which softens the copy and
+  // adds a "Not right now" escape. Opening it from the menu is never "prompted".
+  const [feedbackPrompted, setFeedbackPrompted] = useState(false);
   // Convex mutations
   const likeNameMutation = useMutation(api.names.likeName);
   const unlikeNameMutation = useMutation(api.names.unlikeName);
@@ -136,6 +141,26 @@ export const AppPage = () => {
   useEffect(() => {
     loadNames();
   }, [genderFilter, languageFilter, meaningSearch, popularOnly, celebrityOnly, firstLetter]);
+
+  // Ask for feedback once, after enough swiping that the person has an opinion
+  // worth giving. App Store reviews were the only channel before this and almost
+  // nobody writes one, so the ask has to come to them — but only ever once, and
+  // never over a modal that is already open.
+  const FEEDBACK_PROMPT_AFTER_SWIPES = 40;
+  useEffect(() => {
+    if (swipedNameStrings.size < FEEDBACK_PROMPT_AFTER_SWIPES) return;
+    if (showFeedback || showSubmitModal || menuVisible || showTutorial) return;
+    let cancelled = false;
+    AsyncStorage.getItem(FEEDBACK_PROMPT_KEY)
+      .then((seen) => {
+        if (!cancelled && !seen) {
+          setFeedbackPrompted(true);
+          setShowFeedback(true);
+        }
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [swipedNameStrings.size]);
 
   const loadProfile = async () => {
     try {
@@ -371,12 +396,16 @@ export const AppPage = () => {
     setNames(prev => [...prev, ...moreNames]);
   };
 
-  // Language filter display text
-  const languageDisplayText = languageFilter.includes('All') || languageFilter.length === 0
+  // Language filter display text. An empty list now means "none ticked", which
+  // is a real state the deck reflects — it is no longer a synonym for 'All'.
+  const noLanguagesSelected = !languageFilter.includes('All') && languageFilter.length === 0;
+  const languageDisplayText = languageFilter.includes('All')
     ? 'All'
-    : languageFilter.length === 1
-      ? languageFilter[0]
-      : `${languageFilter.length} selected`;
+    : noLanguagesSelected
+      ? 'None'
+      : languageFilter.length === 1
+        ? languageFilter[0]
+        : `${languageFilter.length} selected`;
 
   const styles = React.useMemo(() => StyleSheet.create({
     container: {
@@ -738,9 +767,15 @@ export const AppPage = () => {
           />
         ) : (
           <View style={styles.emptyState}>
-            <Text style={styles.emptyText}>No more names!</Text>
-            <TouchableOpacity onPress={handleEmpty}>
-              <Text style={styles.retryText}>Load More</Text>
+            <Text style={styles.emptyText}>
+              {noLanguagesSelected ? 'No languages selected' : 'No more names!'}
+            </Text>
+            <TouchableOpacity
+              onPress={() => (noLanguagesSelected ? setLanguagePickerVisible(true) : handleEmpty())}
+            >
+              <Text style={styles.retryText}>
+                {noLanguagesSelected ? 'Choose languages' : 'Load More'}
+              </Text>
             </TouchableOpacity>
           </View>
         )}
@@ -796,6 +831,14 @@ export const AppPage = () => {
           }
         }}
         onSuggestName={() => setShowSubmitModal(true)}
+        onSendFeedback={() => { setFeedbackPrompted(false); setShowFeedback(true); }}
+      />
+
+      <FeedbackModal
+        visible={showFeedback}
+        prompted={feedbackPrompted}
+        token={token}
+        onClose={() => setShowFeedback(false)}
       />
 
       <LanguagePickerModal

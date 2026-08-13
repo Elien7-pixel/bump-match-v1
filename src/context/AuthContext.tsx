@@ -45,8 +45,10 @@ interface SignUpData {
   gender: 'mom' | 'dad' | 'partner';
   expecting?: 'boy' | 'girl' | 'unknown';
   status: string;
-  /** Date-only "YYYY-MM-DD"; kept device-local (AsyncStorage), never sent to Convex. */
+  /** Month-only "YYYY-MM" — people rarely know the exact day. */
   dueDate?: string;
+  country?: string;
+  province?: string;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -140,8 +142,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signUp = async (data: SignUpData): Promise<{ success: boolean; error?: string }> => {
     try {
-      const { dueDate, ...convexData } = data;
-      const result = await signUpMutation(convexData);
+      const result = await signUpMutation(data);
+      const dueDate = data.dueDate;
 
       await AsyncStorage.setItem(AUTH_TOKEN_KEY, result.token);
       setToken(result.token);

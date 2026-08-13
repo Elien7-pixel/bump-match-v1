@@ -40,7 +40,10 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { useTheme } from '../context/ThemeContext';
 import { Brand } from '../theme/designTokens';
 import { useAuth } from '../context/AuthContext';
-import { formatDate, toISODateString } from '../utils/date';
+import { formatDate, toISODateString, formatMonth } from '../utils/date';
+import { MonthPickerSheet } from '../components/MonthPickerSheet';
+import { OptionPickerSheet } from '../components/OptionPickerSheet';
+import { COUNTRIES, provincesFor, regionLabel } from '../data/locations';
 import { cleanErrorMessage } from '../utils/errors';
 
 // Tablet breakpoint
@@ -203,7 +206,13 @@ export const LandingPage = () => {
   const [gender, setGender] = useState<'mom' | 'dad' | 'partner'>('mom');
   const [expecting, setExpecting] = useState<'boy' | 'girl' | 'unknown'>('unknown');
   const [status, setStatus] = useState('Expecting soon');
-  const [dueDate, setDueDate] = useState<Date | null>(null);
+  // Month-only "YYYY-MM" — people rarely know the exact day, and a guessed day
+  // makes the pregnancy tracker's week count wrong by up to a fortnight.
+  const [dueDate, setDueDate] = useState<string | null>(null);
+  const [country, setCountry] = useState<string | null>(null);
+  const [province, setProvince] = useState<string | null>(null);
+  const [showCountryPicker, setShowCountryPicker] = useState(false);
+  const [showProvincePicker, setShowProvincePicker] = useState(false);
   const [showDueDatePicker, setShowDueDatePicker] = useState(false);
 
   const [loginEmail, setLoginEmail] = useState('');
@@ -560,7 +569,9 @@ export const LandingPage = () => {
           email, password, firstName, surname,
           age: dateOfBirth ? toISODateString(dateOfBirth) : '',
           gender, expecting, status,
-          dueDate: dueDate ? toISODateString(dueDate) : undefined,
+          dueDate: dueDate || undefined,
+          country: country || undefined,
+          province: province || undefined,
         }),
         timeoutPromise,
       ]);
@@ -881,21 +892,73 @@ export const LandingPage = () => {
                       style={{ backgroundColor: theme.colors.card, borderWidth: 1, borderColor: theme.colors.border, borderRadius: theme.borderRadius.m, padding: 14, marginBottom: 4 }}
                     >
                       <Text style={{ color: dueDate ? theme.colors.text : theme.colors.grey, fontSize: 16, fontFamily: theme.typography.fontFamily }}>
-                        {dueDate ? formatDate(dueDate) : 'Select your due date'}
+                        {dueDate ? formatMonth(dueDate) : 'Select the month'}
                       </Text>
                     </TouchableOpacity>
-                    <DatePickerSheet
+                    <MonthPickerSheet
                       visible={showDueDatePicker}
-                      value={dueDate || new Date()}
+                      value={dueDate}
                       title="When are you expecting?"
-                      minimumDate={new Date()}
-                      maximumDate={new Date(Date.now() + 10 * 30 * 24 * 60 * 60 * 1000)}
-                      primaryColor={theme.brand.pinkDeep}
-                      fontFamily={theme.typography.fontFamily}
-                      fontFamilyBold={theme.typography.fontFamilyBold}
-                      onChange={setDueDate}
+                      onSelect={setDueDate}
                       onClose={() => setShowDueDatePicker(false)}
                     />
+                  </>
+                )}
+
+                <Text style={pageStyles.label}>Country</Text>
+                <TouchableOpacity
+                  onPress={() => setShowCountryPicker(true)}
+                  style={{ backgroundColor: theme.colors.card, borderWidth: 1, borderColor: theme.colors.border, borderRadius: theme.borderRadius.m, padding: 14, marginBottom: 4 }}
+                >
+                  <Text style={{ color: country ? theme.colors.text : theme.colors.grey, fontSize: 16, fontFamily: theme.typography.fontFamily }}>
+                    {country || 'Select your country'}
+                  </Text>
+                </TouchableOpacity>
+                <OptionPickerSheet
+                  visible={showCountryPicker}
+                  value={country}
+                  title="Country"
+                  options={COUNTRIES}
+                  onSelect={(c) => {
+                    setCountry(c);
+                    // The province list is country-specific, so a previous pick
+                    // is meaningless once the country changes.
+                    setProvince(null);
+                  }}
+                  onClose={() => setShowCountryPicker(false)}
+                />
+
+                {!!country && (
+                  <>
+                    <Text style={pageStyles.label}>{regionLabel(country)}</Text>
+                    {provincesFor(country) ? (
+                      <>
+                        <TouchableOpacity
+                          onPress={() => setShowProvincePicker(true)}
+                          style={{ backgroundColor: theme.colors.card, borderWidth: 1, borderColor: theme.colors.border, borderRadius: theme.borderRadius.m, padding: 14, marginBottom: 4 }}
+                        >
+                          <Text style={{ color: province ? theme.colors.text : theme.colors.grey, fontSize: 16, fontFamily: theme.typography.fontFamily }}>
+                            {province || `Select your ${regionLabel(country).toLowerCase()}`}
+                          </Text>
+                        </TouchableOpacity>
+                        <OptionPickerSheet
+                          visible={showProvincePicker}
+                          value={province}
+                          title={regionLabel(country)}
+                          options={provincesFor(country) as string[]}
+                          onSelect={setProvince}
+                          onClose={() => setShowProvincePicker(false)}
+                        />
+                      </>
+                    ) : (
+                      // No subdivision list for this country — a free-text field
+                      // beats forcing people into a wrong one.
+                      <Input
+                        placeholder={`Your ${regionLabel(country).toLowerCase()} (optional)`}
+                        value={province || ''}
+                        onChangeText={setProvince}
+                      />
+                    )}
                   </>
                 )}
 

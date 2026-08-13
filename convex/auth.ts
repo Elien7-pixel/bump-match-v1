@@ -44,6 +44,9 @@ export const signUp = mutation({
     gender: v.union(v.literal("mom"), v.literal("dad"), v.literal("partner")),
     expecting: v.optional(v.union(v.literal("boy"), v.literal("girl"), v.literal("unknown"))),
     status: v.string(),
+    dueDate: v.optional(v.string()),
+    country: v.optional(v.string()),
+    province: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     // Check if email already exists
@@ -67,6 +70,9 @@ export const signUp = mutation({
       gender: args.gender,
       expecting: args.expecting,
       status: args.status,
+      dueDate: args.dueDate,
+      country: args.country,
+      province: args.province,
       inviteCode,
       createdAt: Date.now(),
     });

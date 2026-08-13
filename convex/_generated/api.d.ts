@@ -8,11 +8,18 @@
  * @module
  */
 
+import type * as adminExport from "../adminExport.js";
+import type * as adminFeedbackPage from "../adminFeedbackPage.js";
+import type * as adminHiddenUsers from "../adminHiddenUsers.js";
+import type * as adminUsers from "../adminUsers.js";
+import type * as adminUsersPage from "../adminUsersPage.js";
 import type * as auth from "../auth.js";
 import type * as authActions from "../authActions.js";
 import type * as crons from "../crons.js";
 import type * as deleteAccount from "../deleteAccount.js";
 import type * as dictionary from "../dictionary.js";
+import type * as faqContent from "../faqContent.js";
+import type * as feedback from "../feedback.js";
 import type * as http from "../http.js";
 import type * as names from "../names.js";
 import type * as partnerInvites from "../partnerInvites.js";
@@ -31,11 +38,18 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  adminExport: typeof adminExport;
+  adminFeedbackPage: typeof adminFeedbackPage;
+  adminHiddenUsers: typeof adminHiddenUsers;
+  adminUsers: typeof adminUsers;
+  adminUsersPage: typeof adminUsersPage;
   auth: typeof auth;
   authActions: typeof authActions;
   crons: typeof crons;
   deleteAccount: typeof deleteAccount;
   dictionary: typeof dictionary;
+  faqContent: typeof faqContent;
+  feedback: typeof feedback;
   http: typeof http;
   names: typeof names;
   partnerInvites: typeof partnerInvites;

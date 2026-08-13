@@ -1,8 +1,13 @@
 import { httpRouter } from "convex/server";
 import { httpAction } from "./_generated/server";
-import { api } from "./_generated/api";
+import { api, internal } from "./_generated/api";
+import { ADMIN_USERS_HTML } from "./adminUsersPage";
+import { buildUsersCsv, usersCsvFilename, AdminUserRow } from "./adminExport";
+import { faqSectionsHtml } from "./faqContent";
+import { ADMIN_FEEDBACK_HTML } from "./adminFeedbackPage";
 
-const ADMIN_KEY = "bumpmatch-admin-2026";
+// Override in production with `npx convex env set ADMIN_KEY <value>`.
+const ADMIN_KEY = process.env.ADMIN_KEY || "bumpmatch-admin-2026";
 
 const http = httpRouter();
 
@@ -94,6 +99,56 @@ http.route({
   }),
 });
 
+// FAQ page. Same content as the support page's FAQ block — both render
+// faqSectionsHtml() so an answer is only ever corrected in faqContent.ts.
+http.route({
+  path: "/faq",
+  method: "GET",
+  handler: httpAction(async () => {
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bump Match - FAQ</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #333; line-height: 1.7; background: #fafafa; }
+    .container { max-width: 720px; margin: 0 auto; padding: 40px 24px 80px; }
+    h1 { font-size: 28px; margin-bottom: 8px; color: #111; }
+    .subtitle { color: #888; font-size: 16px; margin-bottom: 32px; }
+    h2 { font-size: 20px; margin-top: 32px; margin-bottom: 12px; color: #222; }
+    p { font-size: 16px; color: #444; margin-bottom: 12px; }
+    p strong { color: #222; }
+    a { color: #C850C0; }
+    .contact-box { background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 12px; padding: 24px; margin-top: 32px; }
+    .contact-box h2 { margin-top: 0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Frequently Asked Questions</h1>
+    <p class="subtitle">Everything people ask us most often about Bump Match.</p>
+
+    ${faqSectionsHtml()}
+
+    <div class="contact-box">
+      <h2>Still stuck?</h2>
+      <p>Send us feedback from the menu in the app, or email us:</p>
+      <p><strong>Email:</strong> <a href="mailto:ai@sherbetagency.com">ai@sherbetagency.com</a></p>
+      <p>See also our <a href="/support">support page</a>.</p>
+    </div>
+  </div>
+</body>
+</html>`;
+
+    return new Response(html, {
+      status: 200,
+      headers: { "Content-Type": "text/html; charset=utf-8" },
+    });
+  }),
+});
+
 // Support page
 http.route({
   path: "/support",
@@ -124,22 +179,7 @@ http.route({
     <h1>Support</h1>
     <p class="subtitle">We're here to help you get the most out of Bump Match.</p>
 
-    <h2>Frequently Asked Questions</h2>
-
-    <p><strong>How do I connect with my partner?</strong></p>
-    <p>Go to the Partner screen from the menu. Share your invite code or QR code with your partner. They can enter your code to link your accounts.</p>
-
-    <p><strong>What is a match?</strong></p>
-    <p>A match happens when both you and your partner like the same baby name. Matched names are highlighted with a green badge.</p>
-
-    <p><strong>Can I undo a swipe?</strong></p>
-    <p>Yes! Tap the undo button (circular arrow) to go back to the previous name.</p>
-
-    <p><strong>How do I change the language or gender filter?</strong></p>
-    <p>On the main screen, use the language dropdown on the left and the gender toggle (Boy, Neutral, Girl) at the top right.</p>
-
-    <p><strong>How do I delete my account?</strong></p>
-    <p>Go to Settings in the app and tap "Delete Account", or visit our <a href="/delete-account">account deletion page</a>.</p>
+    ${faqSectionsHtml()}
 
     <div class="contact-box">
       <h2>Contact Us</h2>
@@ -473,9 +513,12 @@ http.route({
   </div>
 
   <div id="app-screen" style="display:none;">
-    <div class="header">
-      <h1>BumpMatch Admin</h1>
-      <p>Name Submission Moderation Dashboard</p>
+    <div class="header" style="display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap;">
+      <div>
+        <h1>BumpMatch Admin</h1>
+        <p>Name Submission Moderation Dashboard</p>
+      </div>
+      <a id="nav-users" href="/admin/users" style="color:white; font-size:14px; font-weight:600; text-decoration:none; padding:8px 14px; border:1px solid rgba(255,255,255,0.5); border-radius:10px;">Users &amp; exports &rarr;</a>
     </div>
     <div class="container">
       <div class="stats" id="stats"></div>
@@ -515,6 +558,7 @@ http.route({
         }
         const data = await res.json();
         allSubmissions = data;
+        document.getElementById('nav-users').href = '/admin/users?key=' + encodeURIComponent(adminKey);
         document.getElementById('auth-screen').style.display = 'none';
         document.getElementById('app-screen').style.display = 'block';
         render();
@@ -708,5 +752,118 @@ http.route({
     }
   }),
 });
+
+// ─── Admin: Users & Exports ────────────────────────────────────────────────────
+
+function unauthorized() {
+  return new Response(JSON.stringify({ error: "Unauthorized" }), {
+    status: 401,
+    headers: { "Content-Type": "application/json" },
+  });
+}
+
+// GET /admin/feedback — serves the in-app feedback dashboard
+http.route({
+  path: "/admin/feedback",
+  method: "GET",
+  handler: httpAction(async () => {
+    return new Response(ADMIN_FEEDBACK_HTML, {
+      status: 200,
+      headers: { "Content-Type": "text/html; charset=utf-8" },
+    });
+  }),
+});
+
+// GET /admin/api/feedback — in-app feedback as JSON
+http.route({
+  path: "/admin/api/feedback",
+  method: "GET",
+  handler: httpAction(async (ctx, request) => {
+    const url = new URL(request.url);
+    if (url.searchParams.get("key") !== ADMIN_KEY) return unauthorized();
+
+    const rows = await ctx.runQuery(internal.feedback.getAllFeedback, {});
+    return new Response(JSON.stringify(rows), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  }),
+});
+
+// GET /admin/users — serves the user dashboard HTML
+http.route({
+  path: "/admin/users",
+  method: "GET",
+  handler: httpAction(async () => {
+    return new Response(ADMIN_USERS_HTML, {
+      status: 200,
+      headers: { "Content-Type": "text/html; charset=utf-8" },
+    });
+  }),
+});
+
+// GET /admin/api/users — every registered user as JSON
+http.route({
+  path: "/admin/api/users",
+  method: "GET",
+  handler: httpAction(async (ctx, request) => {
+    const url = new URL(request.url);
+    if (url.searchParams.get("key") !== ADMIN_KEY) return unauthorized();
+
+    const users = await ctx.runQuery(internal.adminUsers.getAllUsers, {});
+
+    return new Response(JSON.stringify(users), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  }),
+});
+
+// GET /admin/api/users.csv — full export, handy for scripts and bookmarks
+http.route({
+  path: "/admin/api/users.csv",
+  method: "GET",
+  handler: httpAction(async (ctx, request) => {
+    const url = new URL(request.url);
+    if (url.searchParams.get("key") !== ADMIN_KEY) return unauthorized();
+
+    const users = await ctx.runQuery(internal.adminUsers.getAllUsers, {});
+    return csvResponse(users);
+  }),
+});
+
+// POST /admin/api/users.csv — export just the rows the dashboard is showing
+http.route({
+  path: "/admin/api/users.csv",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    try {
+      const body = await request.json();
+      if (body.key !== ADMIN_KEY) return unauthorized();
+
+      const users = await ctx.runQuery(internal.adminUsers.getAllUsers, {});
+      const ids: string[] | undefined = Array.isArray(body.ids) ? body.ids : undefined;
+      const rows = ids ? users.filter((u) => ids.includes(u.id)) : users;
+
+      return csvResponse(rows);
+    } catch (err: any) {
+      return new Response(JSON.stringify({ error: err.message || "Internal error." }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+  }),
+});
+
+function csvResponse(rows: AdminUserRow[]) {
+  return new Response(buildUsersCsv(rows), {
+    status: 200,
+    headers: {
+      "Content-Type": "text/csv; charset=utf-8",
+      "Content-Disposition": `attachment; filename="${usersCsvFilename(Date.now())}"`,
+      "Cache-Control": "no-store",
+    },
+  });
+}
 
 export default http;

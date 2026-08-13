@@ -16,6 +16,7 @@ import { LikedNamesScreen } from './src/screens/LikedNamesScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
 import { PartnerScreen } from './src/screens/PartnerScreen';
 import { DictionaryScreen } from './src/screens/DictionaryScreen';
+import { FaqScreen } from './src/screens/FaqScreen';
 import { AppTokens } from './src/theme/designTokens';
 import { ThemeProvider } from './src/context/ThemeContext';
 import { AuthProvider } from './src/context/AuthContext';
@@ -146,6 +147,7 @@ function AppContent() {
         <Stack.Screen name="Settings" component={SettingsScreen} />
         <Stack.Screen name="Partner" component={PartnerScreen} />
         <Stack.Screen name="Dictionary" component={DictionaryScreen} />
+        <Stack.Screen name="Faq" component={FaqScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
