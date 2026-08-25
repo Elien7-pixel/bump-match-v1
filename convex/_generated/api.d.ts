@@ -29,6 +29,7 @@ import type * as pushNotifications from "../pushNotifications.js";
 import type * as search from "../search.js";
 import type * as searchHelpers from "../searchHelpers.js";
 import type * as submissions from "../submissions.js";
+import type * as termsHtml from "../termsHtml.js";
 import type * as trending from "../trending.js";
 import type * as users from "../users.js";
 
@@ -60,6 +61,7 @@ declare const fullApi: ApiFromModules<{
   search: typeof search;
   searchHelpers: typeof searchHelpers;
   submissions: typeof submissions;
+  termsHtml: typeof termsHtml;
   trending: typeof trending;
   users: typeof users;
 }>;

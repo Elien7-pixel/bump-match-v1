@@ -1,5 +1,6 @@
 import { httpRouter } from "convex/server";
 import { PRIVACY_POLICY_HTML } from "./privacyPolicyHtml";
+import { TERMS_HTML } from "./termsHtml";
 import { httpAction } from "./_generated/server";
 import { api, internal } from "./_generated/api";
 import { ADMIN_USERS_HTML } from "./adminUsersPage";
@@ -13,6 +14,20 @@ const ADMIN_KEY = process.env.ADMIN_KEY || "bumpmatch-admin-2026";
 const http = httpRouter();
 
 // Privacy Policy page
+http.route({
+  path: "/terms",
+  method: "GET",
+  // The sign-up screen links here, so this has to resolve — a 404 behind a
+  // consent tick is both a bad experience and an App Review finding. Generated
+  // from TERMS.md by scripts/generate_privacy_html.js.
+  handler: httpAction(async () => {
+    return new Response(TERMS_HTML, {
+      status: 200,
+      headers: { "Content-Type": "text/html; charset=utf-8" },
+    });
+  }),
+});
+
 http.route({
   path: "/privacy-policy",
   method: "GET",

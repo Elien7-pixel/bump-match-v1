@@ -12,6 +12,7 @@ import {
   ScrollView,
   useWindowDimensions,
   Image,
+  Linking,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -45,6 +46,9 @@ import { MonthPickerSheet } from '../components/MonthPickerSheet';
 import { OptionPickerSheet } from '../components/OptionPickerSheet';
 import { COUNTRIES, provincesFor, regionLabel } from '../data/locations';
 import { cleanErrorMessage } from '../utils/errors';
+
+// Convex serves HTTP actions on .site, not .cloud — same derivation as App.tsx.
+const CONVEX_SITE_URL = (process.env.EXPO_PUBLIC_CONVEX_URL || 'https://silent-ermine-169.convex.cloud').replace('.cloud', '.site');
 
 // Tablet breakpoint
 const TABLET_MIN_WIDTH = 600;
@@ -196,8 +200,13 @@ export const LandingPage = () => {
   const [signUpModalVisible, setSignUpModalVisible] = useState(false);
   const [loginModalVisible, setLoginModalVisible] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Terms acceptance. This one IS a condition of creating an account, which is
+  // allowed — the contract can be mandatory. Sign Up stays disabled until it is
+  // ticked.
+  const [termsAccepted, setTermsAccepted] = useState(false);
   // Partner Offers. Starts false and stays false unless tapped — never
-  // pre-ticked, and never a condition of completing sign-up.
+  // pre-ticked, and never a condition of completing sign-up. Kept visually
+  // separate from the terms above so the two asks cannot be conflated.
   const [partnerOffersOptIn, setPartnerOffersOptIn] = useState(false);
 
   const [firstName, setFirstName] = useState('');
@@ -547,13 +556,32 @@ export const LandingPage = () => {
       flexDirection: 'row',
       marginTop: 24,
     },
+    // Terms acceptance. Required, so it sits directly above the buttons and
+    // reads plainly rather than being styled as a promotional block.
+    termsRow: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: 12,
+      marginTop: 24,
+    },
+    termsText: {
+      flex: 1,
+      fontFamily: theme.typography.fontFamily,
+      fontSize: 12.5,
+      lineHeight: 18,
+      color: theme.colors.grey,
+    },
+    termsLink: {
+      color: theme.colors.primary,
+      textDecorationLine: 'underline',
+    },
     // Partner Offers opt-in. Deliberately quieter than the form fields above —
     // it is optional, and dressing it up as a feature would be a dark pattern.
     offersRow: {
       flexDirection: 'row',
       alignItems: 'flex-start',
       gap: 12,
-      marginTop: 24,
+      marginTop: 14,
       padding: 14,
       borderRadius: 14,
       backgroundColor: theme.brand.tealSoft,
@@ -1005,6 +1033,36 @@ export const LandingPage = () => {
                 )}
 
                 <TouchableOpacity
+                  style={pageStyles.termsRow}
+                  onPress={() => setTermsAccepted(!termsAccepted)}
+                  activeOpacity={0.7}
+                  accessibilityRole="checkbox"
+                  accessibilityState={{ checked: termsAccepted }}
+                  accessibilityLabel="I agree to the Terms of Service and Privacy Policy"
+                >
+                  <View style={[pageStyles.offersBox, termsAccepted && pageStyles.offersBoxOn]}>
+                    {termsAccepted && <Ionicons name="checkmark" size={15} color="#FFFFFF" />}
+                  </View>
+                  <Text style={pageStyles.termsText}>
+                    I'm 18 or older and I agree to the{' '}
+                    <Text
+                      style={pageStyles.termsLink}
+                      onPress={() => Linking.openURL(`${CONVEX_SITE_URL}/terms`)}
+                    >
+                      Terms of Service
+                    </Text>
+                    {' '}and{' '}
+                    <Text
+                      style={pageStyles.termsLink}
+                      onPress={() => Linking.openURL(`${CONVEX_SITE_URL}/privacy-policy`)}
+                    >
+                      Privacy Policy
+                    </Text>
+                    .
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
                   style={pageStyles.offersRow}
                   onPress={() => setPartnerOffersOptIn(!partnerOffersOptIn)}
                   activeOpacity={0.7}
@@ -1037,7 +1095,7 @@ export const LandingPage = () => {
                     title={isSubmitting ? "Creating..." : "Sign Up"}
                     onPress={handleCompleteOnboarding}
                     style={{ flex: 1 }}
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || !termsAccepted}
                   />
                 </View>
               </ScrollView>

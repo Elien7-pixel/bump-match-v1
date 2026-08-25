@@ -16,7 +16,15 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
-const md = fs.readFileSync(path.join(ROOT, 'PRIVACY_POLICY.md'), 'utf8');
+
+// [sourceMarkdown, generatedModule, exportName, browserTitle]
+const DOCS = [
+  ['PRIVACY_POLICY.md', 'privacyPolicyHtml.ts', 'PRIVACY_POLICY_HTML', 'Bump Match - Privacy Policy'],
+  ['TERMS.md', 'termsHtml.ts', 'TERMS_HTML', 'Bump Match - Terms of Service'],
+];
+
+for (const [srcName, outName, exportName, browserTitle] of DOCS) {
+const md = fs.readFileSync(path.join(ROOT, srcName), 'utf8');
 
 const escapeHtml = (s) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -110,7 +118,7 @@ const html = `<!DOCTYPE html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bump Match - Privacy Policy</title>
+  <title>${browserTitle}</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #333; line-height: 1.7; background: #fafafa; }
@@ -135,15 +143,14 @@ const html = `<!DOCTYPE html>
 </body>
 </html>`;
 
-const target = path.join(ROOT, 'convex', 'privacyPolicyHtml.ts');
+const target = path.join(ROOT, 'convex', outName);
 fs.writeFileSync(
   target,
   `// GENERATED FILE — do not edit by hand.\n` +
-  `// Source: PRIVACY_POLICY.md\n` +
+  `// Source: ${srcName}\n` +
   `// Regenerate: node scripts/generate_privacy_html.js\n\n` +
-  `export const PRIVACY_POLICY_HTML = ${JSON.stringify(html)};\n`,
+  `export const ${exportName} = ${JSON.stringify(html)};\n`,
 );
 
-console.log(`Wrote ${path.relative(ROOT, target)} (${(html.length / 1024).toFixed(1)} KB)`);
-console.log(`Title: ${title}`);
-console.log(`Date:  ${dateLine.replace(/&middot;/g, '·')}`);
+console.log(`Wrote ${path.relative(ROOT, target)} (${(html.length / 1024).toFixed(1)} KB) — ${dateLine.replace(/&middot;/g, '·')}`);
+}
