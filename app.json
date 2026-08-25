@@ -58,7 +58,14 @@
           "backgroundColor": "#FEFAF6"
         }
       ],
-      "@react-native-firebase/app",
+      [
+        "@react-native-firebase/app",
+        {
+          "ios": {
+            "disableSPM": true
+          }
+        }
+      ],
       "@react-native-firebase/analytics",
       [
         "react-native-fbsdk-next",
@@ -73,7 +80,14 @@
           "iosUserTrackingPermission": "Allow tracking so we can see which ads brought you to Bump Match and reach more parents-to-be like you. We never sell your data or share your baby names."
         }
       ],
-      "expo-build-properties",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static"
+          }
+        }
+      ],
       [
         "expo-tracking-transparency",
         {

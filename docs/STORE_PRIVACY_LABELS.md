@@ -78,15 +78,25 @@ ATT builds without it.
 - **App info and performance** → Crash logs, Diagnostics
 
 ### Shared with third parties
+
+Play defines "shared" as transfer to a third party and **excludes service
+providers processing on your behalf**. That distinction decides two entries:
+
+- **Meta — counts as shared.** It uses the data for its own advertising
+  purposes, so it acts as an independent controller, not a processor.
+- **Google Analytics — does not count as shared.** Google processes it on your
+  behalf. Declare the data as collected, not shared.
+
 Shared with Meta for **advertising or marketing**:
 - Name, Email address (hashed)
 - Device or other IDs
 - App interactions
 
-Shared with Google for **analytics**:
-- Device or other IDs, App interactions, Approximate location
+**Not shared with anyone:** health info, race and ethnicity, approximate
+location, user content, crash logs.
 
-**Not shared with anyone:** health info, race and ethnicity, user content.
+Mark heritage, health info and approximate location as **optional** — users can
+genuinely skip them. Name and email are required for an account.
 
 ### Security practices
 - Data is encrypted in transit — **yes**
