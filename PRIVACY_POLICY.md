@@ -1,6 +1,6 @@
 # Bump Match — Privacy Policy
 
-**Last updated:** 24 August 2026
+**Last updated:** 25 August 2026
 **Effective date:** 27 July 2026
 
 This Privacy Policy explains how **Sherbet Agency (Pty) Ltd** ("Sherbet Agency", "we", "us")

@@ -34,6 +34,11 @@ Bump Match helps couples find baby names they both love using a Tinder-like swip
 - **Bundle ID:** iOS `com.sherbetagency.bumpmatch` / Android `com.orbitai.bumpmatch`
 - **Version:** 1.0.8 (iOS build 9)
 - **Backend:** Convex `silent-ermine-169` — v1.0.8 functions deployed 30 Jul 2026 (trending table + weekly cron, match-push, DOB/name repairs); DOB migration run (16 accounts fixed)
-- **Privacy Policy:** https://elated-newt-380.convex.cloud/privacy-policy
-- **Support:** https://elated-newt-380.convex.cloud/support
+- **Privacy Policy:** https://silent-ermine-169.convex.site/privacy-policy
+- **Support:** https://silent-ermine-169.convex.site/support
+
+  These previously pointed at `elated-newt-380.convex.cloud`, which 404s — wrong
+  deployment and wrong domain. Convex serves HTTP actions on `.convex.site`, not
+  `.convex.cloud`. Check the URLs registered in App Store Connect and Play
+  Console match the working ones above.
 - **Contact:** ai@sherbetagency.com
