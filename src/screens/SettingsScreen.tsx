@@ -1,11 +1,13 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, StatusBar, Alert, Switch, Linking, Modal, ScrollView, Platform, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
 import { useNavigation } from '@react-navigation/native';
+import { useMutation } from 'convex/react';
+import { api } from '../../convex/_generated/api';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { LogoIcon, LogoText } from '../components/Logo';
@@ -20,6 +22,14 @@ export const SettingsScreen = () => {
   const [helpModalVisible, setHelpModalVisible] = useState(false);
   const [privacyModalVisible, setPrivacyModalVisible] = useState(false);
   const [adTrackingEnabled, setAdTrackingEnabled] = useState(getTrackingConsent() === 'granted');
+  const setPartnerOffersMutation = useMutation(api.auth.setPartnerOffers);
+  const [partnerOffers, setPartnerOffers] = useState(false);
+
+  // `user` is null on the first frames and again whenever the Convex verifyToken
+  // query re-subscribes, so mirror it rather than initialising from it once.
+  useEffect(() => {
+    if (user) setPartnerOffers(user.partnerOffersOptIn ?? false);
+  }, [user?.partnerOffersOptIn]);
   const [termsModalVisible, setTermsModalVisible] = useState(false);
 
   const appVersion = Constants.expoConfig?.version ?? '1.0.0';
@@ -352,6 +362,32 @@ export const SettingsScreen = () => {
                 onValueChange={async (next) => {
                   setAdTrackingEnabled(next);
                   await setTrackingConsent(next);
+                }}
+                trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
+                thumbColor={theme.colors.textLight}
+              />
+            }
+          />
+
+          {/* Section 5 of the privacy policy promises this is reversible at any
+              time, so it has to live here rather than behind a support email. */}
+          <SettingItem
+            icon="pricetag-outline"
+            title="Partner Offers"
+            subtitle={partnerOffers
+              ? 'Sharing your name and email with partner brands'
+              : 'Off — nothing shared with partners'}
+            rightElement={
+              <Switch
+                value={partnerOffers}
+                onValueChange={async (next) => {
+                  setPartnerOffers(next);
+                  try {
+                    if (token) await setPartnerOffersMutation({ token, optIn: next });
+                  } catch (e) {
+                    setPartnerOffers(!next); // put the switch back if it did not save
+                    Alert.alert('Could not save', 'Please try again.');
+                  }
                 }}
                 trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
                 thumbColor={theme.colors.textLight}

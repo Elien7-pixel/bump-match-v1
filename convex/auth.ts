@@ -47,6 +47,7 @@ export const signUp = mutation({
     dueDate: v.optional(v.string()),
     country: v.optional(v.string()),
     province: v.optional(v.string()),
+    partnerOffersOptIn: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     // Check if email already exists
@@ -73,6 +74,10 @@ export const signUp = mutation({
       dueDate: args.dueDate,
       country: args.country,
       province: args.province,
+      // Only stamp the consent time when it was actually given. A timestamp on
+      // a false value would read as evidence of consent in an audit.
+      partnerOffersOptIn: args.partnerOffersOptIn ?? false,
+      partnerOffersOptInAt: args.partnerOffersOptIn ? Date.now() : undefined,
       inviteCode,
       createdAt: Date.now(),
     });
@@ -173,6 +178,7 @@ export const verifyToken = query({
       surname: user.surname,
       inviteCode: user.inviteCode,
       partnerId: user.partnerId,
+      partnerOffersOptIn: user.partnerOffersOptIn ?? false,
     };
   },
 });
@@ -268,5 +274,37 @@ export const resetPassword = mutation({
     }
 
     return { success: true, message: "Password reset successfully. Please log in." };
+  },
+});
+
+/**
+ * Change the Partner Offers choice after sign-up.
+ *
+ * Section 5 of the privacy policy promises this is reversible at any time, so it
+ * has to be reachable from Settings rather than by emailing support. Re-stamps
+ * the timestamp on opt-in and clears it on withdrawal, so the stored time always
+ * refers to consent that is actually in force.
+ */
+export const setPartnerOffers = mutation({
+  args: {
+    token: v.string(),
+    optIn: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    const session = await ctx.db
+      .query("sessions")
+      .withIndex("by_token", (q) => q.eq("token", args.token))
+      .first();
+
+    if (!session || session.expiresAt < Date.now()) {
+      throw new Error("Not signed in.");
+    }
+
+    await ctx.db.patch(session.userId, {
+      partnerOffersOptIn: args.optIn,
+      partnerOffersOptInAt: args.optIn ? Date.now() : undefined,
+    });
+
+    return { success: true };
   },
 });

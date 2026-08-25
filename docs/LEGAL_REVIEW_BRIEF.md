@@ -97,6 +97,41 @@ two separately maintained documents.
 a summary plus a link suffice? If verbatim, the app should render one source
 rather than maintaining two.
 
+### 5. Partner Offers — can the opt-in be pre-ticked, or required?
+
+The data sale described in Section 5 of the privacy policy is not yet built. The
+business would prefer it **on by default**, and asked whether app functionality
+could be **gated** on it — a blocked Continue button until the user agrees.
+
+Current reading, which needs confirming or overruling:
+
+- **Pre-ticked is not consent.** GDPR requires a clear affirmative action, and
+  pre-ticked boxes were ruled invalid in *Planet49* (CJEU C-673/17). POPIA s69
+  requires prior opt-in for direct marketing by electronic communication, and
+  South Africa is the primary market.
+- **Gating is worse.** GDPR Art. 7(4): consent is not freely given where
+  performance of a contract is made conditional on consent to processing that is
+  not necessary for it. Access to the app is not necessary for selling data to
+  partner brands.
+- **CCPA/CPRA differs** — the US opt-out model would permit default-on for
+  Californian users. So this is not universally unlawful, it is unlawful in the
+  main market. A region-dependent default is possible in principle.
+- **Apple 5.1.1** does not permit gating functionality on optional data sharing,
+  which is a live submission risk rather than a theoretical one.
+- The app's own published policy states *"We never require you to consent to
+  data selling as a condition of using the App"* and *"It is OFF by default."*
+  Shipping either variant without changing that text would put the app in
+  contradiction with its live policy.
+
+**Question:** is the opt-in-only, unticked, non-gated design required in South
+Africa, or is there a lawful route to a stronger default? If a region-dependent
+default is viable, which regions?
+
+**Being built in the meantime:** unticked opt-in at registration, visually
+separate from the mandatory terms acceptance, stored with a consent timestamp,
+changeable in Settings, and reportable on the admin dashboard. That design is
+safe under every reading above; it can be relaxed later if you advise it.
+
 ---
 
 ## What has already been done

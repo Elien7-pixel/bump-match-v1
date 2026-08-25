@@ -23,6 +23,7 @@ import type * as feedback from "../feedback.js";
 import type * as http from "../http.js";
 import type * as names from "../names.js";
 import type * as partnerInvites from "../partnerInvites.js";
+import type * as privacyPolicyHtml from "../privacyPolicyHtml.js";
 import type * as pushHelpers from "../pushHelpers.js";
 import type * as pushNotifications from "../pushNotifications.js";
 import type * as search from "../search.js";
@@ -53,6 +54,7 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   names: typeof names;
   partnerInvites: typeof partnerInvites;
+  privacyPolicyHtml: typeof privacyPolicyHtml;
   pushHelpers: typeof pushHelpers;
   pushNotifications: typeof pushNotifications;
   search: typeof search;

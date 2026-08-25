@@ -21,6 +21,11 @@ export default defineSchema({
     // an update, so both fields have to tolerate being absent indefinitely.
     country: v.optional(v.string()),
     province: v.optional(v.string()),
+    // Partner Offers (Section 5 of the privacy policy). Opt-in only, never
+    // pre-ticked, never a condition of using the App. The timestamp matters as
+    // much as the boolean — consent has to be demonstrable, not just current.
+    partnerOffersOptIn: v.optional(v.boolean()),
+    partnerOffersOptInAt: v.optional(v.number()),
     partnerId: v.optional(v.id("users")),
     matchRevealDate: v.optional(v.number()),
     revealDateProposedBy: v.optional(v.id("users")),

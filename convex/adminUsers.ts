@@ -95,6 +95,10 @@ export const getAllUsers = internalQuery({
           country: user.country ?? "",
           province: user.province ?? "",
           heritage: user.heritage ?? [],
+          // Partner Offers consent, for working out who may lawfully be included
+          // in a partner share. The timestamp is the evidence, not the boolean.
+          partnerOffers: user.partnerOffersOptIn ?? false,
+          partnerOffersAt: user.partnerOffersOptInAt ?? null,
           inviteCode: user.inviteCode,
           partnerName: partner ? `${partner.firstName} ${partner.surname}`.trim() : "",
           partnerEmail: partner ? partner.email : "",

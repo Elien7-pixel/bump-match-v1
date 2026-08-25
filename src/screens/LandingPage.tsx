@@ -196,6 +196,9 @@ export const LandingPage = () => {
   const [signUpModalVisible, setSignUpModalVisible] = useState(false);
   const [loginModalVisible, setLoginModalVisible] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Partner Offers. Starts false and stays false unless tapped — never
+  // pre-ticked, and never a condition of completing sign-up.
+  const [partnerOffersOptIn, setPartnerOffersOptIn] = useState(false);
 
   const [firstName, setFirstName] = useState('');
   const [surname, setSurname] = useState('');
@@ -544,6 +547,44 @@ export const LandingPage = () => {
       flexDirection: 'row',
       marginTop: 24,
     },
+    // Partner Offers opt-in. Deliberately quieter than the form fields above —
+    // it is optional, and dressing it up as a feature would be a dark pattern.
+    offersRow: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: 12,
+      marginTop: 24,
+      padding: 14,
+      borderRadius: 14,
+      backgroundColor: theme.brand.tealSoft,
+    },
+    offersBox: {
+      width: 22,
+      height: 22,
+      borderRadius: 6,
+      borderWidth: 1.5,
+      borderColor: theme.colors.grey,
+      backgroundColor: theme.colors.card,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginTop: 1,
+    },
+    offersBoxOn: {
+      backgroundColor: theme.colors.primary,
+      borderColor: theme.colors.primary,
+    },
+    offersTitle: {
+      fontFamily: theme.typography.fontFamilyBold,
+      fontSize: 14,
+      color: theme.colors.text,
+      marginBottom: 3,
+    },
+    offersBody: {
+      fontFamily: theme.typography.fontFamily,
+      fontSize: 12,
+      lineHeight: 17,
+      color: theme.colors.grey,
+    },
   }), [theme, width, height, isTablet, squircleSize, rainbowWidth, rainbowHeight, insets.bottom]);
 
   const handleCompleteOnboarding = async () => {
@@ -572,6 +613,7 @@ export const LandingPage = () => {
           dueDate: dueDate || undefined,
           country: country || undefined,
           province: province || undefined,
+          partnerOffersOptIn,
         }),
         timeoutPromise,
       ]);
@@ -961,6 +1003,27 @@ export const LandingPage = () => {
                     )}
                   </>
                 )}
+
+                <TouchableOpacity
+                  style={pageStyles.offersRow}
+                  onPress={() => setPartnerOffersOptIn(!partnerOffersOptIn)}
+                  activeOpacity={0.7}
+                  accessibilityRole="checkbox"
+                  accessibilityState={{ checked: partnerOffersOptIn }}
+                  accessibilityLabel="Send me baby product deals"
+                >
+                  <View style={[pageStyles.offersBox, partnerOffersOptIn && pageStyles.offersBoxOn]}>
+                    {partnerOffersOptIn && <Ionicons name="checkmark" size={15} color="#FFFFFF" />}
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={pageStyles.offersTitle}>Send me baby product deals</Text>
+                    <Text style={pageStyles.offersBody}>
+                      We'll pass your name and email to brands we've checked out, so they can
+                      send you offers. Never your pregnancy details, due date, or the names you
+                      like. Change your mind anytime in Settings.
+                    </Text>
+                  </View>
+                </TouchableOpacity>
 
                 <View style={pageStyles.modalActions}>
                   <Button

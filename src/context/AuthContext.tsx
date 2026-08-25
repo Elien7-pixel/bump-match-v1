@@ -22,6 +22,7 @@ interface User {
   surname: string;
   inviteCode: string;
   partnerId?: Id<"users">;
+  partnerOffersOptIn?: boolean;
 }
 
 interface AuthContextType {
@@ -57,6 +58,8 @@ interface SignUpData {
   dueDate?: string;
   country?: string;
   province?: string;
+  /** Partner Offers (privacy policy Section 5). Opt-in only, never pre-ticked. */
+  partnerOffersOptIn?: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -139,6 +142,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         surname: verifyResult.surname,
         inviteCode: verifyResult.inviteCode,
         partnerId: verifyResult.partnerId,
+        partnerOffersOptIn: verifyResult.partnerOffersOptIn,
       });
 
       // Rung 4 fires on BOTH sides of the link. PartnerScreen only sees the

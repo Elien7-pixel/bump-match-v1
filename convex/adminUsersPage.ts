@@ -150,6 +150,7 @@ export const ADMIN_USERS_HTML = `<!DOCTYPE html>
       { key: 'country', label: 'Country' },
       { key: 'province', label: 'Province' },
       { key: 'heritage', label: 'Heritage' },
+      { key: 'partnerOffers', label: 'Partner offers' },
       { key: 'inviteCode', label: 'Invite code' },
       { key: 'partnerName', label: 'Partner' },
       { key: 'likedNames', label: 'Liked' },
@@ -315,6 +316,9 @@ export const ADMIN_USERS_HTML = `<!DOCTYPE html>
           '<td>' + orDash(u.country) + '</td>' +
           '<td>' + orDash(u.province) + '</td>' +
           '<td>' + orDash(u.heritage.join(', ')) + '</td>' +
+          '<td>' + (u.partnerOffers
+            ? '<span class="pill yes" title="Opted in' + (u.partnerOffersAt ? ' ' + escapeHtml(formatDate(u.partnerOffersAt)) : '') + '">Opted in</span>'
+            : '<span class="pill no">No</span>') + '</td>' +
           '<td class="mono">' + escapeHtml(u.inviteCode) + '</td>' +
           '<td>' + (u.isPaired ? escapeHtml(u.partnerName || u.partnerEmail) : '<span class="pill no">Solo</span>') + '</td>' +
           '<td>' + u.likedNames + '</td>' +
