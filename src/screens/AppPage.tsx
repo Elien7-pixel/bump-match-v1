@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, StatusBar, Alert, TextInput, Image, Modal, useWindowDimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, StatusBar, Alert, TextInput, Image, Modal, Platform, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useMutation, useQuery } from 'convex/react';
@@ -17,11 +17,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
+import { AnalyticsEvent, logEvent, requestTrackingPermission, hasAnsweredTrackingConsent } from '../utils/analytics';
+import { TrackingConsentDialog } from '../components/TrackingConsentDialog';
 import { LogoText } from '../components/Logo';
 import { OnboardingTutorial } from '../components/OnboardingTutorial';
 import { PregnancyTracker } from '../components/PregnancyTracker';
 import { SubmitNameModal } from '../components/SubmitNameModal';
 import { FeedbackModal, FEEDBACK_PROMPT_KEY } from '../components/FeedbackModal';
+
+const ATT_PROMPTED_KEY = 'bumpmatch_att_prompted';
 
 export const AppPage = () => {
   const navigation = useNavigation<any>();
@@ -59,6 +63,7 @@ export const AppPage = () => {
   const [letterPickerVisible, setLetterPickerVisible] = useState(false);
   const [favBurstKey, setFavBurstKey] = useState(0);
   const [showTutorial, setShowTutorial] = useState(false);
+  const [showTrackingConsent, setShowTrackingConsent] = useState(false);
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
   // True only when we opened the sheet ourselves, which softens the copy and
@@ -109,11 +114,51 @@ export const AppPage = () => {
     loadSwipedNames();
     if (route.params?.fromSignUp) {
       setShowTutorial(true);
+    } else {
+      // Returning users skip the tutorial, so hook the prompt here instead.
+      maybeAskForTracking();
     }
   }, []);
 
   const dismissTutorial = () => {
     setShowTutorial(false);
+    // Ask for ATT once the user has seen what the app does. Prompting on the
+    // first frame instead is the main reason iOS opt-in rates collapse, and a
+    // denied prompt costs us the IDFA that Meta audience matching runs on.
+    maybeAskForTracking();
+  };
+
+  /**
+   * Fires the ATT prompt at most once per install. iOS only shows the system
+   * dialog once anyway, but the flag keeps us from re-entering on every dismiss.
+   */
+  const maybeAskForTracking = async () => {
+    try {
+      const asked = await AsyncStorage.getItem(ATT_PROMPTED_KEY);
+      if (asked === 'true') return;
+
+      // Don't re-ask if consent was already recorded some other way.
+      if (await hasAnsweredTrackingConsent()) {
+        await AsyncStorage.setItem(ATT_PROMPTED_KEY, 'true');
+        return;
+      }
+
+      await AsyncStorage.setItem(ATT_PROMPTED_KEY, 'true');
+
+      // Let the tutorial modal finish dismissing before anything else appears.
+      setTimeout(() => {
+        if (Platform.OS === 'ios') {
+          // iOS has a system-level consent gate.
+          requestTrackingPermission();
+        } else {
+          // Android has none, so the app asks for itself. Without this the same
+          // advertising processing would have consent on iOS and none here.
+          setShowTrackingConsent(true);
+        }
+      }, 800);
+    } catch (e) {
+      console.log('Tracking consent check failed', e);
+    }
   };
 
   // Sync liked names from Convex
@@ -273,6 +318,13 @@ export const AppPage = () => {
   }, [trendingNameSet]);
 
   const handleSwipeRight = async (name: BabyName) => {
+    // Rung 3 of the ladder — logEvent de-dupes STARTED_SWIPING to first swipe only.
+    logEvent(AnalyticsEvent.STARTED_SWIPING);
+    logEvent(AnalyticsEvent.NAME_LIKED, {
+      name_gender: name.gender,
+      origin: name.origin,
+      language: name.language,
+    });
     const updated = [...likedNames, name];
     setLikedNames(updated);
     saveLikedNames(updated);
@@ -335,6 +387,12 @@ export const AppPage = () => {
   };
 
   const handleSwipeLeft = (name: BabyName) => {
+    logEvent(AnalyticsEvent.STARTED_SWIPING);
+    logEvent(AnalyticsEvent.NAME_PASSED, {
+      name_gender: name.gender,
+      origin: name.origin,
+      language: name.language,
+    });
     setDislikedNames([...dislikedNames, name]);
     setCardHistory([...cardHistory, name]);
     setNames(prev => prev.filter(n => n.id !== name.id));
@@ -885,6 +943,11 @@ export const AppPage = () => {
           </View>
         </TouchableOpacity>
       </Modal>
+
+      <TrackingConsentDialog
+        visible={showTrackingConsent}
+        onDone={() => setShowTrackingConsent(false)}
+      />
 
       <OnboardingTutorial
         visible={showTutorial}

@@ -10,6 +10,7 @@ import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { LogoIcon, LogoText } from '../components/Logo';
 import { APP_STORE_URL, PLAY_STORE_URL } from '../constants/storeLinks';
+import { getTrackingConsent, setTrackingConsent } from '../utils/analytics';
 
 export const SettingsScreen = () => {
   const navigation = useNavigation<any>();
@@ -18,6 +19,7 @@ export const SettingsScreen = () => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [helpModalVisible, setHelpModalVisible] = useState(false);
   const [privacyModalVisible, setPrivacyModalVisible] = useState(false);
+  const [adTrackingEnabled, setAdTrackingEnabled] = useState(getTrackingConsent() === 'granted');
   const [termsModalVisible, setTermsModalVisible] = useState(false);
 
   const appVersion = Constants.expoConfig?.version ?? '1.0.0';
@@ -335,6 +337,27 @@ export const SettingsScreen = () => {
               />
             }
           />
+
+          {/* Withdrawing consent is promised in Section 7f of the privacy
+              policy, so it has to be actionable from inside the app. */}
+          <SettingItem
+            icon="megaphone-outline"
+            title="Ad Measurement"
+            subtitle={adTrackingEnabled
+              ? 'Helping us measure our ads'
+              : 'Off — the app works the same'}
+            rightElement={
+              <Switch
+                value={adTrackingEnabled}
+                onValueChange={async (next) => {
+                  setAdTrackingEnabled(next);
+                  await setTrackingConsent(next);
+                }}
+                trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
+                thumbColor={theme.colors.textLight}
+              />
+            }
+          />
         </View>
 
         {/* Support Section */}
@@ -445,7 +468,7 @@ export const SettingsScreen = () => {
             </TouchableOpacity>
           </View>
           <ScrollView style={{ flex: 1, padding: 16 }}>
-            <Text style={{ fontFamily: theme.typography.fontFamily, fontSize: 12, color: theme.colors.grey, marginBottom: 16 }}>Last updated: January 2026</Text>
+            <Text style={{ fontFamily: theme.typography.fontFamily, fontSize: 12, color: theme.colors.grey, marginBottom: 16 }}>Last updated: August 2026</Text>
 
             <Text style={{ fontFamily: theme.typography.fontFamilyBold, fontSize: 16, color: theme.colors.text, marginBottom: 8 }}>1. Information We Collect</Text>
             <Text style={{ fontFamily: theme.typography.fontFamily, fontSize: 14, color: theme.colors.grey, marginBottom: 16, lineHeight: 20 }}>
@@ -459,30 +482,35 @@ export const SettingsScreen = () => {
 
             <Text style={{ fontFamily: theme.typography.fontFamilyBold, fontSize: 16, color: theme.colors.text, marginBottom: 8 }}>3. Data Storage & Third-Party Services</Text>
             <Text style={{ fontFamily: theme.typography.fontFamily, fontSize: 14, color: theme.colors.grey, marginBottom: 16, lineHeight: 20 }}>
-              Your data is stored securely using Convex, our cloud backend provider. Data is stored on servers located in the United States. We do not sell your personal information to third parties.
+              Your data is stored securely using Convex, our cloud backend provider. Data is stored on servers located in the United States. We never sell your pregnancy information, due date, or the names you swipe on. We only share your name and contact details with partner brands if you switch that on yourself — it is off by default.
             </Text>
 
-            <Text style={{ fontFamily: theme.typography.fontFamilyBold, fontSize: 16, color: theme.colors.text, marginBottom: 8 }}>4. Your Rights</Text>
+            <Text style={{ fontFamily: theme.typography.fontFamilyBold, fontSize: 16, color: theme.colors.text, marginBottom: 8 }}>4. Analytics & Advertising</Text>
+            <Text style={{ fontFamily: theme.typography.fontFamily, fontSize: 14, color: theme.colors.grey, marginBottom: 16, lineHeight: 20 }}>
+              We use Google Analytics to understand how the app is used, and we advertise Bump Match on Meta (Facebook and Instagram). To measure whether those adverts work, the app tells Meta when you install it, create an account, start swiping, connect a partner, or reach a match, along with a scrambled version of your email and name.{'\n\n'}We never send Google or Meta your pregnancy stage, due date, or the names you swipe on.{'\n\n'}On iPhone we ask your permission before using your device's advertising identifier. If you say no, the app works exactly the same. You can change your mind anytime in iOS Settings, or on Android under Settings → Google → Ads. To be excluded from our advertising audiences entirely, email ai@sherbetagency.com.
+            </Text>
+
+            <Text style={{ fontFamily: theme.typography.fontFamilyBold, fontSize: 16, color: theme.colors.text, marginBottom: 8 }}>5. Your Rights</Text>
             <Text style={{ fontFamily: theme.typography.fontFamily, fontSize: 14, color: theme.colors.grey, marginBottom: 16, lineHeight: 20 }}>
               You have the right to:{'\n'}- Access your personal data{'\n'}- Request deletion of your data{'\n'}- Export your data{'\n'}- Opt out of communications{'\n\n'}To exercise any of these rights, contact us at ai@sherbetagency.com.
             </Text>
 
-            <Text style={{ fontFamily: theme.typography.fontFamilyBold, fontSize: 16, color: theme.colors.text, marginBottom: 8 }}>5. Data Security</Text>
+            <Text style={{ fontFamily: theme.typography.fontFamilyBold, fontSize: 16, color: theme.colors.text, marginBottom: 8 }}>6. Data Security</Text>
             <Text style={{ fontFamily: theme.typography.fontFamily, fontSize: 14, color: theme.colors.grey, marginBottom: 16, lineHeight: 20 }}>
               We implement industry-standard security measures to protect your data, including encryption in transit and at rest. Passwords are hashed and never stored in plain text.
             </Text>
 
-            <Text style={{ fontFamily: theme.typography.fontFamilyBold, fontSize: 16, color: theme.colors.text, marginBottom: 8 }}>6. Children's Privacy</Text>
+            <Text style={{ fontFamily: theme.typography.fontFamilyBold, fontSize: 16, color: theme.colors.text, marginBottom: 8 }}>7. Children's Privacy</Text>
             <Text style={{ fontFamily: theme.typography.fontFamily, fontSize: 14, color: theme.colors.grey, marginBottom: 16, lineHeight: 20 }}>
               BumpMatch is intended for users aged 18 and older. We do not knowingly collect data from children under 13.
             </Text>
 
-            <Text style={{ fontFamily: theme.typography.fontFamilyBold, fontSize: 16, color: theme.colors.text, marginBottom: 8 }}>7. Changes to This Policy</Text>
+            <Text style={{ fontFamily: theme.typography.fontFamilyBold, fontSize: 16, color: theme.colors.text, marginBottom: 8 }}>8. Changes to This Policy</Text>
             <Text style={{ fontFamily: theme.typography.fontFamily, fontSize: 14, color: theme.colors.grey, marginBottom: 16, lineHeight: 20 }}>
               We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new policy within the app.
             </Text>
 
-            <Text style={{ fontFamily: theme.typography.fontFamilyBold, fontSize: 16, color: theme.colors.text, marginBottom: 8 }}>8. Contact Us</Text>
+            <Text style={{ fontFamily: theme.typography.fontFamilyBold, fontSize: 16, color: theme.colors.text, marginBottom: 8 }}>9. Contact Us</Text>
             <Text style={{ fontFamily: theme.typography.fontFamily, fontSize: 14, color: theme.colors.grey, marginBottom: 40, lineHeight: 20 }}>
               If you have questions about this Privacy Policy, contact us at ai@sherbetagency.com.
             </Text>

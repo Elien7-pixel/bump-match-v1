@@ -1,0 +1,103 @@
+<!--
+  Bump Match — website tracking for bumpmatch.app (Framer)
+
+  WHERE THIS GOES
+    Framer → Site Settings → General → Custom Code → "Start of <head> tag"
+    Then Publish. Framer only injects custom code on the PUBLISHED site —
+    it will not run in the editor or in preview, so always test on the live URL.
+
+  TWO HALVES, AND THEY SHIP SEPARATELY
+
+  PART 1 (GA4) is ready to paste as-is. The Measurement ID below is real —
+  property "bump-match", web stream 15490768723, created 24 Aug 2026.
+
+  PART 2 (Meta Pixel) is commented out. It needs a Pixel ID, which needs a
+  Business Manager, which does not exist yet. Leaving it commented is deliberate:
+  calling fbq('init') with a placeholder ID throws on every page load.
+  When you have the ID, uncomment Part 2 and replace YOUR_PIXEL_ID.
+
+  PART 3 (store links) is safe to paste now. Its fbq call is guarded, so it does
+  nothing until Part 2 is live, then starts reporting with no further edit.
+
+  WHY BOTH EVENTUALLY
+    GA4 tells you how the site performs. The Pixel is what lets Meta retarget
+    site visitors and build website-based lookalikes — GA4 cannot do that.
+-->
+
+<!-- ==================== PART 1 — GA4 (NOT USED ON FRAMER) ==============
+     Framer has a native Google Analytics field:
+       Site Settings → General → Google Analytics → G-CHQEBXS4S3
+     That is what is actually in use. Do NOT also add the gtag script below to
+     a Framer site — two gtag loads double-count every pageview.
+     Kept here only as the canonical tag for any non-Framer host.
+     ==================================================================== -->
+<!-- ============================ PART 1 — GA4 ============================ -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-CHQEBXS4S3"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-CHQEBXS4S3');
+</script>
+
+<!-- ====================== PART 2 — Meta Pixel ==========================
+     COMMENTED OUT until a Pixel ID exists. Uncomment and swap YOUR_PIXEL_ID.
+
+<script>
+  !function(f,b,e,v,n,t,s)
+  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];
+  s.parentNode.insertBefore(t,s)}(window,document,'script',
+  'https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', 'YOUR_PIXEL_ID');
+  fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+  src="https://www.facebook.com/tr?id=YOUR_PIXEL_ID&ev=PageView&noscript=1"/></noscript>
+
+====================== end of commented Part 2 ====================== -->
+
+<!-- ==================== PART 3 — store-link tracking ====================
+
+  Store-link tracking. Safe to paste now: the fbq call is guarded, so it does
+  nothing until Part 2 is live, then starts reporting with no further edit.
+
+  The only conversion this site has is a tap through to the App Store or Play
+  Store, so it is worth measuring properly rather than relying on GA4's generic
+  outbound-click event.
+
+  Delegated from document so it survives Framer's client-side navigation —
+  a listener bound to the buttons directly would go stale on the first route
+  change. Uses 'pointerdown' rather than 'click' because the browser often
+  tears the page down before a click handler on an outbound link can fire.
+-->
+<script>
+  (function () {
+    document.addEventListener('pointerdown', function (event) {
+      var link = event.target && event.target.closest && event.target.closest('a[href]');
+      if (!link) return;
+
+      var href = link.href || '';
+      var store =
+        href.indexOf('apps.apple.com') > -1 ? 'app_store' :
+        href.indexOf('play.google.com') > -1 ? 'play_store' : null;
+      if (!store) return;
+
+      if (typeof gtag === 'function') {
+        gtag('event', 'store_link_tapped', {
+          store: store,
+          link_url: href,
+          transport_type: 'beacon'
+        });
+      }
+      if (typeof fbq === 'function') {
+        // Custom rather than a standard event: this is intent to install, not a
+        // completed install, and Meta cannot confirm the install from the web.
+        fbq('trackCustom', 'StoreLinkClick', { store: store });
+      }
+    }, true);
+  })();
+</script>

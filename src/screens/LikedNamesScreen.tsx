@@ -27,6 +27,7 @@ import { useAuth } from '../context/AuthContext';
 import { useAccountSurname } from '../hooks/useAccountSurname';
 import { ShareNameCard } from '../components/ShareNameCard';
 import { buildShareCaption } from '../constants/storeLinks';
+import { AnalyticsEvent, logEvent } from '../utils/analytics';
 
 interface LikedNameWithFavorite extends BabyName {
   isFavorite?: boolean;
@@ -101,6 +102,15 @@ export const LikedNamesScreen = () => {
     isSharingRef.current = true;
     const fullName = surname ? `${item.name} ${surname}` : item.name;
     const caption = buildShareCaption(fullName, item.meaning, item.origin);
+
+    // Logged on intent rather than completion: the Android path hands off to a
+    // system sheet that reports nothing back, so there is no reliable
+    // "actually sent" signal to wait for on both platforms.
+    logEvent(AnalyticsEvent.SHARE_NAME_CARD, {
+      name_gender: item.gender,
+      origin: item.origin,
+      language: item.language,
+    });
 
     try {
       // Mount the hidden card and wait for it to lay out and paint.

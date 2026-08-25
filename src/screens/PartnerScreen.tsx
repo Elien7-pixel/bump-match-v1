@@ -28,6 +28,7 @@ import { MatchRevealAnimation } from '../components/MatchRevealAnimation';
 
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
+import { AnalyticsEvent, logEvent } from '../utils/analytics';
 
 export const PartnerScreen = () => {
     const navigation = useNavigation();
@@ -125,6 +126,11 @@ export const PartnerScreen = () => {
                 if (newNames.length > 0) {
                     setNewMatchNames(newNames);
                     setShowMatchReveal(true);
+                    // Rung 5 — the payoff moment, and the highest-intent Meta signal.
+                    logEvent(AnalyticsEvent.NAMES_MATCHED, {
+                        new_matches: newNames.length,
+                        total_matches: matchedNames.length,
+                    });
 
                     // Mark all current matches as seen
                     const allNames = matchedNames.map((m: any) => m.name);
@@ -441,10 +447,16 @@ export const PartnerScreen = () => {
 
     const handleShare = async () => {
         try {
-            await Share.share({
+            const result = await Share.share({
                 message: `Join me on BumpMatch to find a name for Baby ${user?.surname || 'ours'}! Use code: ${inviteCode}\n\n${inviteLink}`,
                 url: inviteLink,
             });
+            if (result.action === Share.sharedAction) {
+                logEvent(AnalyticsEvent.INVITE_SENT, {
+                    source: 'partner_screen',
+                    channel: result.activityType ?? 'unknown',
+                });
+            }
         } catch (error) {
             console.log(error);
         }
@@ -470,6 +482,7 @@ export const PartnerScreen = () => {
             });
 
             if (result.success) {
+                logEvent(AnalyticsEvent.PARTNER_CONNECTED, { role: 'accepted_invite' });
                 Alert.alert('Connected!', `You're now connected with ${result.partner.firstName}!`);
                 setShowJoinInput(false);
                 setJoinCode('');

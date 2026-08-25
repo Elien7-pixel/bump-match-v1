@@ -6,6 +6,7 @@ import { Button } from './Button';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { useNavigation } from '@react-navigation/native';
+import { AnalyticsEvent, logEvent } from '../utils/analytics';
 
 interface PartnerInviteDialogProps {
   visible: boolean;
@@ -33,10 +34,16 @@ export const PartnerInviteDialog: React.FC<PartnerInviteDialogProps> = ({ visibl
 
   const handleShare = async () => {
     try {
-      await Share.share({
+      const result = await Share.share({
         message: inviteMessage,
         url: inviteLink,
       });
+      if (result.action === Share.sharedAction) {
+        logEvent(AnalyticsEvent.INVITE_SENT, {
+          source: 'invite_dialog',
+          channel: result.activityType ?? 'unknown',
+        });
+      }
     } catch (error) {
       console.log(error);
     }
@@ -46,6 +53,10 @@ export const PartnerInviteDialog: React.FC<PartnerInviteDialogProps> = ({ visibl
     const whatsappUrl = `whatsapp://send?text=${encodeURIComponent(inviteMessage)}`;
     try {
       const canOpen = await Linking.canOpenURL(whatsappUrl);
+      logEvent(AnalyticsEvent.INVITE_SENT, {
+        source: 'invite_dialog',
+        channel: 'whatsapp',
+      });
       if (canOpen) {
         await Linking.openURL(whatsappUrl);
       } else {

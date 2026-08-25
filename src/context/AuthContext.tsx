@@ -4,6 +4,14 @@ import { useMutation, useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import { Id } from '../../convex/_generated/dataModel';
 import { cleanErrorMessage } from '../utils/errors';
+import {
+  AnalyticsEvent,
+  identifyUser,
+  logEvent,
+  resetMilestones,
+  resetUser,
+  setMetaAdvancedMatching,
+} from '../utils/analytics';
 
 const AUTH_TOKEN_KEY = 'bumpmatch_auth_token';
 
@@ -52,6 +60,20 @@ interface SignUpData {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+/** Bucket a raw age into a band — GA4 user properties must not carry raw PII. */
+const toAgeBand = (age?: string): string => {
+  const n = parseInt(String(age ?? ''), 10);
+  if (Number.isNaN(n)) return 'unknown';
+  if (n < 25) return '18-24';
+  if (n < 35) return '25-34';
+  if (n < 45) return '35-44';
+  return '45+';
+};
+
+/** The sign-up role doubles as Meta's gender signal; 'partner' stays blank. */
+const toMetaGender = (gender?: string): string | undefined =>
+  gender === 'mom' ? 'f' : gender === 'dad' ? 'm' : undefined;
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [token, setToken] = useState<string | null>(null);
@@ -119,6 +141,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         partnerId: verifyResult.partnerId,
       });
 
+      // Rung 4 fires on BOTH sides of the link. PartnerScreen only sees the
+      // person who typed the code; the inviter finds out here, when the
+      // verifyToken subscription first reports a partnerId.
+      if (verifyResult.partnerId) {
+        logEvent(AnalyticsEvent.PARTNER_CONNECTED, { role: 'linked' });
+      }
+
       setCachedSurname(verifyResult.surname || '');
 
       // Refresh the offline profile snapshot. Screens that display the account
@@ -162,6 +191,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }));
       await AsyncStorage.setItem('bumpmatch_onboarding_completed', 'true');
 
+      // Account created — rung 2 of the acquisition ladder.
+      await identifyUser(String(result.userId), {
+        status: data.status,
+        gender: data.gender,
+        ageBand: toAgeBand(data.age),
+        hasPartner: false,
+        country: data.country,
+      });
+      setMetaAdvancedMatching({
+        email: data.email,
+        firstName: data.firstName,
+        lastName: data.surname,
+        gender: toMetaGender(data.gender),
+        country: data.country,
+      });
+      logEvent(AnalyticsEvent.SIGN_UP, {
+        method: 'email',
+        status: data.status,
+        role: data.gender,
+        expecting: data.expecting,
+        age_band: toAgeBand(data.age),
+        country: data.country,
+      });
+      logEvent(AnalyticsEvent.ONBOARDING_COMPLETE, { status: data.status });
+
       return { success: true };
     } catch (e: any) {
       console.error('Sign up error:', e);
@@ -176,6 +230,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await AsyncStorage.setItem(AUTH_TOKEN_KEY, result.token);
       setToken(result.token);
       await AsyncStorage.setItem('bumpmatch_onboarding_completed', 'true');
+
+      await identifyUser(String(result.userId));
+      setMetaAdvancedMatching({ email });
+      logEvent(AnalyticsEvent.LOGIN, { method: 'email' });
 
       return { success: true };
     } catch (e: any) {
@@ -194,6 +252,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       await AsyncStorage.removeItem(AUTH_TOKEN_KEY);
       await AsyncStorage.removeItem('bumpmatch_onboarding_completed');
+      await resetUser();
+      await resetMilestones();
       setToken(null);
       setUser(null);
     }

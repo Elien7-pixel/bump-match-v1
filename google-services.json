@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "223598917653",
-    "project_id": "bump-match-26e15",
-    "storage_bucket": "bump-match-26e15.firebasestorage.app"
+    "project_number": "520738666572",
+    "project_id": "bump-match",
+    "storage_bucket": "bump-match.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:223598917653:android:a514866cbe57282330761c",
+        "mobilesdk_app_id": "1:520738666572:android:8338c874c2968844649ce9",
         "android_client_info": {
           "package_name": "com.orbitai.bumpmatch"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyCCtLEbk5Zz0DhGmFrfolnJj9jii442ues"
+          "current_key": "AIzaSyB_vD7EsTf99U6OGwQHSbnf_gf4J7rVcEw"
         }
       ],
       "services": {

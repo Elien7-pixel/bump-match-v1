@@ -20,6 +20,7 @@ import { FaqScreen } from './src/screens/FaqScreen';
 import { AppTokens } from './src/theme/designTokens';
 import { ThemeProvider } from './src/context/ThemeContext';
 import { AuthProvider } from './src/context/AuthContext';
+import { initAnalytics, logScreen } from './src/utils/analytics';
 let usePushNotifications: any;
 let getNotificationData: any;
 let getInitialNotificationScreen: any;
@@ -67,6 +68,7 @@ function AppContent() {
   const navigationRef = useRef<NavigationContainerRef<any>>(null);
   const navReadyRef = useRef(false);
   const pendingScreenRef = useRef<string | null>(null);
+  const routeNameRef = useRef<string | undefined>(undefined);
 
   // Initialize push notifications
   const { notification } = usePushNotifications();
@@ -101,6 +103,12 @@ function AppContent() {
     checkOnboarding();
   }, []);
 
+  // Boot Firebase Analytics + the Meta SDK once, as early as possible so
+  // first_open / fb_mobile_activate_app are attributed to this session.
+  useEffect(() => {
+    initAnalytics();
+  }, []);
+
   const checkOnboarding = async () => {
     try {
       const completed = await AsyncStorage.getItem('bumpmatch_onboarding_completed');
@@ -130,10 +138,18 @@ function AppContent() {
       linking={linking}
       onReady={() => {
         navReadyRef.current = true;
+        routeNameRef.current = navigationRef.current?.getCurrentRoute()?.name;
+        if (routeNameRef.current) logScreen(routeNameRef.current);
         if (pendingScreenRef.current) {
           navigationRef.current?.navigate(pendingScreenRef.current);
           pendingScreenRef.current = null;
         }
+      }}
+      onStateChange={() => {
+        const previous = routeNameRef.current;
+        const current = navigationRef.current?.getCurrentRoute()?.name;
+        if (current && previous !== current) logScreen(current);
+        routeNameRef.current = current;
       }}
     >
       <Stack.Navigator
