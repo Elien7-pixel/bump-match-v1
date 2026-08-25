@@ -23,9 +23,30 @@ let meta: any = null;        // react-native-fbsdk-next
 let att: any = null;         // expo-tracking-transparency
 
 try {
-  fb = require('@react-native-firebase/analytics');
+  // The modular API is NOT on the package root in v23 — the root exports the
+  // legacy namespaced surface. Requiring the root leaves getAnalytics undefined,
+  // and because every call here is wrapped in try/catch that fails *silently*:
+  // the app would ship reporting nothing at all. Import the subpath explicitly.
+  fb = require('@react-native-firebase/analytics/lib/modular');
 } catch (e) {
   console.log('[analytics] Firebase Analytics unavailable:', (e as Error)?.message);
+}
+
+// Fail loudly in development if the surface is not what this file expects. A
+// version bump that moves these functions would otherwise look like "analytics
+// is quiet today" rather than a break.
+if (__DEV__ && fb) {
+  const required = [
+    'getAnalytics', 'logEvent', 'logScreenView',
+    'setUserId', 'setUserProperties', 'setAnalyticsCollectionEnabled', 'setConsent',
+  ];
+  const missing = required.filter((fn) => typeof fb[fn] !== 'function');
+  if (missing.length) {
+    console.error(
+      `[analytics] Firebase modular API is missing: ${missing.join(', ')}. ` +
+      'Analytics will silently no-op. Check the @react-native-firebase/analytics version.',
+    );
+  }
 }
 
 try {
