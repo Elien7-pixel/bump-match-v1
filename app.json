@@ -11,7 +11,7 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.sherbetagency.bumpmatch",
       "icon": "./assets/icon-ios.png",
-      "buildNumber": "14",
+      "buildNumber": "15",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSUserTrackingUsageDescription": "Allow tracking so we can see which ads brought you to Bump Match and reach more parents-to-be like you. We never sell your data or share your baby names."
