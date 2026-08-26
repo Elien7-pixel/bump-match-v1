@@ -124,6 +124,24 @@ Shared with Meta for **advertising or marketing**:
 **Not shared with anyone:** health info, race and ethnicity, approximate
 location, user-generated content.
 
+### Advertising ID declaration
+
+Play asks separately whether the app uses the advertising ID. **Yes.**
+
+Answer yes even though it is consent-gated — the question is whether the app
+uses it at all. `com.google.android.gms.permission.AD_ID` is declared in the
+merged manifest (verified in the shipped AAB), and answering No while that
+permission is present contradicts the binary.
+
+- Purpose: **Advertising or marketing**
+- Shared with: **Meta**
+- Required or optional: **Optional** — collected only after the user accepts the
+  tracking prompt
+
+Worth knowing: that permission is what makes the ID work at all on Android 13+.
+Without it the OS returns all zeros, Meta receives nothing usable, and audience
+match rates fail silently with no error surfaced anywhere.
+
 ### Security practices
 
 - Data is encrypted in transit — **yes**
