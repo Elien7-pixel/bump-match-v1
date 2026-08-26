@@ -8,6 +8,10 @@ review, not at build.
 **The headline change:** this release adds advertising tracking. Both stores must
 now declare it. Previous submissions did not.
 
+**Firebase Analytics is NOT in the shipped build** — it could not be made to
+build on Expo SDK 54. Meta is the only third-party recipient. Anything below
+that mentions Google applies only if Firebase is reinstated later.
+
 ---
 
 ## What the app collects
@@ -58,7 +62,9 @@ advertising — Meta advanced matching and custom audiences are exactly that.
 - **Other Data** → age, role, expected baby gender
 
 ### Data Not Linked to You
-- **Diagnostics** → Crash Data, Performance Data
+Nothing. Crash and performance data were Firebase's, and Firebase is not in the
+shipped build — there is no crash reporting in the app at all, so leave the
+Diagnostics category untouched.
 
 ### Also required
 `NSUserTrackingUsageDescription` is already in `app.json` — App Review rejects
@@ -68,49 +74,70 @@ ATT builds without it.
 
 ## Google Play — Data safety
 
+Meta is the **only** third party the app sends data to. Firebase Analytics was
+removed before release, so Google receives nothing from the app.
+
 ### Collected
+
 - **Personal info** → Name, Email address, **Race and ethnicity** (heritage),
   Other info (age, role, expected baby gender)
 - **Health and fitness** → Health info (pregnancy status, due date)
-- **Location** → Approximate location
+- **Location** → Approximate location (country/province)
 - **App activity** → App interactions, Other user-generated content
 - **Device or other IDs** → Device or other IDs
-- **App info and performance** → Crash logs, Diagnostics
+
+### NOT collected — do not tick
+
+- **App info and performance** (crash logs, diagnostics). There is no crash
+  reporting in the app. Firebase was the only source and it is gone; nothing
+  replaced it. Declaring collection you do not perform is as wrong as omitting
+  collection you do.
+
+### Processed ephemerally: NO, for every type
+
+Play defines ephemeral as accessed in memory only and retained no longer than
+needed to service the request in real time. Every field above is persisted —
+account data in Convex, Meta events on Meta's servers. Answer **No** throughout.
+
+### Required or optional
+
+| Data | Which | Why |
+|---|---|---|
+| Name, Email address | **Required** | Needed to create an account |
+| Race and ethnicity | *Optional* | Cultural heritage is a skippable profile field |
+| Health info | *Optional* | Pregnancy status and due date can be left blank |
+| Approximate location | *Optional* | Country/province are optional profile fields |
+| App interactions | **Required** | Meta events fire for all users |
+| Other user-generated content | *Optional* | Feedback and name submissions are voluntary |
+| Device or other IDs | *Optional* | The advertising ID needs consent; the push token needs notifications enabled |
 
 ### Shared with third parties
 
-Play defines "shared" as transfer to a third party and **excludes service
-providers processing on your behalf**. That distinction decides two entries:
-
-- **Meta — counts as shared.** It uses the data for its own advertising
-  purposes, so it acts as an independent controller, not a processor.
-- **Google Analytics — does not count as shared.** Google processes it on your
-  behalf. Declare the data as collected, not shared.
+Play excludes service providers processing on your behalf. Meta is not one — it
+uses the data for its own advertising purposes, so it counts as sharing.
 
 Shared with Meta for **advertising or marketing**:
-- Name, Email address (hashed)
+- Name, Email address (hashed, via advanced matching)
 - Device or other IDs
 - App interactions
 
 **Not shared with anyone:** health info, race and ethnicity, approximate
-location, user content, crash logs.
-
-Mark heritage, health info and approximate location as **optional** — users can
-genuinely skip them. Name and email are required for an account.
+location, user-generated content.
 
 ### Security practices
-- Data is encrypted in transit — **yes**
-- Users can request data deletion — **yes** (Section 10 of the privacy policy)
-- Committed to Play Families Policy — **no** (app is 18+)
 
----
+- Data is encrypted in transit — **yes**
+- Users can request data deletion — **yes** (privacy policy Section 10, and
+  in-app account deletion)
+- Committed to Play Families Policy — **no** (18+)
 
 ## Watch-outs
 
 1. **Play prohibits sharing sensitive user data for advertising.** You are
-   compliant only because pregnancy and heritage are stripped in code. If anyone
-   flips `SEND_SENSITIVE_USER_PROPERTIES` to `true` without also revisiting these
-   declarations, the Play listing becomes false.
+   compliant only because pregnancy and heritage are stripped in code before any
+   Meta call. If anyone removes `SENSITIVE_PARAM_KEYS` or re-enables
+   `SEND_SENSITIVE_USER_PROPERTIES` without revisiting these declarations, the
+   Play listing becomes false.
 2. **Apple treats "tracking" as a yes/no.** Once ATT ships, answering "no" to
    tracking anywhere in the questionnaire contradicts the prompt in the binary,
    and reviewers do check.
