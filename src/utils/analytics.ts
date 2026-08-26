@@ -1,9 +1,23 @@
 /**
  * Unified analytics for Bump Match.
  *
- * One call site, two destinations:
- *   - Firebase Analytics  -> Google Analytics 4 (product reporting, funnels, retention)
- *   - Meta App Events     -> Events Manager -> Custom Audiences -> Lookalikes
+ * Currently ONE destination:
+ *   - Meta App Events -> Events Manager -> Custom Audiences -> Lookalikes
+ *
+ * Firebase Analytics (the GA4 app streams) is deliberately NOT installed.
+ * @react-native-firebase v26 fails the iOS build on Expo SDK 54 / RN 0.81 with a
+ * TurboModule codegen mismatch, and v23 — the last version contemporary with
+ * this RN — needs static frameworks, which then breaks React-Core's non-modular
+ * headers. Meta is what the lookalike audiences actually run on, so the app
+ * ships with Meta alone rather than blocking on Firebase.
+ *
+ * The Firebase code paths below are kept intact and inert. Reinstating them
+ * means installing @react-native-firebase/app + /analytics and re-adding the
+ * plugin — best attempted on Expo SDK 55+, where v26 is a supported pairing.
+ *
+ * WHAT IS LOST while Firebase is absent: GA4 app reporting — screen views, user
+ * properties, and the app-side funnel. GA4 *web* (property bump-match, stream
+ * 15490768723) is unaffected and still collecting. Every Meta event still fires.
  *
  * Both SDKs are optional at runtime. In Expo Go, in unit tests, or in any build
  * where the native modules are missing, every function here degrades to a no-op
@@ -23,13 +37,17 @@ let meta: any = null;        // react-native-fbsdk-next
 let att: any = null;         // expo-tracking-transparency
 
 try {
-  // The modular API is NOT on the package root in v23 — the root exports the
-  // legacy namespaced surface. Requiring the root leaves getAnalytics undefined,
-  // and because every call here is wrapped in try/catch that fails *silently*:
-  // the app would ship reporting nothing at all. Import the subpath explicitly.
+  // Expected to throw right now: the package is intentionally not installed.
+  // Kept so reinstating Firebase is an install rather than a rewrite.
+  //
+  // NOTE for whoever re-adds it: in v23 the modular API is NOT on the package
+  // root — the root exports the legacy namespaced surface, so requiring it
+  // leaves getAnalytics undefined. Because every call here is wrapped in
+  // try/catch, that fails *silently* and the app ships reporting nothing while
+  // looking healthy. Import the subpath, and keep the assertion below.
   fb = require('@react-native-firebase/analytics/lib/modular');
-} catch (e) {
-  console.log('[analytics] Firebase Analytics unavailable:', (e as Error)?.message);
+} catch {
+  // Not an error today. Firebase is absent by design — see the file header.
 }
 
 // Fail loudly in development if the surface is not what this file expects. A

@@ -15,8 +15,7 @@
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSUserTrackingUsageDescription": "Allow tracking so we can see which ads brought you to Bump Match and reach more parents-to-be like you. We never sell your data or share your baby names."
-      },
-      "googleServicesFile": "./GoogleService-Info.plist"
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -58,7 +57,6 @@
           "backgroundColor": "#FEFAF6"
         }
       ],
-      "@react-native-firebase/app",
       [
         "react-native-fbsdk-next",
         {
@@ -73,20 +71,11 @@
         }
       ],
       [
-        "expo-build-properties",
-        {
-          "ios": {
-            "useFrameworks": "static"
-          }
-        }
-      ],
-      [
         "expo-tracking-transparency",
         {
           "userTrackingPermission": "Allow tracking so we can see which ads brought you to Bump Match and reach more parents-to-be like you. We never sell your data or share your baby names."
         }
-      ],
-      "./plugins/withNonModularIncludes"
+      ]
     ]
   }
 }

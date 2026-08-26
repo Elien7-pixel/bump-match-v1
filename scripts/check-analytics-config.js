@@ -39,39 +39,14 @@ if (!androidFile || !fs.existsSync(path.join(root, androidFile))) {
     );
   } else {
     androidProject = gs.project_info?.project_id;
-    ok.push(`Android Firebase config OK (${app.android.package}, project ${androidProject})`);
+    // Still required even with Firebase Analytics removed: expo-notifications
+    // needs it for FCM push on Android.
+    ok.push(`Android FCM config OK (${app.android.package}, project ${androidProject})`);
   }
 }
 
-// 2. iOS Firebase config
-const iosFile = app.ios?.googleServicesFile;
-if (!iosFile || !fs.existsSync(path.join(root, iosFile))) {
-  problems.push(
-    `iOS: ${iosFile || 'GoogleService-Info.plist'} is missing.\n` +
-    `   Firebase console > Add app > iOS, bundle ID "${app.ios?.bundleIdentifier}", then download GoogleService-Info.plist to the project root.`,
-  );
-} else {
-  const plist = fs.readFileSync(path.join(root, iosFile), 'utf8');
-  if (!plist.includes(app.ios?.bundleIdentifier)) {
-    problems.push(
-      `iOS: GoogleService-Info.plist does not mention bundle ID "${app.ios?.bundleIdentifier}" — wrong app downloaded?`,
-    );
-  } else {
-    iosProject = (plist.match(/<key>PROJECT_ID<\/key>\s*<string>([^<]+)<\/string>/) || [])[1];
-    ok.push(`iOS Firebase config OK (${app.ios.bundleIdentifier}, project ${iosProject})`);
-  }
-}
-
-// 2b. Both configs must name the same Firebase project.
-if (androidProject && iosProject && androidProject !== iosProject) {
-  problems.push(
-    `Split projects: Android reports to "${androidProject}" but iOS reports to "${iosProject}".\n` +
-    '   The two app streams would land in different GA4 properties and no funnel would span them.\n' +
-    '   Re-download both config files from the same Firebase project.',
-  );
-} else if (androidProject && iosProject) {
-  ok.push(`Both platforms report to the same project (${androidProject})`);
-}
+// 2. iOS Firebase config — N/A while Firebase is Meta-only.
+// iOS push runs on APNs, not FCM, so nothing on iOS reads a Firebase config.
 
 // 3. Meta SDK keys
 const fbPlugin = (app.plugins || []).find(
