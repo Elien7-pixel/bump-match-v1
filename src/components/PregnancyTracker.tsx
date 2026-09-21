@@ -1,13 +1,21 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../context/ThemeContext';
 import { toPickerDate, isMonthOnly, monthBounds } from '../utils/date';
 
+// Holds the milestone the user last closed the banner on. Keyed to the
+// milestone rather than a plain flag so the banner comes back when the baby
+// reaches the next size — closing "sesame seed" shouldn't hide "blueberry".
+const DISMISSED_KEY = 'bumpmatch_tracker_dismissed';
+
 interface PregnancyTrackerProps {
   /** Month-only "YYYY-MM", or a legacy full "YYYY-MM-DD" due date. */
   dueDate: string;
+  /** One-line version, for when the swipe deck below is starved of height. */
+  compact?: boolean;
 }
 
 // Week-by-week fruit/veggie size comparison
@@ -115,8 +123,16 @@ function getClosestMilestone(week: number): { fruit: string; emoji: string; size
   return MILESTONES[4];
 }
 
-export const PregnancyTracker: React.FC<PregnancyTrackerProps> = ({ dueDate }) => {
+export const PregnancyTracker: React.FC<PregnancyTrackerProps> = ({ dueDate, compact }) => {
   const { theme, isDark } = useTheme();
+  // undefined = not read from storage yet. Render nothing until it is, so a
+  // dismissed banner doesn't flash up on every launch.
+  const [dismissedFor, setDismissedFor] = useState<string | null | undefined>(undefined);
+  useEffect(() => {
+    AsyncStorage.getItem(DISMISSED_KEY)
+      .then((value) => setDismissedFor(value))
+      .catch(() => setDismissedFor(null));
+  }, []);
 
   const gestation = getGestation(dueDate);
   if (!gestation) return null;
@@ -125,6 +141,23 @@ export const PregnancyTracker: React.FC<PregnancyTrackerProps> = ({ dueDate }) =
   const milestone = getClosestMilestone(mid);
 
   if (mid < 4 || mid > 42) return null;
+  if (dismissedFor === undefined || dismissedFor === milestone.fruit) return null;
+
+  const handleClose = () => {
+    setDismissedFor(milestone.fruit);
+    AsyncStorage.setItem(DISMISSED_KEY, milestone.fruit).catch(() => {});
+  };
+  const closeButton = (
+    <TouchableOpacity
+      onPress={handleClose}
+      hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+      accessibilityRole="button"
+      accessibilityLabel="Close baby size banner"
+      style={compact ? styles.closeCompact : styles.close}
+    >
+      <Ionicons name="close" size={18} color={theme.colors.grey} />
+    </TouchableOpacity>
+  );
 
   // "Weeks 23–25" when the due date is only known to the month, "Week 24" when
   // it is an exact date (or when the range happens to collapse to one week).
@@ -137,6 +170,26 @@ export const PregnancyTracker: React.FC<PregnancyTrackerProps> = ({ dueDate }) =
         : `${weeksLeftHigh} ${weeksLeftHigh === 1 ? 'week' : 'weeks'} to go`;
 
   const progressPercent = Math.max(0, Math.min(100, Math.round((mid / 40) * 100)));
+
+  if (compact) {
+    return (
+      <View style={[styles.container, styles.containerCompact, {
+        backgroundColor: isDark ? theme.colors.card : theme.brand.yellowSoft,
+        borderColor: isDark ? theme.colors.border : theme.brand.yellow,
+        shadowColor: theme.colors.shadow,
+      }]}>
+        <Text style={styles.emojiCompact} maxFontSizeMultiplier={1.2}>{milestone.emoji}</Text>
+        <Text
+          style={[styles.title, styles.titleCompact, { color: theme.colors.text, fontFamily: theme.typography.fontFamilySemiBold }]}
+          numberOfLines={1}
+          maxFontSizeMultiplier={1.2}
+        >
+          {weekLabel} · size of a {milestone.fruit.toLowerCase()} · {weeksLeftLabel}
+        </Text>
+        {closeButton}
+      </View>
+    );
+  }
 
   return (
     <View style={[styles.container, {
@@ -163,6 +216,7 @@ export const PregnancyTracker: React.FC<PregnancyTrackerProps> = ({ dueDate }) =
           />
         </View>
       </View>
+      {closeButton}
     </View>
   );
 };
@@ -181,9 +235,28 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 2,
   },
+  containerCompact: {
+    paddingVertical: 6,
+  },
   emoji: {
     fontSize: 32,
     marginRight: 12,
+  },
+  // Top-right of the full banner, clear of the title's first line.
+  close: {
+    alignSelf: 'flex-start',
+    marginLeft: 8,
+  },
+  closeCompact: {
+    marginLeft: 8,
+  },
+  emojiCompact: {
+    fontSize: 16,
+    marginRight: 8,
+  },
+  titleCompact: {
+    flex: 1,
+    marginBottom: 0,
   },
   textContainer: {
     flex: 1,

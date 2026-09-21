@@ -49,6 +49,14 @@ export const NameCard: React.FC<NameCardProps> = ({ data, onFavorite, isFavorite
   const sp = (n: number) => Math.round(n * s);
   const NAME_FONT = Math.max(24, Math.round(44 * s));
   const NAME_LINE = Math.round(NAME_FONT * 1.18);
+  // Even at the 0.6 floor the full layout needs ~310dp. Below that (pregnancy
+  // banner + large OS font on a mid-size phone left ~210dp) the centred content
+  // overflowed both ways and the clip ate the name — the one thing the card is
+  // for. So when it's this tight, shed what's expendable instead: the swipe
+  // hints (the buttons below say the same), the reserved second title line and
+  // the big gaps, and pin content to the top so any clipping lands on the
+  // origin, never the name.
+  const compact = CARD_HEIGHT < 320;
 
   const getGradientColors = () => {
     if (data.gender === 'boy') return [theme.colors.boyBlue, theme.brand.tealDeep] as const;
@@ -74,7 +82,7 @@ export const NameCard: React.FC<NameCardProps> = ({ data, onFavorite, isFavorite
     card: {
       flex: 1,
       borderRadius: theme.borderRadius.xl,
-      padding: sp(theme.spacing.l),
+      padding: compact ? sp(theme.spacing.m) : sp(theme.spacing.l),
       justifyContent: 'space-around',
       // Safety net: whatever the font scale, content is clipped to the card
       // rather than painting over the filter chips sitting above it.
@@ -83,15 +91,15 @@ export const NameCard: React.FC<NameCardProps> = ({ data, onFavorite, isFavorite
     content: {
       flex: 1,
       alignItems: 'center',
-      justifyContent: 'center',
-      paddingVertical: sp(theme.spacing.m),
+      justifyContent: compact ? 'flex-start' : 'center',
+      paddingVertical: compact ? 0 : sp(theme.spacing.m),
     },
     // Two-line box: a long "FirstName Surname" wraps (surname on its own line)
     // instead of tail-ellipsizing. minHeight (not height) reserves the space so
     // the card layout stays identical for one- and two-line titles, while still
     // letting the box grow rather than spilling its text outside the card.
     nameWrap: {
-      minHeight: NAME_LINE * 2,
+      minHeight: compact ? NAME_LINE : NAME_LINE * 2,
       alignSelf: 'stretch',
       // Row + wrap: name and surname are separate Text nodes (a single
       // concatenated string got its tail clipped by Android with this display
@@ -123,12 +131,12 @@ export const NameCard: React.FC<NameCardProps> = ({ data, onFavorite, isFavorite
       fontSize: Math.round(theme.typography.sizes.h3 * s),
       color: 'rgba(255, 255, 255, 0.9)',
       letterSpacing: 2,
-      marginBottom: sp(theme.spacing.xl),
+      marginBottom: compact ? sp(theme.spacing.s) : sp(theme.spacing.xl),
     },
     infoBox: {
       backgroundColor: 'rgba(255, 255, 255, 0.2)',
       borderRadius: theme.borderRadius.l,
-      padding: sp(theme.spacing.l),
+      padding: compact ? sp(theme.spacing.m) : sp(theme.spacing.l),
       width: '100%',
       alignItems: 'center',
     },
@@ -144,7 +152,7 @@ export const NameCard: React.FC<NameCardProps> = ({ data, onFavorite, isFavorite
       fontSize: Math.round(theme.typography.sizes.h3 * s),
       color: theme.colors.textLight,
       textAlign: 'center',
-      marginBottom: sp(theme.spacing.m),
+      marginBottom: compact ? 0 : sp(theme.spacing.m),
     },
     spacer: {
       height: sp(theme.spacing.s),
@@ -209,7 +217,7 @@ export const NameCard: React.FC<NameCardProps> = ({ data, onFavorite, isFavorite
       alignItems: 'center',
       justifyContent: 'center',
     },
-  }), [theme, CARD_WIDTH, CARD_HEIGHT, NAME_FONT, NAME_LINE, s]);
+  }), [theme, CARD_WIDTH, CARD_HEIGHT, NAME_FONT, NAME_LINE, s, compact]);
 
   return (
     <View style={styles.container}>
@@ -260,17 +268,19 @@ export const NameCard: React.FC<NameCardProps> = ({ data, onFavorite, isFavorite
 
           <View style={styles.infoBox}>
             <Text style={styles.meaningTitle} maxFontSizeMultiplier={CARD_TEXT_SCALE}>Meaning</Text>
-            <Text style={styles.meaning} maxFontSizeMultiplier={CARD_TEXT_SCALE}>{data.meaning}</Text>
+            <Text style={styles.meaning} maxFontSizeMultiplier={CARD_TEXT_SCALE} numberOfLines={compact ? 2 : undefined}>{data.meaning}</Text>
             <View style={styles.spacer} />
             <Text style={styles.originTitle} maxFontSizeMultiplier={CARD_TEXT_SCALE}>Origin</Text>
             <Text style={styles.origin} maxFontSizeMultiplier={CARD_TEXT_SCALE}>{data.origin}</Text>
           </View>
         </View>
 
-        <View style={styles.footer}>
-          <Text style={[styles.hint, styles.hintDislike]} maxFontSizeMultiplier={CARD_TEXT_SCALE}>← Dislike</Text>
-          <Text style={[styles.hint, styles.hintLike]} maxFontSizeMultiplier={CARD_TEXT_SCALE}>Like →</Text>
-        </View>
+        {!compact && (
+          <View style={styles.footer}>
+            <Text style={[styles.hint, styles.hintDislike]} maxFontSizeMultiplier={CARD_TEXT_SCALE}>← Dislike</Text>
+            <Text style={[styles.hint, styles.hintLike]} maxFontSizeMultiplier={CARD_TEXT_SCALE}>Like →</Text>
+          </View>
+        )}
       </LinearGradient>
     </View>
   );
