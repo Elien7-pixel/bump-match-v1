@@ -2,25 +2,20 @@
 import { v } from "convex/values";
 import { action, internalAction } from "./_generated/server";
 import { internal } from "./_generated/api";
+import { vertexAuth, vertexUrl } from "./vertex";
 
-// Generate embedding via Gemini API
+// Generate embedding via Vertex AI. Same model as before the move off the
+// Gemini API key, so vectors already in nameEmbeddings stay comparable.
 async function generateEmbedding(text: string): Promise<number[]> {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    throw new Error("GEMINI_API_KEY not configured");
-  }
+  const auth = await vertexAuth();
 
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=${apiKey}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "models/text-embedding-004",
-        content: { parts: [{ text }] },
-      }),
-    }
-  );
+  const response = await fetch(vertexUrl(auth, "text-embedding-004", "predict"), {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${auth.token}` },
+    body: JSON.stringify({
+      instances: [{ content: text }],
+    }),
+  });
 
   if (!response.ok) {
     const err = await response.text();
@@ -28,7 +23,7 @@ async function generateEmbedding(text: string): Promise<number[]> {
   }
 
   const data = await response.json();
-  return data.embedding.values;
+  return data.predictions[0].embeddings.values;
 }
 
 // Search names by meaning using vector search

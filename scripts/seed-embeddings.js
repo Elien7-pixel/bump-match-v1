@@ -7,7 +7,7 @@
  * Usage: node scripts/seed-embeddings.js
  *
  * Requires:
- * - GEMINI_API_KEY set in Convex env
+ * - VERTEX_PROJECT_ID + VERTEX_SERVICE_ACCOUNT_JSON set in Convex env
  * - Convex dev server running or deployed
  */
 
