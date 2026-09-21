@@ -321,6 +321,16 @@ export const confirmRevealDate = mutation({
     await ctx.db.patch(user._id, { revealDateConfirmed: true });
     await ctx.db.patch(user.partnerId, { revealDateConfirmed: true });
 
+    // getMatchedNames gates on Date.now(), and Convex doesn't re-run a query
+    // just because time passes. Touch both users at the reveal moment so
+    // subscribed clients get the unlocked list.
+    if (user.matchRevealDate > Date.now()) {
+      await ctx.scheduler.runAt(user.matchRevealDate, internal.users.markMatchesRevealed, {
+        userId: user._id,
+        revealDate: user.matchRevealDate,
+      });
+    }
+
     // Notify the proposer that the date was confirmed
     await ctx.scheduler.runAfter(0, internal.pushNotifications.notifyPartner, {
       userId: user._id,
@@ -330,6 +340,65 @@ export const confirmRevealDate = mutation({
     });
 
     return { success: true };
+  },
+});
+
+// Scheduled by confirmRevealDate for the reveal moment. Writing to both user
+// docs invalidates their getMatchedNames subscriptions.
+export const markMatchesRevealed = internalMutation({
+  args: {
+    userId: v.id("users"),
+    revealDate: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const user = await ctx.db.get(args.userId);
+    // The date may have been changed or cancelled since this was scheduled.
+    if (
+      !user ||
+      !user.partnerId ||
+      user.matchRevealDate !== args.revealDate ||
+      user.revealDateConfirmed !== true
+    ) {
+      return;
+    }
+    const now = Date.now();
+    await ctx.db.patch(user._id, { matchesRevealedAt: now });
+    await ctx.db.patch(user.partnerId, { matchesRevealedAt: now });
+  },
+});
+
+/**
+ * One-time: schedule markMatchesRevealed for couples whose reveal date was
+ * confirmed before that scheduling existed.
+ * Run: npx convex run users:backfillRevealSchedules
+ */
+export const backfillRevealSchedules = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const users = await ctx.db.query("users").collect();
+    const now = Date.now();
+    const seen = new Set<string>();
+    let scheduled = 0;
+    for (const user of users) {
+      if (
+        !user.partnerId ||
+        user.matchRevealDate === undefined ||
+        user.revealDateConfirmed !== true ||
+        user.matchRevealDate <= now ||
+        seen.has(user._id)
+      ) {
+        continue;
+      }
+      // One job covers the couple.
+      seen.add(user._id);
+      seen.add(user.partnerId);
+      await ctx.scheduler.runAt(user.matchRevealDate, internal.users.markMatchesRevealed, {
+        userId: user._id,
+        revealDate: user.matchRevealDate,
+      });
+      scheduled++;
+    }
+    return { scheduled };
   },
 });
 

@@ -32,6 +32,7 @@ import type * as submissions from "../submissions.js";
 import type * as termsHtml from "../termsHtml.js";
 import type * as trending from "../trending.js";
 import type * as users from "../users.js";
+import type * as vertex from "../vertex.js";
 
 import type {
   ApiFromModules,
@@ -64,6 +65,7 @@ declare const fullApi: ApiFromModules<{
   termsHtml: typeof termsHtml;
   trending: typeof trending;
   users: typeof users;
+  vertex: typeof vertex;
 }>;
 
 /**

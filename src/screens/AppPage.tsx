@@ -53,6 +53,15 @@ export const AppPage = () => {
   // dropping the two footer counters, which are the most expendable rows here.
   const { height: viewportHeight } = useWindowDimensions();
   const isShort = viewportHeight < 700;
+  // Set when the measured deck comes out too short for a full name card — a
+  // mid-size phone with the pregnancy banner and a large OS font, which
+  // viewportHeight alone can't see. One-way on purpose: relaxing it when the
+  // deck grows back would hand the space straight back and flip-flop forever.
+  const [deckStarved, setDeckStarved] = useState(false);
+  useEffect(() => {
+    setDeckStarved(false);
+  }, [viewportHeight]);
+  const tight = isShort || deckStarved;
 
   const [surname, setSurname] = useState('');
   const [firstName, setFirstName] = useState('');
@@ -730,7 +739,7 @@ export const AppPage = () => {
       </View>
 
       {/* Pregnancy tracker */}
-      {dueDate && <PregnancyTracker dueDate={dueDate} />}
+      {dueDate && <PregnancyTracker dueDate={dueDate} compact={deckStarved} />}
 
       {/* Filter Bar: language + first-letter dropdowns */}
       <View style={styles.filterBar}>
@@ -811,6 +820,9 @@ export const AppPage = () => {
           // itself to fit, instead of assuming a fixed share of the viewport.
           const h = Math.round(e.nativeEvent.layout.height);
           setDeckHeight((prev) => (Math.abs((prev ?? 0) - h) > 1 ? h : prev));
+          // Below this the card has to drop into its compact layout; claw room
+          // back from the banner and the footer lines first.
+          if (h > 0 && h < 330) setDeckStarved(true);
         }}
       >
         {names.length > 0 ? (
@@ -858,12 +870,12 @@ export const AppPage = () => {
         </TouchableOpacity>
       </View>
 
-      {!isShort && (
+      {!tight && (
         <Text style={styles.footerText} maxFontSizeMultiplier={1.3}>
           {likedNames.length + dislikedNames.length} names explored - {likedNames.length} liked
         </Text>
       )}
-      {!isShort && (
+      {!tight && (
         <Text style={styles.footerText} maxFontSizeMultiplier={1.3}>
           Welcome back, {user?.firstName?.trim() || firstName.trim() || 'there'}!
         </Text>

@@ -17,6 +17,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useAction } from 'convex/react';
+import { ConvexError } from 'convex/values';
 import { api } from '../../convex/_generated/api';
 import { useTheme } from '../context/ThemeContext';
 
@@ -52,7 +53,13 @@ export const DictionaryScreen = () => {
       const entry = await lookupName({ name: trimmed });
       setResult(entry);
     } catch (e: any) {
-      Alert.alert('Lookup failed', e.message || 'Could not look up that name. Try again.');
+      // Only a ConvexError carries copy written for users. Anything else is
+      // Convex's raw "[CONVEX A(...)] Server Error" text, which we never show.
+      const friendly =
+        e instanceof ConvexError && typeof (e.data as any)?.message === 'string'
+          ? (e.data as any).message
+          : 'Something went wrong on our side. Please try again later.';
+      Alert.alert('Oops!', friendly);
     } finally {
       setLoading(false);
     }

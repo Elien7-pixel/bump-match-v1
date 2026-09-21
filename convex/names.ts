@@ -182,6 +182,50 @@ export const getPartnerLikedNames = query({
   },
 });
 
+// Names both partners have liked. Shared by getMatchedNames and getMatchCount.
+async function findMatches(ctx: any, user: Doc<"users">): Promise<Doc<"likedNames">[]> {
+  // Get user's liked names
+  const userLikedNames: Doc<"likedNames">[] = await ctx.db
+    .query("likedNames")
+    .withIndex("by_user", (q: any) => q.eq("userId", user._id))
+    .collect();
+
+  // Get partner's liked names
+  const partnerLikedNames: Doc<"likedNames">[] = await ctx.db
+    .query("likedNames")
+    .withIndex("by_user", (q: any) => q.eq("userId", user.partnerId!))
+    .collect();
+
+  // Find matches (names that both have liked)
+  const userNameIds = new Set(userLikedNames.map((ln) => ln.nameId));
+  return partnerLikedNames.filter((ln) => userNameIds.has(ln.nameId));
+}
+
+// Matches stay sealed until the couple's reveal date is confirmed by both and
+// has passed — the same rule the Partner screen uses to show the list.
+function matchesRevealed(user: Doc<"users">): boolean {
+  return (
+    user.matchRevealDate !== undefined &&
+    user.revealDateConfirmed === true &&
+    user.matchRevealDate <= Date.now()
+  );
+}
+
+// How many matches exist, without saying which — safe to show before the
+// reveal ("3 matches waiting!").
+export const getMatchCount = query({
+  args: {
+    token: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const user = await getUserFromToken(ctx, args.token);
+    if (!user || !user.partnerId) {
+      return 0;
+    }
+    return (await findMatches(ctx, user)).length;
+  },
+});
+
 export const getMatchedNames = query({
   args: {
     token: v.string(),
@@ -192,21 +236,12 @@ export const getMatchedNames = query({
       return [];
     }
 
-    // Get user's liked names
-    const userLikedNames = await ctx.db
-      .query("likedNames")
-      .withIndex("by_user", (q) => q.eq("userId", user._id))
-      .collect();
+    // Enforced here rather than in each screen so no client can peek early.
+    if (!matchesRevealed(user)) {
+      return [];
+    }
 
-    // Get partner's liked names
-    const partnerLikedNames = await ctx.db
-      .query("likedNames")
-      .withIndex("by_user", (q) => q.eq("userId", user.partnerId!))
-      .collect();
-
-    // Find matches (names that both have liked)
-    const userNameIds = new Set(userLikedNames.map((ln) => ln.nameId));
-    const matches = partnerLikedNames.filter((ln) => userNameIds.has(ln.nameId));
+    const matches = await findMatches(ctx, user);
 
     return matches.map((ln) => ({
       id: ln.nameId,

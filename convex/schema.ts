@@ -30,6 +30,9 @@ export default defineSchema({
     matchRevealDate: v.optional(v.number()),
     revealDateProposedBy: v.optional(v.id("users")),
     revealDateConfirmed: v.optional(v.boolean()),
+    // Stamped by a scheduled job at the reveal moment; its only purpose is to
+    // re-run getMatchedNames for subscribed clients.
+    matchesRevealedAt: v.optional(v.number()),
     inviteCode: v.string(),
     createdAt: v.number(),
     // Password reset fields
