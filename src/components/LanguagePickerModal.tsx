@@ -52,8 +52,10 @@ export const LanguagePickerModal: React.FC<LanguagePickerModalProps> = ({
   const noneSelected = !isAllSelected && selectedLanguages.length === 0;
 
   const handleToggle = (language: string) => {
+    // 'All' is a real toggle: ticking it selects everything, unticking it
+    // clears everything.
     if (language === 'All') {
-      onSelectLanguages(['All']);
+      onSelectLanguages(isAllSelected ? [] : ['All']);
       return;
     }
 
