@@ -14,7 +14,7 @@ import { useAuth } from '../context/AuthContext';
 import { formatDate, calculateAge, toISODateString, toPickerDate, formatDueDate, toMonthValue } from '../utils/date';
 import { MonthPickerSheet } from '../components/MonthPickerSheet';
 import { OptionPickerSheet } from '../components/OptionPickerSheet';
-import { COUNTRIES, provincesFor, regionLabel } from '../data/locations';
+import { COUNTRIES, COUNTRY_ALIASES, PINNED_COUNTRIES, provincesFor, regionLabel } from '../data/locations';
 import { Brand } from '../theme/designTokens';
 
 
@@ -669,6 +669,11 @@ export const ProfileScreen = () => {
               value={editCountry || null}
               title="Country"
               options={COUNTRIES}
+              searchable
+              searchPlaceholder="Search countries"
+              pinned={PINNED_COUNTRIES}
+              allLabel="All countries"
+              aliases={COUNTRY_ALIASES}
               onSelect={(c) => { setEditCountry(c); setEditProvince(''); }}
               onClose={() => setShowCountryPicker(false)}
             />

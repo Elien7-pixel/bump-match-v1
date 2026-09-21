@@ -44,7 +44,7 @@ import { useAuth } from '../context/AuthContext';
 import { formatDate, toISODateString, formatMonth } from '../utils/date';
 import { MonthPickerSheet } from '../components/MonthPickerSheet';
 import { OptionPickerSheet } from '../components/OptionPickerSheet';
-import { COUNTRIES, provincesFor, regionLabel } from '../data/locations';
+import { COUNTRIES, COUNTRY_ALIASES, PINNED_COUNTRIES, provincesFor, regionLabel } from '../data/locations';
 import { cleanErrorMessage } from '../utils/errors';
 
 // Convex serves HTTP actions on .site, not .cloud — same derivation as App.tsx.
@@ -989,6 +989,11 @@ export const LandingPage = () => {
                   value={country}
                   title="Country"
                   options={COUNTRIES}
+                  searchable
+                  searchPlaceholder="Search countries"
+                  pinned={PINNED_COUNTRIES}
+                  allLabel="All countries"
+                  aliases={COUNTRY_ALIASES}
                   onSelect={(c) => {
                     setCountry(c);
                     // The province list is country-specific, so a previous pick
