@@ -2,7 +2,7 @@
   "expo": {
     "name": "Bump Match",
     "slug": "bump-match",
-    "version": "1.0.9",
+    "version": "1.0.10",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -26,7 +26,7 @@
       "predictiveBackGestureEnabled": false,
       "package": "com.orbitai.bumpmatch",
       "googleServicesFile": "./google-services.json",
-      "versionCode": 13
+      "versionCode": 14
     },
     "web": {
       "favicon": "./assets/favicon.png"
