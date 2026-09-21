@@ -84,6 +84,13 @@ export const PartnerScreen = () => {
         token ? { token } : "skip"
     );
 
+    // The server keeps matchedNames empty until the reveal, so the locked card
+    // counts from here instead.
+    const matchCount = useQuery(
+        api.names.getMatchCount,
+        token ? { token } : "skip"
+    );
+
     const myInvite = useQuery(
         api.partnerInvites.getMyInvite,
         token ? { token } : "skip"
@@ -672,7 +679,7 @@ export const PartnerScreen = () => {
                                 <View style={[styles.matchedNameCard, { flexDirection: 'column', alignItems: 'center', paddingVertical: 20, backgroundColor: isDark ? theme.colors.card : theme.brand.yellowSoft }]}>
                                     <Ionicons name="lock-closed" size={32} color={theme.brand.yellowDeep} />
                                     <Text style={[styles.matchedNameText, { color: isDark ? theme.brand.yellow : theme.colors.text, marginTop: 8, textAlign: 'center' }]}>
-                                        {matchedNames?.length || 0} {(matchedNames?.length || 0) === 1 ? 'match' : 'matches'} waiting!
+                                        {matchCount || 0} {(matchCount || 0) === 1 ? 'match' : 'matches'} waiting!
                                     </Text>
                                     <Text style={[styles.emptySubtext, { marginTop: 4 }]}>
                                         Reveals on {new Date(revealDateInfo!.date).toLocaleDateString('en-ZA', { day: 'numeric', month: 'long', year: 'numeric' })}
